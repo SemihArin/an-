@@ -27,12 +27,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "BURAYA_API_KEY",
-  authDomain: "BURAYA_PROJECT.firebaseapp.com",
-  projectId: "BURAYA_PROJECT_ID",
-  storageBucket: "BURAYA_PROJECT.appspot.com",
-  messagingSenderId: "BURAYA_SENDER_ID",
-  appId: "BURAYA_APP_ID",
+  apiKey: "AIzaSyBmabbsj_gsJ28qpAOwWEFy5IxGqwM90F8",
+  authDomain: "teste-6c5e5.firebaseapp.com",
+  projectId: "teste-6c5e5",
+  storageBucket: "teste-6c5e5.firebasestorage.app",
+  messagingSenderId: "662582202182",
+  appId: "1:662582202182:web:2bfbf2bc3f35cb8ca19f47",
+  measurementId: "G-XFPLB3GE0Z"
 };
 
 const hasFirebaseConfig = !Object.values(firebaseConfig).some((value) => value.startsWith("BURAYA_"));
