@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iki Kisilik An</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="auth-panel" id="authPanel">
+        <div>
+          <p class="eyebrow">Ozel alan</p>
+          <h1>Iki kisilik an</h1>
+          <p class="muted">
+            Google ile giris, Firebase mesajlasma, kamera kaydi ve WebRTC sesli/goruntulu konusma.
+          </p>
+        </div>
+        <button class="primary-action" id="loginButton" type="button">Google ile giris yap</button>
+        <p class="setup-warning" id="setupWarning">
+          Firebase bilgilerini app.js icindeki firebaseConfig alanina ekle.
+        </p>
+      </section>
+
+      <section class="workspace is-hidden" id="workspace" aria-label="Uygulama">
+        <aside class="sidebar">
+          <div class="profile">
+            <img id="userPhoto" alt="" />
+            <div>
+              <strong id="userName">Kullanici</strong>
+              <span id="userEmail"></span>
+            </div>
+          </div>
+          <div class="room-card">
+            <label for="roomInput">Oda kodu</label>
+            <div class="inline-form">
+              <input id="roomInput" value="bizim-odamiz" autocomplete="off" />
+              <button id="joinRoomButton" type="button">Baglan</button>
+            </div>
+          </div>
+          <nav class="tabs" aria-label="Bolumler">
+            <button class="tab is-active" type="button" data-view="chatView">Mesaj</button>
+            <button class="tab" type="button" data-view="cameraView">Kamera</button>
+            <button class="tab" type="button" data-view="callView">Arama</button>
+          </nav>
+          <button class="ghost-action" id="logoutButton" type="button">Cikis yap</button>
+        </aside>
+
+        <section class="content">
+          <div class="topbar">
+            <div>
+              <p class="eyebrow">Aktif oda</p>
+              <h2 id="activeRoomTitle">bizim-odamiz</h2>
+            </div>
+            <span class="status-pill" id="statusPill">Hazir</span>
+          </div>
+
+          <section class="view chat-view" id="chatView">
+            <div class="messages" id="messages" aria-live="polite"></div>
+            <form class="composer" id="messageForm">
+              <button class="icon-button" id="attachLastCaptureButton" type="button" title="Son cekimi ekle">
+                +
+              </button>
+              <input id="messageInput" placeholder="Mesaj yaz..." autocomplete="off" />
+              <button class="send-button" type="submit">Gonder</button>
+            </form>
+          </section>
+
+          <section class="view camera-view is-hidden" id="cameraView">
+            <div class="media-stage">
+              <video id="cameraPreview" autoplay playsinline muted></video>
+              <canvas id="photoCanvas" class="is-hidden"></canvas>
+            </div>
+            <div class="control-row">
+              <button id="startCameraButton" type="button">Kamerayi ac</button>
+              <button id="takePhotoButton" type="button" disabled>Fotograf cek</button>
+              <button id="recordButton" type="button" disabled>Video kaydet</button>
+              <button id="uploadCaptureButton" type="button" disabled>Firebase'e yukle</button>
+            </div>
+            <div class="capture-preview" id="capturePreview"></div>
+          </section>
+
+          <section class="view call-view is-hidden" id="callView">
+            <div class="call-grid">
+              <div class="video-tile">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <span>Sen</span>
+              </div>
+              <div class="video-tile">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <span>Sevgilin</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <button id="prepareCallButton" type="button">Mikrofon/kamera ac</button>
+              <button id="createCallButton" type="button" disabled>Arama baslat</button>
+              <button id="answerCallButton" type="button" disabled>Aramaya katil</button>
+              <button id="hangupButton" type="button" disabled>Kapat</button>
+            </div>
+            <p class="muted small">
+              Ayni oda koduyla iki farkli cihazda giris yapinca biri arama baslatir, digeri katilir.
+            </p>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <template id="messageTemplate">
+      <article class="message">
+        <div class="message-meta"></div>
+        <p></p>
+        <a class="attachment" target="_blank" rel="noreferrer"></a>
+      </article>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
