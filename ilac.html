@@ -168,7 +168,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
   border:1.5px solid rgba(90,44,70,.05);transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
 .row:active{transform:scale(.985);box-shadow:0 6px 16px rgba(90,44,70,.08)}
 .row .txt{flex:1;min-width:0}
-.row b{display:block;font-size:16px;font-weight:500}
+.row b{display:block;font-size:16px;font-weight:500;overflow-wrap:anywhere}
 .row small{color:var(--soft);font-size:12.5px;font-variant-numeric:tabular-nums;letter-spacing:.05em}
 .empty{text-align:center;color:var(--soft);font-size:14px;padding:24px 0 14px}
 /* haftalık grafik: alınan altta, atlanan üstünde — bugün çerçeveli */
@@ -209,6 +209,33 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .lgnd i.n{height:2px;border-radius:1px;background:rgba(90,44,70,.16)}
 /* form bölüm başlıkları */
 .hd.t{margin-top:20px}
+/* su hedefi seçici */
+.goal{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 18px}
+.gbtn{width:56px;height:56px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--hair);background:#fff;
+  font-family:inherit;font-size:26px;font-weight:500;color:var(--plum);line-height:1;
+  display:grid;place-items:center;box-shadow:0 5px 16px rgba(90,44,70,.06);
+  transition:transform .16s cubic-bezier(.34,1.56,.64,1)}
+.gbtn:active{transform:scale(.9)}
+.gbtn:disabled{opacity:.28;box-shadow:none}
+.gnum{text-align:center;min-width:88px}
+.gnum b{display:block;font-size:44px;font-weight:700;line-height:1;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
+.gnum em{display:block;margin-top:4px;font-style:normal;font-size:13px;color:var(--soft)}
+.gprev{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px;min-height:19px}
+.ghint{margin:0;text-align:center;font-size:13px;color:var(--soft);line-height:1.45}
+/* diyet haftalık geçmiş: çubuk öğün oranı, altındaki nokta su hedefi */
+.dwh{margin-bottom:8px}
+.dweek{display:flex;gap:5px;margin-bottom:14px}
+.dw{flex:1;min-width:0;text-align:center}
+.dw .col{height:40px;display:flex;align-items:flex-end;justify-content:center;gap:4px;margin-bottom:6px;
+  border-radius:9px;padding:3px 2px}
+.dw .bar{width:11px;height:100%;border-radius:6px;background:rgba(90,44,70,.09);overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end}
+.dw .f{width:100%;height:0;border-radius:6px;transition:height .65s cubic-bezier(.32,.72,0,1)}
+.dw .f.m{background:linear-gradient(180deg,var(--rose2),var(--rose))}
+.dw .f.w{background:linear-gradient(180deg,#C7E4F6,#7FB8E0)}
+.dw .dl{display:block;font-size:10.5px;color:var(--soft)}
+.dw.today .col{box-shadow:inset 0 0 0 2px var(--rose-mid)}
+.dw.today .dl{color:var(--rose-ink);font-weight:700}
 .times:empty{display:none}
 .hd{font-size:13px;font-weight:700;color:var(--soft);margin:0 0 12px;letter-spacing:.02em}
 
@@ -321,17 +348,22 @@ textarea:focus{border-color:var(--rose2)}
 
 .meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:22px;padding:14px 16px 12px;margin-bottom:12px;
   box-shadow:0 6px 18px rgba(90,44,70,.05)}
-.meal h3{margin:0 0 6px;font-size:15.5px;font-weight:700;display:flex;align-items:baseline;gap:10px}
-.meal h3 em{font-style:normal;font-size:13px;font-weight:500;color:var(--soft);font-variant-numeric:tabular-nums}
+.meal h3{margin:0 0 6px;font-size:15.5px;font-weight:700;display:flex;align-items:baseline;gap:10px;min-width:0}
+.meal h3 .mn{min-width:0;overflow-wrap:anywhere}
+.meal h3 em{flex:0 0 auto;font-style:normal;font-size:13px;font-weight:500;color:var(--soft);font-variant-numeric:tabular-nums}
 .meal h3 button{margin-left:auto;flex:0 0 auto;border:0;background:none;width:var(--hit);height:36px;display:grid;place-items:center}
-.food{display:flex;align-items:center;gap:11px;padding:5px 0;font-size:15.5px;transition:opacity .25s,color .25s}
-.food span{transition:text-decoration-color .25s;min-width:0;overflow-wrap:anywhere}
-.food .c{transition:background .25s,border-color .25s,transform .18s cubic-bezier(.34,1.56,.64,1)}
-.food .c{width:30px;height:30px;flex:0 0 auto;border-radius:50%;border:2px solid var(--faint);background:none;display:grid;place-items:center;position:relative}
-.food .c::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--hit);height:var(--hit)}
-.food .c:active{transform:scale(.85)}
+/* satırın tamamı tek hedef: daha önce dairelerin 44px görünmez alanları komşu
+   satıra taşıyor ve yanlış maddeyi işaretleyebiliyordu */
+.food{display:flex;align-items:center;gap:11px;width:100%;min-height:var(--hit);padding:3px 0;
+  border:0;background:none;font-family:inherit;font-size:15.5px;color:var(--plum);text-align:left;
+  transition:opacity .25s,color .25s}
+.food .t{min-width:0;overflow-wrap:anywhere;transition:text-decoration-color .25s}
+.food .c{width:30px;height:30px;flex:0 0 auto;border-radius:50%;border:2px solid var(--faint);
+  display:grid;place-items:center;
+  transition:background .25s,border-color .25s,transform .18s cubic-bezier(.34,1.56,.64,1)}
+.food:active .c{transform:scale(.85)}
 .food.ok{color:var(--soft)}
-.food.ok span{text-decoration:line-through}
+.food.ok .t{text-decoration:line-through}
 .food.ok .c{background:rgba(143,208,180,.22);border-color:transparent}
 .mbar{height:4px;border-radius:2px;background:rgba(90,44,70,.07);margin-top:8px;overflow:hidden}
 .mbar i{display:block;height:100%;width:0;border-radius:2px;background:linear-gradient(90deg,var(--rose2),var(--rose));transition:width .45s cubic-bezier(.32,.72,0,1)}
@@ -433,6 +465,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="card" id="dring"></div>
       <div class="card" id="water"></div>
     </div>
+    <div class="hdrow dwh"><b>Son 7 gün</b><span class="lgd">sol: öğün · sağ: su</span></div>
+    <div class="dweek" id="dweek"></div>
     <div class="meals" id="meals"></div>
     <div class="bar">
       <button class="take" id="btnAddMeal"></button>
@@ -466,11 +500,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div class="sheet" id="sheetSet">
   <div class="grab"></div>
   <p class="hd">Günlük su hedefi</p>
-  <div class="field"><input type="number" id="sWater" inputmode="numeric" min="4" max="16"><button class="mini" id="sWaterOk"></button></div>
-  <p class="hd">Yedek</p>
-  <textarea id="sData" placeholder="Kopyala'ya basıp yedeği bir yere kaydet. Geri yüklemek için yedeği buraya yapıştır."></textarea>
-  <div class="pair"><button class="save ghost" id="sCopy">Kopyala</button><button class="save" id="sRestore">Geri yükle</button></div>
-  <button class="del" id="sReset">Tüm verileri sil</button>
+  <div class="goal">
+    <button class="gbtn" id="sMinus" aria-label="Hedefi azalt">−</button>
+    <span class="gnum"><b id="sGoalN">8</b><em>bardak</em></span>
+    <button class="gbtn" id="sPlus" aria-label="Hedefi artır">+</button>
+  </div>
+  <div class="gprev" id="sPrev" aria-hidden="true"></div>
+  <p class="ghint">Gün içinde diyet sekmesindeki bardağa dokunarak işaretle.</p>
 </div>
 
 <div class="sheet" id="sheetMeal">
@@ -617,6 +653,7 @@ const COLORS=['#FFB3CD','#FFC9A8','#D9C2F5','#A8E0C6','#AFD6F0','#FFE0A8'];
 const SHAPES=['capsule','tablet','drop'];
 const DAYS=['Pzr','Pzt','Sal','Çar','Per','Cum','Cmt'];
 const MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const PILL=.78;  /* hapın tam boyu — 1 iken ekrandan taşıyor, kadranı bastırıyordu */
 const S={meds:[],taken:{},skipped:{},diet:[],eaten:{},water:{},settings:{waterGoal:8}};
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -841,7 +878,7 @@ function playReveal(full){
   render(false,true);
   sweepHand(full?1200:650);
   scene.scale=.12;
-  tween(.12,1,full?950:600,x=>scene.scale=x);
+  tween(.12,PILL,full?950:600,x=>scene.scale=x);
 }
 /* gün tamamlandığında kapanış */
 function playFinale(){
@@ -907,7 +944,7 @@ function render(swap,animate){
       $('btnTake').disabled=false;
       scene.col=hex2rgb(cur.med.color);
       scene.shape=Math.max(0,SHAPES.indexOf(cur.med.shape));
-      scene.alive=1;scene.split=0;
+      scene.alive=(curTab==='med')?1:0;scene.split=0;
     }else{
       $('nName').textContent=all.length?'Bugünlük bitti':'Liste boş';
       if(all.length){
@@ -934,6 +971,7 @@ function toast(msg,fn,label){
   undoFn=fn;
   $('toastBtn').textContent=label||'Geri al';
   $('toastBtn').style.display=fn?'':'none';
+  $('a2hs').classList.remove('on');
   $('toast').classList.add('on');
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>$('toast').classList.remove('on'),5000);
@@ -1249,19 +1287,48 @@ function renderRing(){
     </div>
     <p class="cl">öğün</p>`;
 }
+/* öğün eklenmeden önceki günler sayılmamalı — ilaç tarafındaki added ile aynı mantık */
+function dietDay(d){
+  const k=keyOf(d),eat=S.eaten[k]||[];
+  let t=0,e=0;
+  S.diet.forEach(m=>{
+    if(m.added&&k<m.added)return;
+    m.items.forEach((it,i)=>{t++;if(eat.indexOf(eatenKey(m.id,i))>=0)e++});
+  });
+  return {total:t,done:e,water:(S.water&&S.water[k])||0};
+}
+function drawDietWeek(){
+  const g=goal(),pend=[];let h='';
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const s2=dietDay(d);
+    pend.push([s2.total?Math.round(s2.done/s2.total*100):0,
+               g?Math.round(Math.min(1,s2.water/g)*100):0]);
+    h+=`<div class="dw ${i===0?'today':''}" title="${DAY2[d.getDay()]}: ${s2.done}/${s2.total} öğün · ${s2.water}/${g} bardak">
+      <div class="col"><span class="bar"><i class="f m"></i></span><span class="bar"><i class="f w"></i></span></div>
+      <span class="dl">${DAY2[d.getDay()]}</span></div>`;
+  }
+  $('dweek').innerHTML=h;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    Array.prototype.forEach.call($('dweek').querySelectorAll('.dw'),(el,i)=>{
+      el.querySelector('.f.m').style.height=pend[i][0]+'%';
+      el.querySelector('.f.w').style.height=pend[i][1]+'%';
+    });
+  }));
+}
 function renderDiet(animate,justKey){
   const ms=mealList(),tot=dietTotals(),nx=nextMeal();
   $('dietCount').textContent=(tot[1]&&tot[0]===tot[1])?'Bugün tamam':'';
-  renderRing();
+  renderRing();drawDietWeek();
   $('meals').innerHTML=ms.length?ms.map((m,mi)=>{
     const done=m.items.filter((it,i)=>isEaten(eatenKey(m.id,i))).length;
     const full=m.items.length&&done===m.items.length,now=nx&&nx.id===m.id;
     return `<div class="meal${full?' done':''}${now?' now':''}" style="${animate?'animation:mealIn .55s cubic-bezier(.2,.8,.3,1) '+(mi*90+80)+'ms both':'animation:none'}">
-      <h3>${esc(m.name)}<em>${m.time}</em><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
+      <h3><span class="mn">${esc(m.name)}</span><em>${m.time}</em><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
       ${now?`<p class="mnow">${when(m.time)}</p>`:''}
       ${m.items.map((it,i)=>{
         const ek=eatenKey(m.id,i),ok=isEaten(ek);
-        return `<div class="food${ok?' ok':''}"><button class="c${ok&&ek===justKey?' just':''}" data-eat="${ek}" aria-pressed="${ok}" aria-label="${esc(it)}">${ok?ico.tick:''}</button><span>${esc(it)}</span></div>`;
+        return `<button class="food${ok?' ok':''}" data-eat="${ek}" aria-pressed="${ok}"><span class="c${ok&&ek===justKey?' just':''}">${ok?ico.tick:''}</span><span class="t">${esc(it)}</span></button>`;
       }).join('')}
       <div class="mbar"><i style="width:${m.items.length?(done/m.items.length*100).toFixed(0):0}%"></i></div>
     </div>`;
@@ -1305,7 +1372,7 @@ $('mSave').addEventListener('click',()=>{
   if(mealEdit){
     const m=S.diet.filter(x=>x.id===mealEdit)[0];
     if(m){m.name=data.name;m.time=data.time;m.items=data.items}
-  }else S.diet.push(Object.assign({id:'g'+Date.now()},data));
+  }else S.diet.push(Object.assign({id:'g'+Date.now(),added:todayKey()},data));
   mealEdit=null;save();hide();setTimeout(()=>renderDiet(true),300);
 });
 $('mDel').addEventListener('click',()=>{
@@ -1317,57 +1384,24 @@ $('mDel').addEventListener('click',()=>{
 });
 $('btnAddMeal').addEventListener('click',()=>openMeal(null));
 
-/* ---------------- ayarlar ---------------- */
-let resetArmed=false;
-$('btnSet').addEventListener('click',()=>{
-  $('sWater').value=goal();
-  $('sData').value='';
-  resetArmed=false;$('sReset').textContent='Tüm verileri sil';
-  show('sheetSet');
-});
-$('sWaterOk').addEventListener('click',()=>{
-  const v=parseInt($('sWater').value,10);
-  if(isNaN(v)){toast('Bir sayı gir');return}
-  S.settings.waterGoal=Math.min(16,Math.max(4,v));
-  $('sWater').value=S.settings.waterGoal;
-  save();renderWater();toast('Hedef '+S.settings.waterGoal+' bardak');
-});
-$('sCopy').addEventListener('click',()=>{
-  const txt=JSON.stringify(S);
-  $('sData').value=txt;
-  $('sData').select();
-  let ok=false;
-  try{ok=document.execCommand('copy')}catch(e){}
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(()=>toast('Yedek panoya kopyalandı'),()=>toast(ok?'Yedek panoya kopyalandı':'Metni seçip elle kopyala'));
-  }else toast(ok?'Yedek panoya kopyalandı':'Metni seçip elle kopyala');
-});
-$('sRestore').addEventListener('click',()=>{
-  const raw=$('sData').value.trim();
-  if(!raw){toast('Önce yedeği yapıştır');return}
-  let p;
-  try{p=JSON.parse(raw)}catch(e){toast('Yedek okunamadı');return}
-  if(!p||!Array.isArray(p.meds)){toast('Bu bir yedek değil');return}
-  const before=JSON.parse(JSON.stringify(S));
-  S.meds=p.meds||[];S.taken=p.taken||{};S.skipped=p.skipped||{};
-  S.diet=p.diet||[];S.eaten=p.eaten||{};S.water=p.water||{};
-  S.settings=Object.assign({waterGoal:8},p.settings||{});
-  save();hide();manual=null;render(true,true);renderWater();renderDiet(false);
-  toast('Yedek geri yüklendi',()=>{
-    Object.keys(before).forEach(k=>{S[k]=before[k]});
-    save();render(true,true);renderWater();renderDiet(false);
-  });
-});
-$('sReset').addEventListener('click',()=>{
-  if(!resetArmed){resetArmed=true;$('sReset').textContent='Emin misin? Tekrar dokun';return}
-  const before=JSON.parse(JSON.stringify(S));
-  S.meds=[];S.taken={};S.skipped={};S.diet=[];S.eaten={};S.water={};
-  save();hide();manual=null;render(true,true);renderWater();renderDiet(false);
-  toast('Her şey silindi',()=>{
-    Object.keys(before).forEach(k=>{S[k]=before[k]});
-    save();render(true,true);renderWater();renderDiet(false);
-  });
-});
+/* ---------------- su hedefi ---------------- */
+const GLASS_MINI='<svg width="14" height="19" viewBox="0 0 20 26" aria-hidden="true"><path d="M3 3h14l-1.6 20a2 2 0 0 1-2 1.8H6.6a2 2 0 0 1-2-1.8z" fill="#AFD6F0" stroke="#7FB8E0" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+function drawGoal(){
+  const g=goal();
+  $('sGoalN').textContent=g;
+  $('sMinus').disabled=g<=4;$('sPlus').disabled=g>=16;
+  $('sPrev').innerHTML=new Array(g+1).join(GLASS_MINI);
+}
+/* anında kaydeder — ayrı bir onay düğmesi gerekmiyor */
+function setGoal(step){
+  const g=Math.min(16,Math.max(4,goal()+step));
+  if(g===goal())return;
+  S.settings.waterGoal=g;save();drawGoal();renderWater();
+  if(navigator.vibrate)navigator.vibrate(8);
+}
+$('sMinus').addEventListener('click',()=>setGoal(-1));
+$('sPlus').addEventListener('click',()=>setGoal(1));
+$('btnSet').addEventListener('click',()=>{drawGoal();show('sheetSet')});
 
 /* sekmeler */
 let curTab='med';
@@ -1388,13 +1422,15 @@ function tab(which){
   curTab=which;
   if(navigator.vibrate)navigator.vibrate(6);
   if(med){
-    tween(scene.scale,1,520,x=>scene.scale=x);
+    tween(scene.scale,PILL,520,x=>scene.scale=x);
+    scene.alive=active?1:0;
     const el=$('water');el.style.animation='none';
     const f=$('foot');f.classList.remove('reveal-foot');void f.offsetWidth;f.classList.add('reveal-foot');
     const rs=document.querySelector('.ring svg');
     rs.style.animation='none';void rs.getBBox;rs.style.animation='fadeIn .5s ease .1s both';
   }else{
     tween(scene.scale,.02,420,x=>scene.scale=x);
+    tween(scene.alive,0,300,x=>scene.alive=x);
     renderWater();renderDiet(true);
     const el=document.querySelector('.dsum');el.style.animation='none';void el.offsetWidth;
     el.style.animation='fadeUp .5s cubic-bezier(.2,.8,.3,1) both';
@@ -1453,7 +1489,6 @@ $('btnAddMeal').innerHTML=ico.plus+'<span>Öğün ekle</span>';
 $('tabMed').innerHTML=ico.pillTab;
 $('tabDiet').innerHTML=ico.fork;
 $('btnSet').innerHTML=ico.gear;
-$('sWaterOk').innerHTML=ico.tickW;
 $('fAddTime').innerHTML=ico.plus;
 load();renderWater();renderDiet(false);drawDial();bellState();
 if(initGL())requestAnimationFrame(frame);
