@@ -30,6 +30,7 @@
   --rose2:#FFB3CD;
   /* rose metin/odak için çok açık (2.1:1) — koyu eşi 5.2:1 */
   --rose-ink:#B03A63;
+  --rose-mid:#DA5A85;
   --amber-ink:#9A5416;
   --mint:#8FD0B4;
   --card:rgba(255,255,255,.62);
@@ -177,14 +178,35 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .week span{font-size:10.5px;color:var(--soft)}
 .hd{font-size:13px;font-weight:700;color:var(--soft);margin:0 0 12px;letter-spacing:.02em}
 
-/* açılış perdesi — uygulamayla aynı zemin, sessizce erir */
-#boot{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
-  background:var(--bg);transition:opacity .55s ease}
+/* açılış — sahne sahne kurulur: hap yerleşir, halka çizilir, ad belirir, perde açılır */
+#boot{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  background:radial-gradient(125% 85% at 50% 36%,#FFF8FB 0%,#FFE6F0 52%,#FFD6E6 100%);
+  transition:opacity .6s cubic-bezier(.4,0,.2,1)}
 #boot.gone{opacity:0;pointer-events:none}
-#boot .cap{animation:capIn .75s cubic-bezier(.34,1.56,.64,1) both,capBob 2.6s ease-in-out .75s infinite}
-@keyframes capIn{0%{opacity:0;transform:scale(.5) rotate(-26deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+#boot.gone .bstage,#boot.gone .btitle,#boot.gone .dots{transform:scale(1.25);opacity:0;
+  transition:transform .6s cubic-bezier(.45,0,.15,1),opacity .44s ease}
+.bstage{position:relative;width:132px;height:132px;display:grid;place-items:center;
+  transition:transform .6s cubic-bezier(.45,0,.15,1),opacity .44s ease}
+.bring{position:absolute;inset:0;width:132px;height:132px}
+.br-t{fill:none;stroke:rgba(90,44,70,.12);stroke-width:2;opacity:0}
+#boot.play .br-t{animation:fadeIn .5s ease .04s both}
+.br-f{fill:none;stroke:var(--rose);stroke-width:2.8;stroke-linecap:round;
+  stroke-dasharray:364;stroke-dashoffset:364}
+#boot.play .br-f{animation:brDraw 1s cubic-bezier(.3,.8,.25,1) .24s both}
+@keyframes brDraw{to{stroke-dashoffset:0}}
+#boot .cap{position:relative;opacity:0}
+#boot.play .cap{animation:capIn .82s cubic-bezier(.34,1.56,.64,1) .06s both,capBob 2.8s ease-in-out .9s infinite}
+@keyframes capIn{0%{opacity:0;transform:scale(.34) rotate(-44deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes capBob{0%,100%{transform:translateY(-3px) rotate(-5deg)}50%{transform:translateY(3px) rotate(5deg)}}
-#boot .dots{display:flex;gap:8px}
+.btitle{display:flex;gap:1px;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:30px;
+  letter-spacing:-.5px;color:var(--plum);
+  transition:transform .6s cubic-bezier(.45,0,.15,1),opacity .44s ease}
+.btitle i{font-style:normal;opacity:0}
+#boot.play .btitle i{animation:btIn .62s cubic-bezier(.2,.9,.3,1) both}
+@keyframes btIn{from{opacity:0;transform:translateY(16px) rotate(-7deg)}to{opacity:1;transform:none}}
+#boot .dots{display:flex;gap:8px;opacity:0;
+  transition:transform .6s cubic-bezier(.45,0,.15,1),opacity .44s ease}
+#boot.play .dots{animation:fadeIn .5s ease 1s both}
 #boot .dots i{width:7px;height:7px;border-radius:50%;background:var(--rose2);animation:dotWave 1.15s ease-in-out infinite}
 @keyframes dotWave{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-7px);opacity:1}}
 
@@ -198,16 +220,19 @@ input::placeholder{color:rgba(90,44,70,.3)}
 @keyframes leave{to{opacity:0;transform:scale(.97) translateY(12px)}}
 .reveal-top{animation:fadeDown .6s ease both}
 .reveal-foot{animation:fadeUp .75s cubic-bezier(.2,.7,.3,1) both}
-.track.draw{stroke-dasharray:792;animation:draw 1s cubic-bezier(.4,0,.2,1) both}
+.track.draw{stroke-dasharray:792;animation:draw 1.2s cubic-bezier(.35,0,.15,1) both}
 circle.bead,text.dlab,circle.ripplering{transform-box:fill-box;transform-origin:center}
 .app.leaving{animation:leave .4s ease forwards}
 
 /* sayfalar */
 .pagewrap{position:relative;flex:1;min-height:0;margin-top:14px}
+/* geçiş: giden sayfa geri çekilip bulanıklaşır, gelen sayfa yaylanarak oturur */
 .page{position:absolute;inset:0;display:flex;flex-direction:column;
-  opacity:0;pointer-events:none;transform:translateX(var(--x,8%)) scale(.985);will-change:transform,opacity;
-  transition:opacity .26s ease,transform .46s cubic-bezier(.22,1,.3,1)}
-.page.on{opacity:1;transform:none;pointer-events:auto;transition:opacity .3s ease .06s,transform .5s cubic-bezier(.22,1.1,.3,1)}
+  opacity:0;pointer-events:none;transform:translateX(var(--x,11%)) scale(.93);filter:blur(6px);
+  will-change:transform,opacity,filter;
+  transition:opacity .3s ease,transform .52s cubic-bezier(.22,1,.3,1),filter .36s ease}
+.page.on{opacity:1;transform:none;filter:blur(0);pointer-events:auto;
+  transition:opacity .36s ease .05s,transform .62s cubic-bezier(.2,1.14,.3,1),filter .44s ease .05s}
 .tabs{position:relative;display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--card);border:1px solid var(--cardline);flex:0 0 auto}
 .tabs .ind{position:absolute;top:3px;left:3px;width:42px;height:40px;border-radius:999px;background:#fff;
   box-shadow:0 4px 12px rgba(90,44,70,.1);transition:transform .42s cubic-bezier(.22,1.3,.3,1)}
@@ -215,15 +240,41 @@ circle.bead,text.dlab,circle.ripplering{transform-box:fill-box;transform-origin:
   display:grid;place-items:center;opacity:.55;transition:opacity .28s ease,transform .28s cubic-bezier(.34,1.56,.64,1)}
 .tabs button.on{opacity:1}
 .tabs button:active{transform:scale(.9)}
-#water{animation:fadeUp .45s cubic-bezier(.2,.7,.3,1) both}
+.tabs button.on svg{animation:tabPop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes tabPop{0%{transform:scale(.7) rotate(-14deg)}60%{transform:scale(1.14) rotate(4deg)}100%{transform:none}}
+.dsum{animation:fadeUp .5s cubic-bezier(.2,.8,.3,1) both}
 
-/* diyet */
-/* 16 bardak hedefinde tek satır 320px'i taşırıyordu — artık sarıyor */
-.water{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-.water button{border:0;background:none;padding:0;width:40px;height:var(--hit);display:grid;place-items:center;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
-.water button:active{transform:scale(.85)}
-.hint{margin-left:auto;align-self:center;font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums}
-.water .wl{flex:1 0 100%;margin:2px 0 0;font-size:13px;color:var(--soft);font-variant-numeric:tabular-nums}
+/* diyet — günün özeti iki kartta: öğün halkası ve dolan bardak */
+.dsum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:14px}
+.card{background:#fff;border:1.5px solid var(--hair);border-radius:22px;padding:13px 10px;
+  box-shadow:0 8px 22px rgba(90,44,70,.06);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:5px;min-width:0}
+.cl{margin:0;font-size:12px;font-weight:500;color:var(--soft);letter-spacing:.04em}
+.rgwrap{position:relative;width:78px;height:78px}
+.rg{width:100%;height:100%;display:block}
+.rg-t{fill:none;stroke:rgba(90,44,70,.10);stroke-width:8}
+.rg-f{fill:none;stroke:var(--rose-mid);stroke-width:8;stroke-linecap:round;
+  transition:stroke-dasharray .8s cubic-bezier(.32,.72,0,1)}
+.rg-n{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;line-height:1;
+  font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.rg-n em{font-style:normal;font-size:12.5px;font-weight:500;color:var(--soft)}
+.rg-n.sm{position:static;transform:none;font-size:19px}
+/* bardak: dokun, dolsun — 16 küçük ikon yerine tek büyük hedef */
+.wgwrap{position:relative;width:112px;height:78px;display:grid;place-items:center}
+.wg{width:44px;height:60px;display:block}
+.wv{transition:transform .7s cubic-bezier(.32,.72,0,1)}
+.w1,.w2{transform-box:view-box}
+.w1{fill:#AFD6F0;animation:wave 3.4s linear infinite}
+.w2{fill:#7FB8E0;opacity:.5;animation:wave 2.2s linear infinite reverse}
+@keyframes wave{from{transform:translateX(0)}to{transform:translateX(-48px)}}
+.wtap{position:absolute;inset:0;border:0;background:none;border-radius:18px;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.wtap:active{transform:scale(.9)}
+.wmin{position:absolute;right:0;bottom:0;z-index:2;width:38px;height:38px;border-radius:50%;
+  border:1.5px solid var(--hair);background:#fff;box-shadow:0 3px 10px rgba(90,44,70,.08);
+  display:grid;place-items:center;transition:transform .16s}
+.wmin:active{transform:scale(.88)}
+.wmin[hidden]{visibility:hidden;display:grid}
+.hint{margin-left:auto;align-self:center;font-size:13px;font-weight:700;color:var(--rose-ink);white-space:nowrap}
 .meals{flex:1;min-height:0;overflow-y:auto;padding-right:2px;scrollbar-width:none;
   -webkit-mask-image:linear-gradient(180deg,#000 90%,transparent)}
 .meals::-webkit-scrollbar{display:none}
@@ -250,6 +301,15 @@ textarea:focus{border-color:var(--rose2)}
 .food.ok .c{background:rgba(143,208,180,.22);border-color:transparent}
 .mbar{height:4px;border-radius:2px;background:rgba(90,44,70,.07);margin-top:8px;overflow:hidden}
 .mbar i{display:block;height:100%;width:0;border-radius:2px;background:linear-gradient(90deg,var(--rose2),var(--rose));transition:width .45s cubic-bezier(.32,.72,0,1)}
+@keyframes mealIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+.meal.now{border-color:var(--rose2);box-shadow:0 10px 30px rgba(240,138,174,.24)}
+.meal.done{opacity:.62}
+.mnow{margin:0 0 9px;font-size:12.5px;font-weight:700;color:var(--rose-ink)}
+/* işaretlenen tik çizilerek gelsin — hepsi birden değil, sadece dokunulan */
+.food .c.just{animation:cpop .46s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cpop{0%{transform:scale(1)}42%{transform:scale(1.24)}100%{transform:scale(1)}}
+.food .c.just svg path{stroke-dasharray:32;stroke-dashoffset:32;animation:tickdraw .44s cubic-bezier(.2,.8,.3,1) .05s forwards}
+@keyframes tickdraw{to{stroke-dashoffset:0}}
 
 :focus-visible{outline:3px solid var(--rose-ink);outline-offset:3px;border-radius:12px}
 input[type=number]{flex:1;width:100%;font-family:inherit;font-size:16px;font-weight:500;color:var(--plum);
@@ -281,13 +341,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <canvas id="gl"></canvas>
 
 <div id="boot">
-  <svg class="cap" width="74" height="74" viewBox="0 0 100 100" style="transform-box:fill-box;transform-origin:center">
-    <g transform="rotate(-38 50 50)">
-      <rect x="38" y="24" width="24" height="52" rx="12" fill="#FFB3CD"/>
-      <path d="M38 50h24v14a12 12 0 0 1-24 0z" fill="rgba(0,0,0,.1)"/>
-      <rect x="43.5" y="31" width="4.6" height="14" rx="2.3" fill="#fff" opacity=".6"/>
-    </g>
-  </svg>
+  <div class="bstage">
+    <svg class="bring" viewBox="0 0 132 132" aria-hidden="true">
+      <circle class="br-t" cx="66" cy="66" r="58"/>
+      <circle class="br-f" cx="66" cy="66" r="58" transform="rotate(-90 66 66)"/>
+    </svg>
+    <svg class="cap" width="74" height="74" viewBox="0 0 100 100" style="transform-box:fill-box;transform-origin:center">
+      <g transform="rotate(-38 50 50)">
+        <rect x="38" y="24" width="24" height="52" rx="12" fill="#FFB3CD"/>
+        <path d="M38 50h24v14a12 12 0 0 1-24 0z" fill="rgba(0,0,0,.1)"/>
+        <rect x="43.5" y="31" width="4.6" height="14" rx="2.3" fill="#fff" opacity=".6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="btitle" aria-hidden="true"><i style="animation-delay:.54s">İ</i><i style="animation-delay:.62s">l</i><i style="animation-delay:.70s">a</i><i style="animation-delay:.78s">ç</i></div>
   <span class="dots"><i></i><i style="animation-delay:.15s"></i><i style="animation-delay:.3s"></i></span>
 </div>
 
@@ -328,7 +395,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 
   <div class="page" id="pgDiet">
-    <div class="water" id="water"></div>
+    <div class="dsum">
+      <div class="card" id="dring"></div>
+      <div class="card" id="water"></div>
+    </div>
     <div class="meals" id="meals"></div>
     <div class="bar">
       <button class="take" id="btnAddMeal"></button>
@@ -639,6 +709,7 @@ function pillSVG(s,c,z){
 const ico={
   plus:'<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   plusInk:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5A2C46" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  minus:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A2C46" stroke-width="2.6" stroke-linecap="round" opacity=".6"><path d="M5 12h14"/></svg>',
   jar:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A2C46" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" opacity=".8"><rect x="5" y="8" width="14" height="13" rx="4.5"/><path d="M8.5 4.5h7v3.5h-7zM12 12.5v5M9.5 15h5"/></svg>',
   x:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A2C46" stroke-width="2.4" stroke-linecap="round" opacity=".45"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   trash:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F08AAE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9.5 7V4.8h5V7M6.8 7l.9 13h8.6l.9-13"/></svg>',
@@ -721,7 +792,7 @@ function playReveal(full){
   });
   ['ticks','labels','glyphs'].forEach((id,i)=>{
     const el=$(id);el.style.animation='none';void el.getBBox;
-    el.style.animation='fadeIn .8s ease '+(i*130+(full?260:60))+'ms both';
+    el.style.animation='fadeIn .85s ease '+(i*175+(full?210:60))+'ms both';
   });
   if(full){track.classList.remove('draw');void track.getBBox;track.classList.add('draw')}
   render(false,true);
@@ -767,7 +838,7 @@ function render(swap,animate){
     c.setAttribute('fill',tk?'#8FD0B4':(sk?'rgba(90,44,70,.22)':d.med.color));
     c.setAttribute('stroke','#fff');c.setAttribute('stroke-width',sel?2.6:2);
     c.setAttribute('opacity',tk?.6:(sk?.5:1));
-    if(animate){c.style.animation='pop .55s cubic-bezier(.34,1.56,.64,1) both';c.style.animationDelay=(i*70)+'ms'}
+    if(animate){c.style.animation='pop .58s cubic-bezier(.34,1.56,.64,1) both';c.style.animationDelay=(i*95)+'ms'}
     g.appendChild(c);
     if(sel){
       const [lx,ly]=pt(mins(d.time),R-26);
@@ -1017,47 +1088,84 @@ function dietTotals(){
 }
 const goal=()=>Math.min(16,Math.max(4,(S.settings&&S.settings.waterGoal)||8));
 function waterCount(){return (S.water&&S.water[todayKey()])||0}
+/* bardak dolu oranına göre dalga yüzeyi kayar: boşken 54, doluyken 3 */
 function renderWater(){
-  const c=waterCount(),g=goal();let s='';
-  for(let i=0;i<g;i++){
-    const on=i<c;
-    s+=`<button data-glass="${i}" aria-pressed="${on}" aria-label="${i+1}. bardak">
-      <svg width="20" height="26" viewBox="0 0 20 26">
-        <path d="M3 3h14l-1.6 20a2 2 0 0 1-2 1.8H6.6a2 2 0 0 1-2-1.8z"
-          fill="${on?'#AFD6F0':'none'}" stroke="${on?'#AFD6F0':'rgba(90,44,70,.22)'}" stroke-width="1.6" stroke-linejoin="round"/>
-      </svg></button>`;
-  }
-  $('water').innerHTML=s+`<span class="wl">${c} / ${g} bardak</span>`;
+  const c=waterCount(),g=goal(),r=g?Math.min(1,c/g):0;
+  const ty=(54-51*r).toFixed(2);
+  $('water').innerHTML=`
+    <div class="wgwrap">
+      <svg class="wg" viewBox="0 0 48 64" aria-hidden="true">
+        <defs><clipPath id="wclip"><path d="M8 7h32l-3.6 48.5A5.5 5.5 0 0 1 30.9 60H17.1a5.5 5.5 0 0 1-5.5-4.5z"/></clipPath></defs>
+        <g clip-path="url(#wclip)">
+          <rect x="0" y="0" width="48" height="64" fill="#F3F8FC"/>
+          <g class="wv" style="transform:translateY(${ty}px)">
+            <path class="w1" d="M0 5 q12 -5 24 0 t24 0 t24 0 t24 0 L96 72 L0 72 Z"/>
+            <path class="w2" d="M0 5 q12 -5 24 0 t24 0 t24 0 t24 0 L96 72 L0 72 Z"/>
+          </g>
+        </g>
+        <path d="M8 7h32l-3.6 48.5A5.5 5.5 0 0 1 30.9 60H17.1a5.5 5.5 0 0 1-5.5-4.5z" fill="none" stroke="rgba(90,44,70,.3)" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M6 7h36" stroke="rgba(90,44,70,.3)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <button class="wtap" data-w="1" aria-label="Bir bardak ekle"></button>
+      <button class="wmin" data-w="-1" aria-label="Bir bardak azalt" ${c?'':'hidden'}>${ico.minus}</button>
+    </div>
+    <span class="rg-n sm">${c}<em>/${g}</em></span>
+    <p class="cl">bardak</p>`;
 }
 $('water').addEventListener('click',e=>{
-  const b=e.target.closest('[data-glass]');if(!b)return;
-  const i=parseInt(b.dataset.glass,10),k=todayKey();
+  const b=e.target.closest('[data-w]');if(!b)return;
+  const g=goal(),cur=waterCount(),nv=Math.max(0,Math.min(g,cur+parseInt(b.dataset.w,10)));
+  if(nv===cur)return;
   if(!S.water)S.water={};
-  S.water[k]=(waterCount()===i+1)?i:i+1;
-  save();renderWater();
+  S.water[todayKey()]=nv;save();renderWater();
   if(navigator.vibrate)navigator.vibrate(8);
+  if(nv===g){const w=$('water').getBoundingClientRect();hearts(w.left+w.width/2,w.top+w.height/2,'#AFD6F0')}
 });
-function renderDiet(animate){
-  const ms=mealList(),tot=dietTotals();
-  $('dietCount').textContent=tot[1]?tot[0]+' / '+tot[1]:'';
+/* ilaç tarafındaki nextDose ile aynı mantık: geçmiş ama bitmemiş varsa o, yoksa sıradaki */
+function nextMeal(){
+  const left=mealList().filter(m=>m.items.some((it,i)=>!isEaten(eatenKey(m.id,i))));
+  if(!left.length)return null;
+  const n=nowMin();
+  return left.filter(m=>mins(m.time)<=n).pop()||left[0];
+}
+function renderRing(){
+  const t=dietTotals(),C=2*Math.PI*40,r=t[1]?t[0]/t[1]:0;
+  $('dring').innerHTML=`
+    <div class="rgwrap">
+      <svg class="rg" viewBox="0 0 96 96" aria-hidden="true">
+        <circle class="rg-t" cx="48" cy="48" r="40"/>
+        <circle class="rg-f" cx="48" cy="48" r="40" transform="rotate(-90 48 48)"
+          stroke-dasharray="${(C*r).toFixed(1)} ${C.toFixed(1)}"/>
+      </svg>
+      <span class="rg-n">${t[1]?t[0]:'—'}${t[1]?`<em>/${t[1]}</em>`:''}</span>
+    </div>
+    <p class="cl">öğün</p>`;
+}
+function renderDiet(animate,justKey){
+  const ms=mealList(),tot=dietTotals(),nx=nextMeal();
+  $('dietCount').textContent=(tot[1]&&tot[0]===tot[1])?'Bugün tamam':'';
+  renderRing();
   $('meals').innerHTML=ms.length?ms.map((m,mi)=>{
     const done=m.items.filter((it,i)=>isEaten(eatenKey(m.id,i))).length;
-    return `<div class="meal" style="${animate?'animation:fadeUp .5s cubic-bezier(.2,.7,.3,1) '+(mi*70+70)+'ms both':'animation:none'}">
+    const full=m.items.length&&done===m.items.length,now=nx&&nx.id===m.id;
+    return `<div class="meal${full?' done':''}${now?' now':''}" style="${animate?'animation:mealIn .55s cubic-bezier(.2,.8,.3,1) '+(mi*90+80)+'ms both':'animation:none'}">
       <h3>${esc(m.name)}<em>${m.time}</em><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
+      ${now?`<p class="mnow">${when(m.time)}</p>`:''}
       ${m.items.map((it,i)=>{
-        const ok=isEaten(eatenKey(m.id,i));
-        return `<div class="food${ok?' ok':''}"><button class="c" data-eat="${eatenKey(m.id,i)}" aria-pressed="${ok}" aria-label="${esc(it)}">${ok?ico.tick:''}</button><span>${esc(it)}</span></div>`;
+        const ek=eatenKey(m.id,i),ok=isEaten(ek);
+        return `<div class="food${ok?' ok':''}"><button class="c${ok&&ek===justKey?' just':''}" data-eat="${ek}" aria-pressed="${ok}" aria-label="${esc(it)}">${ok?ico.tick:''}</button><span>${esc(it)}</span></div>`;
       }).join('')}
       <div class="mbar"><i style="width:${m.items.length?(done/m.items.length*100).toFixed(0):0}%"></i></div>
     </div>`;
-  }).join(''):'<div class="empty">Öğün eklemek için aşağıdaki artıya dokun</div>';
+  }).join(''):'<div class="empty">Öğün eklemek için aşağıdaki düğmeye dokun</div>';
 }
 $('meals').addEventListener('click',e=>{
   const eat=e.target.closest('[data-eat]');
   if(eat){
     const k=todayKey(),key=eat.dataset.eat,list=S.eaten[k]||[];
-    S.eaten[k]=isEaten(key)?list.filter(x=>x!==key):list.concat([key]);
-    save();renderDiet(false);
+    const marking=!isEaten(key);
+    S.eaten[k]=marking?list.concat([key]):list.filter(x=>x!==key);
+    save();renderDiet(false,marking?key:null);
     if(navigator.vibrate)navigator.vibrate(8);
     const t=dietTotals();
     if(t[1]&&t[0]===t[1])hearts(innerWidth/2,innerHeight*.42,'#8FD0B4');
@@ -1180,8 +1288,8 @@ function tab(which){
   }else{
     tween(scene.scale,.02,420,x=>scene.scale=x);
     renderWater();renderDiet(true);
-    const el=$('water');el.style.animation='none';void el.offsetWidth;
-    el.style.animation='fadeUp .45s cubic-bezier(.2,.7,.3,1) both';
+    const el=document.querySelector('.dsum');el.style.animation='none';void el.offsetWidth;
+    el.style.animation='fadeUp .5s cubic-bezier(.2,.8,.3,1) both';
   }
 }
 $('tabMed').addEventListener('click',()=>tab('med'));
@@ -1238,9 +1346,8 @@ $('tabMed').innerHTML=ico.pillTab;
 $('tabDiet').innerHTML=ico.fork;
 $('btnSet').innerHTML=ico.gear;
 $('sWaterOk').innerHTML=ico.tickW;
-renderWater();renderDiet(false);
 $('fAddTime').innerHTML=ico.plus;
-load();drawDial();bellState();
+load();renderWater();renderDiet(false);drawDial();bellState();
 if(initGL())requestAnimationFrame(frame);
 scene.scale=.12;
 tickClock();render(false,false);
@@ -1249,11 +1356,15 @@ function bootDone(){
   if(booted)return;booted=true;
   $('boot').classList.add('gone');
   playReveal(true);
-  setTimeout(()=>{const b=$('boot');if(b)b.remove()},900);
+  setTimeout(()=>{const b=$('boot');if(b)b.remove()},1000);
 }
+$('boot').classList.add('play');
 const bootStart=performance.now();
-const finishBoot=()=>setTimeout(bootDone,Math.max(0,540-(performance.now()-bootStart)));
-if(document.fonts&&document.fonts.ready){document.fonts.ready.then(finishBoot);setTimeout(finishBoot,1600)}
+/* hareket azaltma açıksa sekansı bekletmenin anlamı yok */
+const slow=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const HOLD=slow?1500:350;
+const finishBoot=()=>setTimeout(bootDone,Math.max(0,HOLD-(performance.now()-bootStart)));
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(finishBoot);setTimeout(finishBoot,1200)}
 else finishBoot();
 lastMin=new Date().getMinutes();
 setInterval(()=>{
