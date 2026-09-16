@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "Workbench",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none — mevcut WebGL zemin korundu",
+    "brief": "İlaç · ilaç ve diyet takip PWA'sı — kullanılabilirlik ve kontrast geçişi"
+  }
+]
