@@ -171,11 +171,45 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .row b{display:block;font-size:16px;font-weight:500}
 .row small{color:var(--soft);font-size:12.5px;font-variant-numeric:tabular-nums;letter-spacing:.05em}
 .empty{text-align:center;color:var(--soft);font-size:14px;padding:24px 0 14px}
-.week{display:flex;gap:7px;margin-bottom:20px}
-.week i{flex:1;text-align:center;font-style:normal}
-.week .col{height:44px;border-radius:9px;background:rgba(90,44,70,.07);position:relative;overflow:hidden;margin-bottom:6px}
-.week .fill{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,var(--rose2),var(--rose));border-radius:9px}
-.week span{font-size:10.5px;color:var(--soft)}
+/* haftalık grafik: alınan altta, atlanan üstünde — bugün çerçeveli */
+.week{display:flex;gap:7px;margin-bottom:8px;align-items:flex-end}
+.week i{flex:1;min-width:0;text-align:center;font-style:normal}
+.week .col{height:66px;border-radius:11px;background:rgba(90,44,70,.07);position:relative;overflow:hidden;
+  margin-bottom:7px;display:flex;flex-direction:column;justify-content:flex-end}
+.week .fill{width:100%;height:0;background:linear-gradient(180deg,var(--rose2),var(--rose));
+  transition:height .65s cubic-bezier(.32,.72,0,1)}
+.week .sfill{width:100%;height:0;background:rgba(90,44,70,.16);transition:height .65s cubic-bezier(.32,.72,0,1)}
+.week .pc{position:absolute;left:0;right:0;top:5px;font-size:9.5px;font-weight:700;color:var(--soft);
+  font-variant-numeric:tabular-nums}
+.week i.today .col{box-shadow:inset 0 0 0 2px var(--rose-mid)}
+.week i.today span{color:var(--rose-ink);font-weight:700}
+.week span{font-size:11px;color:var(--soft)}
+/* üst şerit: uyum · seri · ilaç sayısı */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:2px 0 18px}
+.st{background:#fff;border:1.5px solid var(--hair);border-radius:18px;padding:12px 6px;text-align:center;
+  box-shadow:0 5px 16px rgba(90,44,70,.05)}
+.st b{display:block;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1.1}
+.st.k b{color:var(--rose-ink)}
+.st span{display:block;margin-top:3px;font-size:11.5px;color:var(--soft)}
+/* ilaç başına son 7 gün */
+.dots7{display:flex;gap:4px;margin-top:7px}
+.dots7 i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-sizing:border-box}
+.dots7 i.f{background:var(--rose-mid)}
+.dots7 i.h{background:var(--rose2)}
+.dots7 i.e{border:1.5px solid rgba(90,44,70,.28)}
+.dots7 i.n{height:2px;border-radius:1px;background:rgba(90,44,70,.16);align-self:center}
+.hdrow span.lgd{font-size:11.5px;color:var(--soft);font-weight:500}
+/* nokta göstergesinin karşılığı */
+.lgnd{display:flex;flex-wrap:wrap;gap:6px 14px;margin:15px 2px 2px;font-size:11.5px;color:var(--soft)}
+.lgnd em{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+.lgnd i{width:9px;height:9px;border-radius:50%;box-sizing:border-box;flex:0 0 auto}
+.lgnd i.f{background:var(--rose-mid)}
+.lgnd i.h{background:var(--rose2)}
+.lgnd i.e{border:1.5px solid rgba(90,44,70,.28)}
+.lgnd i.n{height:2px;border-radius:1px;background:rgba(90,44,70,.16)}
+/* form bölüm başlıkları */
+.hd.t{margin-top:20px}
+.times:empty{display:none}
 .hd{font-size:13px;font-weight:700;color:var(--soft);margin:0 0 12px;letter-spacing:.02em}
 
 /* açılış — sahne sahne kurulur: hap yerleşir, halka çizilir, ad belirir, perde açılır */
@@ -324,7 +358,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tag.low{background:rgba(154,84,22,.14);color:var(--amber-ink)}
 .hdrow{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px}
 .hdrow b{font-size:13px;font-weight:700;color:var(--soft)}
-.hdrow span{font-size:12.5px;color:var(--rose);font-weight:700}
+.hdrow span{font-size:12.5px;color:var(--rose-ink);font-weight:700}
 #a2hs{position:fixed;left:20px;right:20px;bottom:calc(env(safe-area-inset-bottom) + 20px);z-index:7;
   display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:20px;background:#fff;
   box-shadow:0 14px 34px rgba(90,44,70,.16);font-size:13.5px;color:var(--soft);
@@ -416,13 +450,17 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div class="sheet" id="sheetAdd">
   <div class="grab"></div>
   <div class="field"><input type="text" id="fName" placeholder="İlaç adı" autocomplete="off"></div>
+  <p class="hd t">Saatler</p>
   <div class="field"><input type="time" id="fTime" value="09:00"><button class="mini" id="fAddTime"></button></div>
   <div class="times" id="fTimes"></div>
+  <p class="hd t">Günler</p>
   <div class="days" id="fDays"></div>
-  <div class="field"><input type="text" id="fNote" placeholder="Not — örn. tok karnına" autocomplete="off"></div>
-  <div class="field"><input type="number" id="fStock" placeholder="Kalan adet (isteğe bağlı)" inputmode="numeric" min="0"></div>
+  <p class="hd t">Renk ve şekil</p>
   <div class="picks" id="fColors"></div>
   <div class="picks" id="fShapes"></div>
+  <p class="hd t">İsteğe bağlı</p>
+  <div class="field"><input type="text" id="fNote" placeholder="Not — örn. tok karnına" autocomplete="off"></div>
+  <div class="field"><input type="number" id="fStock" placeholder="Kalan adet" inputmode="numeric" min="0"></div>
   <button class="save" id="fSave" disabled>Kaydet</button>
 </div>
 <div class="sheet" id="sheetSet">
@@ -446,10 +484,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <div class="sheet" id="sheetList">
   <div class="grab"></div>
+  <div class="stats" id="stats"></div>
   <div class="hdrow"><b>Son 7 gün</b><span id="streak"></span></div>
   <div class="week" id="week"></div>
-  <p class="hd">İlaçlar</p>
+  <div class="hdrow" style="margin-top:18px"><b>İlaçlar</b><span class="lgd">son 7 gün</span></div>
   <div id="listBody"></div>
+  <p class="lgnd"><em><i class="f"></i>alındı</em><em><i class="h"></i>kısmi</em><em><i class="e"></i>kaçtı</em><em><i class="n"></i>planlı değil</em></p>
 </div>
 
 <script id="vs" type="x-shader/x-vertex">
@@ -587,10 +627,13 @@ const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
 
 function load(){
   try{const r=localStorage.getItem('ilac.v7');if(r){const p=JSON.parse(r);S.meds=p.meds||[];S.taken=p.taken||{};S.skipped=p.skipped||{};S.diet=p.diet||[];S.eaten=p.eaten||{};S.water=p.water||{};S.settings=Object.assign({waterGoal:8},p.settings||{})}}catch(e){}
-  if(!S.meds.length)S.meds=[
-    {id:'d1',name:'Vitamin D',times:['09:00'],color:'#FFE0A8',shape:'drop'},
-    {id:'d2',name:'Demir',times:['13:00','21:00'],color:'#FFB3CD',shape:'capsule'},
-    {id:'d3',name:'Magnezyum',times:['22:30'],color:'#A8E0C6',shape:'tablet'}];
+  if(!S.meds.length){
+    const t0=todayKey();
+    S.meds=[
+      {id:'d1',name:'Vitamin D',times:['09:00'],color:'#FFE0A8',shape:'drop',added:t0},
+      {id:'d2',name:'Demir',times:['13:00','21:00'],color:'#FFB3CD',shape:'capsule',added:t0},
+      {id:'d3',name:'Magnezyum',times:['22:30'],color:'#A8E0C6',shape:'tablet',added:t0}];
+  }
   // 30 günden eski kayıtları temizle
   const cut=new Date();cut.setDate(cut.getDate()-30);const c=keyOf(cut);
   Object.keys(S.taken).forEach(k=>{if(k<c)delete S.taken[k]});
@@ -603,7 +646,7 @@ const DAYNAMES=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
 /* tek harf üç "P" ve iki "C" üretiyordu — iki harf ayırt edilebilir */
 const DAY2=['Pa','Pt','Sa','Ça','Pe','Cu','Ct'];
 const DAYORDER=[1,2,3,4,5,6,0];
-const activeOn=(m,dt)=>!m.days||!m.days.length||m.days.indexOf(dt.getDay())>=0;
+const activeOn=(m,dt)=>(!m.added||keyOf(dt)>=m.added)&&(!m.days||!m.days.length||m.days.indexOf(dt.getDay())>=0);
 function dosesFor(dt){
   const o=[];
   S.meds.forEach(m=>{if(activeOn(m,dt))m.times.forEach(t=>o.push({key:m.id+'@'+t,med:m,time:t}))});
@@ -867,7 +910,10 @@ function render(swap,animate){
       scene.alive=1;scene.split=0;
     }else{
       $('nName').textContent=all.length?'Bugünlük bitti':'Liste boş';
-      $('nSub').innerHTML='<span>'+(all.length?'yarın sabah görüşürüz':'artıya dokunup ilk ilacını ekle')+'</span>';
+      if(all.length){
+        const st=streak(),tkn=all.filter(d=>isTaken(d.key)).length;
+        $('nSub').innerHTML='<b>'+tkn+'/'+all.length+'</b><span>'+(st?st+' gün üst üste':'yarın sabah görüşürüz')+'</span>';
+      }else $('nSub').innerHTML='<span>aşağıdan ilk ilacını ekle</span>';
       $('nNote').textContent='';
       $('btnSkip').style.display='none';
       $('btnTake').disabled=true;
@@ -1024,7 +1070,7 @@ $('fSave').addEventListener('click',()=>{
     if(m){m.name=data.name;m.times=data.times;m.color=data.color;m.shape=data.shape;m.days=data.days;m.note=data.note;m.stock=data.stock}
     toast(data.name+' güncellendi');
   }else{
-    S.meds.push(Object.assign({id:'m'+Date.now()},data));
+    S.meds.push(Object.assign({id:'m'+Date.now(),added:todayKey()},data));
     toast(data.name+' eklendi');
   }
   editing=null;save();hide();manual=null;setTimeout(()=>render(true,true),300);
@@ -1039,24 +1085,86 @@ function openForm(med){
   drawForm();show('sheetAdd');
 }
 $('btnAdd').addEventListener('click',()=>openForm(null));
+/* bugünün henüz sırası gelmemiş dozu "kaçırıldı" sayılmamalı */
+function dayStat(d,isToday){
+  const k=keyOf(d),tk=S.taken[k]||[],sk=S.skipped[k]||[];
+  let total=0,done=0,skip=0;
+  dosesFor(d).forEach(ds=>{
+    if(isToday&&mins(ds.time)>nowMin())return;
+    total++;
+    if(tk.indexOf(ds.key)>=0)done++;else if(sk.indexOf(ds.key)>=0)skip++;
+  });
+  return {total:total,done:done,skip:skip};
+}
+function adherence7(){
+  let d=0,t=0;
+  for(let i=6;i>=0;i--){
+    const dt=new Date();dt.setDate(dt.getDate()-i);
+    const st=dayStat(dt,i===0);t+=st.total;d+=st.done;
+  }
+  return t?Math.round(d/t*100):null;
+}
+/* tek ilacın bir günü: 2 tamam · 1 kısmi/atlandı · 0 kaçırıldı · -1 planlı değil */
+function medDay(m,d,isToday){
+  if(!activeOn(m,d))return -1;
+  const k=keyOf(d),tk=S.taken[k]||[],sk=S.skipped[k]||[],n=nowMin();
+  const times=isToday?m.times.filter(t=>mins(t)<=n):m.times;
+  if(!times.length)return -1;
+  let done=0,other=0;
+  times.forEach(t=>{const key=m.id+'@'+t;
+    if(tk.indexOf(key)>=0)done++;else if(sk.indexOf(key)>=0)other++;});
+  if(done===times.length)return 2;
+  if(done>0||other>0)return 1;
+  return 0;
+}
+function drawStats(){
+  const a=adherence7(),st=streak();
+  $('stats').innerHTML=`
+    <div class="st k"><b>${a===null?'—':'%'+a}</b><span>uyum</span></div>
+    <div class="st"><b>${st}</b><span>gün seri</span></div>
+    <div class="st"><b>${S.meds.length}</b><span>ilaç</span></div>`;
+}
 function drawWeek(){
   const st=streak();
   $('streak').textContent=st?st+' gün üst üste':'';
   let html='';
+  const pend=[];
   for(let i=6;i>=0;i--){
     const d=new Date();d.setDate(d.getDate()-i);
-    const k=keyOf(d),c=(S.taken[k]||[]).length,total=dosesFor(d).length;
-    const ratio=total?Math.min(1,c/total):0;
-    html+=`<i><div class="col"><div class="fill" style="height:${(ratio*100).toFixed(0)}%"></div></div>
-      <span>${DAY2[d.getDay()]}</span></i>`;
+    const s2=dayStat(d,i===0);
+    const tp=s2.total?Math.round(s2.done/s2.total*100):0;
+    const sp=s2.total?Math.round(s2.skip/s2.total*100):0;
+    pend.push([tp,sp]);
+    html+=`<i class="${i===0?'today':''}"><div class="col">
+        ${s2.total?`<span class="pc">${tp}</span>`:''}
+        <div class="sfill"></div><div class="fill"></div>
+      </div><span>${DAY2[d.getDay()]}</span></i>`;
   }
   $('week').innerHTML=html;
+  /* sıfırdan yükselsinler — panel açılırken büyüme hissi */
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const cols=$('week').querySelectorAll('.col');
+    Array.prototype.forEach.call(cols,(c,i)=>{
+      c.querySelector('.fill').style.height=pend[i][0]+'%';
+      c.querySelector('.sfill').style.height=pend[i][1]+'%';
+    });
+  }));
+}
+const DOTC={2:'f',1:'h',0:'e'};
+function dots7(m){
+  let h='';
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    h+=`<i class="${DOTC[medDay(m,d,i===0)]||'n'}"></i>`;
+  }
+  return `<div class="dots7" aria-hidden="true">${h}</div>`;
 }
 function drawList(){
   $('listBody').innerHTML=S.meds.length?S.meds.map(m=>`<div class="row" data-edit="${m.id}">${pillSVG(m.shape,m.color,30)}
     <div class="txt"><b>${esc(m.name)}${typeof m.stock==='number'?`<span class="tag${m.stock<=5?' low':''}">${m.stock} kaldı</span>`:''}</b>
-      <small>${m.times.join('   ')}${m.days&&m.days.length?' · '+DAYORDER.filter(d=>m.days.indexOf(d)>=0).map(d=>DAYNAMES[d]).join(' '):''}${m.note?' · '+esc(m.note):''}</small></div>
-    <button class="mini" data-del="${m.id}" style="width:42px;height:42px;background:rgba(240,138,174,.14)">${ico.trash}</button></div>`).join('')
+      <small>${m.times.join('   ')}${m.days&&m.days.length?' · '+DAYORDER.filter(d=>m.days.indexOf(d)>=0).map(d=>DAYNAMES[d]).join(' '):''}${m.note?' · '+esc(m.note):''}</small>
+      ${dots7(m)}</div>
+    <button class="mini" data-del="${m.id}" style="width:42px;height:42px;background:rgba(176,58,99,.12)">${ico.trash}</button></div>`).join('')
     :'<div class="empty">Henüz ilaç eklenmedi</div>';
 }
 $('listBody').addEventListener('click',e=>{
@@ -1065,7 +1173,7 @@ $('listBody').addEventListener('click',e=>{
     const m=S.meds.filter(x=>x.id===del.dataset.del)[0];
     const idx=S.meds.indexOf(m);
     S.meds=S.meds.filter(x=>x.id!==del.dataset.del);
-    save();drawList();drawWeek();manual=null;render(true,true);
+    save();drawStats();drawList();drawWeek();manual=null;render(true,true);
     toast(m.name+' silindi',()=>{S.meds.splice(idx,0,m);save();drawList();render(true)});
     return;
   }
@@ -1075,7 +1183,7 @@ $('listBody').addEventListener('click',e=>{
     if(m){hide();setTimeout(()=>openForm(m),260)}
   }
 });
-$('btnList').addEventListener('click',()=>{drawList();drawWeek();show('sheetList')});
+$('btnList').addEventListener('click',()=>{drawStats();drawList();drawWeek();show('sheetList')});
 
 /* ---------------- diyet ---------------- */
 const eatenKey=(id,i)=>id+'#'+i;
