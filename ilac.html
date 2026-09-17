@@ -619,18 +619,22 @@ float smin(float a,float b,float k){
   float h=clamp(.5+.5*(b-a)/k,0.,1.);
   return mix(b,a,h)-k*h*(1.-h);
 }
-float sdBox2(vec2 p,vec2 b){vec2 d=abs(p)-b;return length(max(d,0.))+min(max(d.x,d.y),0.);}
+/* kalp: alt gövde iki büyük dairenin kesişimi (mercek) — kenarlar uca doğru
+   yay çizerek daralır. Önce 45° döndürülmüş kare kullanıyordum, alt kenarlar
+   düz çizgi oluyordu ve dairelerle kesiştiği yerde siluette kırık kalıyordu. */
 float heart2(vec2 p){
-  vec2 q=(p-vec2(0.,-.05))*rot(.785398);
-  float body=sdBox2(q,vec2(.165));              // aşağı sivrilen gövde
-  /* loblar birbiriyle sert birleşir — çentik kalsın; gövdeye yumuşak bağlanır */
-  float lob=min(length(p-vec2(-.115,.10))-.155,length(p-vec2(.115,.10))-.155);
-  return smin(body,lob,.03);
+  float lob=smin(length(p-vec2(-.125,.105))-.145,
+                 length(p-vec2( .125,.105))-.145,.012);  // üstteki çentik
+  float lens=max(length(p-vec2(-.425,.212))-.64,
+                 length(p-vec2( .425,.212))-.64);
+  /* kesik çentiğe yaklaşınca yumuşak birleşim çentiği dolduruyordu — aşağı alındı */
+  lens=max(lens,p.y-.10);
+  return smin(lob,lens,.06);                             // omuzdaki geçiş yumuşasın
 }
 float sdHeart(vec3 p){
-  p.y+=.05;
-  vec2 w=vec2(heart2(p.xy),abs(p.z)-.135);
-  return min(max(w.x,w.y),0.)+length(max(w,vec2(0.)))-.028;
+  p.y-=.008;
+  vec2 w=vec2(heart2(p.xy),abs(p.z)-.115);
+  return min(max(w.x,w.y),0.)+length(max(w,vec2(0.)))-.03;
 }
 float body(vec3 p){
   if(u_shape<.5)  return sdCapsule(p,.22,.25);
@@ -1737,7 +1741,8 @@ const HOLD=slow?1700:350;
 scene.shape=3;scene.col=hex2rgb('#EF7FA6');scene.alive=1;scene.split=0;scene.scale=PILL;
 scene.apart=slow?1:0;
 /* hızlı başlayıp buluşmaya doğru yavaşlar */
-if(slow)tween(1,0,1250,x=>scene.apart=x,()=>{scene.glow=1},k=>1-Math.pow(1-k,2.2));
+if(slow)tween(1,0,1400,x=>scene.apart=x,()=>{scene.glow=1},
+  k=>1-Math.pow(1-k,1.7));   /* daha nazik yavaşlama; 2.2 fazla sert iniyordu */
 const finishBoot=()=>setTimeout(bootDone,Math.max(0,HOLD-(performance.now()-bootStart)));
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(finishBoot);setTimeout(finishBoot,1200)}
 else finishBoot();
