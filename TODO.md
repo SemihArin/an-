@@ -58,16 +58,15 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Zayıf yönler
 
-- [ ] **P0 · Değer yapısı yok.** Ölçtüm: ekranı kaplayan yüzeylerin bağıl
-      parlaklığı 0.58–0.90 bandında sıkışmış (`--bg` 0.896, `--rose2` 0.579,
-      `--mint` 0.542, beyaz kartlar ~1.0). Koyu uç (`--plum` 0.044,
-      `--rose-ink` 0.132) yalnızca küçük metinde görünüyor. Yani ekranda
-      düğmeden büyük hiçbir koyu alan yok. Sonuç: göz nereye bakacağını
-      bilmiyor, her şey aynı sisin içinde.
-- [ ] **P0 · Kadran ile WebGL hap aynı alanı paylaşıyor.** Render'a baktım: dev
-      soluk pembe hap, kadranın saat etiketlerinin (00/03/06…) tam arkasında
-      duruyor. İkisi de aynı değer bandında olduğu için birbirini yiyor. Hap
-      "hap" gibi değil, biçimsiz bir leke gibi okunuyor.
+- [x] **P0 · Değer yapısı yok.** ~~Ekranda düğmeden büyük hiçbir koyu alan
+      yoktu.~~ **Gece bandı artık o kütle.** Ölçüm (390×844, ekran görüntüsünden
+      piksel örnekleyerek): bandın parlaklığı 0.665 → **0.107**; banda karşı
+      kâğıt kontrastı 1.14 → **5.16**; gece/gündüz yayı kontrastı 1.13 → **5.21**.
+      Ekranın koyu piksel oranı %3.1 → %4.9. Sayfa hâlâ açık, ama artık tek bir
+      odak noktası var.
+- [x] **P0 · Kadran ile WebGL hap aynı alanı paylaşıyor.** ~~Dev soluk hap saat
+      etiketlerinin arkasındaydı.~~ **Çözüldü.** Hap `u_scale` .78 → ~.31'e indi
+      ve kadranın boş merkezine oturdu; saat etiketleri artık temiz.
 - [x] **P0 · Desktop'ta düzen kırılıyor.** ~~1280×800'de `.foot` kadranın üstüne
       18px biniyordu, "Aldım" 1118px'e geriliyordu.~~ **Çözüldü.** Kök neden
       genişlik değil yükseklikmiş: kadran `top:45%`e çivilenmişti, foot ise
@@ -128,15 +127,23 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Renk sistemi
 
-- [ ] **P0** Saat tabanlı değer katmanı kur: gece/sabah/gündüz/akşam için
-      arka plan ve kadran tonları. *Neden:* konusu zaman olan bir uygulamanın
-      paleti saatten türemeli; ayrıca eksik olan değer yapısını keyfi olmayan
-      bir gerekçeyle getiriyor.
-- [ ] **P0** Ekranda düğmeden büyük en az bir koyu/derin yüzey oluştur
-      (kadranın gece kuşağı en doğal aday). *Neden:* 0.58–0.90 bandını kırmadan
-      görsel hiyerarşi kurulamıyor.
-- [ ] **P1** `--night` kuşağını %11'den görünür seviyeye çıkar ve palete bağla.
-      *Neden:* konunun en karakterli unsuru şu an saklı.
+> **Karar notu (yön değişikliği).** Yol haritasını yazarken "tüm paleti saate
+> göre kaydır" demiştim. Uygulamaya geçerken bundan vazgeçtim. Nedeni: bütün
+> sayfayı saate göre boyamak hem sahibinin sevdiği pembe kimliği riske atıyor
+> hem de cesareti ekrana yayıyor. Bunun yerine zamanı **tek bir yere** koydum —
+> kadranın gece bandına. Aynı işi görüyor (eksik koyu kütle geldi), konudan
+> türüyor (gece ilaç alınmaz) ve sayfanın geri kalanı sessiz kalıyor.
+> Tüm sayfanın saate göre değişmesi hâlâ denenebilir; ama önce bu yeterli mi
+> görülmeli.
+
+- [x] **P0** Ekranda düğmeden büyük koyu yüzey var artık: gece bandı
+      (21:00→06:00), `--night:rgba(74,52,104,.82)`, kalınlık 18.
+- [x] **P1** `--night` %11'den çıkarıldı ve token'landı. Bandın üstündeki saat
+      çentikleri koyu mürekkeple kayboluyordu; gece saatlerinde açık renge
+      çevrildi (`--night-ink` ailesi). Ay simgesinin opaklığı .40 → .62.
+- [ ] **P1** Sabah/akşam için ara ton gerekli mi karar ver. *Neden:* şu an ikili
+      (gece/gündüz); üçüncü bir ton hiyerarşiyi güçlendirebilir ya da
+      gürültü yapabilir — ölçülerek denenecek.
 - [ ] **P1** Dört kenarlık rengini iki role indir: `--line` (yapısal) ve
       `--line-soft` (dekoratif).
 - [ ] **P2** `--mint`in rolünü tanımla: şu an hem "tamamlandı" hem "gün bitti"
@@ -193,10 +200,12 @@ Bunlar korunacak — bozulmamaları öncelikli.
 Ölçüm (390×844): `.app` 390 · kadran 335px · `.take` 228px · kadran–foot
 boşluğu 17px. Sağlıklı.
 
-- [ ] **P0** Kadran ile WebGL hap çakışmasını çöz. Seçenekler: hapı kadranın
-      dışına/arkasına belirgin biçimde ayırmak, ölçeğini küçültmek, ya da
-      kadran görünürken hapı tamamen kaldırmak. *Karar render'a bakılarak
-      verilecek, tahminle değil.*
+- [x] **P0** Çakışma çözüldü. Shader'a `u_off` eklendi: yalnız nesne kayıyor,
+      zemin yerinde kalıyor. Hap her karede kadranın ölçülen merkezine
+      hizalanıyor ve çapının sabit oranı kadar büyüyor (`PILL_K`), yani kadran
+      küçüldüğünde hap da küçülüyor. Sekiz boyutta sapma 0px.
+      *Yan bulgu:* hap küçülünce ışının kat ettiği yol kısaldı ve renk beyaza
+      kaçtı — soğurma katsayısı ölçeğe göre normalize edildi, mürekkep geri geldi.
 - [ ] **P2** Kadran saat etiketlerinin okunurluğunu ölç (şu an `rgba(...,.72)`
       ve hapın üstüne biniyor).
 - [ ] **P3** 320px'de yeniden doğrula (`--pad` 18px'e düşüyor).
