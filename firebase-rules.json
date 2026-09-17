@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "devices": {
+      "$did": {
+        ".read": false,
+
+        "events": {
+          "$batch": {
+            ".read": false,
+            ".write": "!data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['e','n']) && newData.child('n').isNumber() && newData.child('n').val() > 0 && newData.child('n').val() <= 60"
+          }
+        },
+
+        "sessionEnds": {
+          "$id": {
+            ".read": false,
+            ".write": "!data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['end','durMs'])"
+          }
+        },
+
+        "sessions": {
+          "$sid": {
+            ".read": false,
+            ".write": "newData.exists()",
+            ".validate": "newData.hasChildren()",
+            "start":    { ".validate": "newData.isNumber()" },
+            "end":      { ".validate": "newData.isNumber()" },
+            "durMs":    { ".validate": "newData.isNumber()" },
+            "activeMs": { ".validate": "newData.isNumber()" }
+          }
+        }
+      }
+    }
+  }
+}

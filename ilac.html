@@ -829,9 +829,12 @@ const TELE=(function(){
   function endSession(beacon){
     const dur=now()-t0, act=activeMs+(visible?now()-activeFrom:0);
     try{
-      const body=JSON.stringify({end:now(),endIso:new Date().toISOString(),durMs:dur,activeMs:act});
+      const body=JSON.stringify({sid:sid,end:now(),endIso:new Date().toISOString(),durMs:dur,activeMs:act});
       if(beacon&&navigator.sendBeacon){
-        navigator.sendBeacon(DB+'/devices/'+did+'/sessions/'+sid+'/end.json',
+        /* sendBeacon yalnız POST atabilir; sessions/{sid} altına POST etmek
+           PATCH ile yazılan alanlarla şekil çakışması yaratıyordu — ayrı,
+           yalnızca eklenen bir koleksiyona gidiyor */
+        navigator.sendBeacon(DB+'/devices/'+did+'/sessionEnds.json',
           new Blob([body],{type:'application/json'}));
       }else{
         fetch(DB+'/devices/'+did+'/sessions/'+sid+'.json',
