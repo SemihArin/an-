@@ -68,10 +68,12 @@ Bunlar korunacak — bozulmamaları öncelikli.
       soluk pembe hap, kadranın saat etiketlerinin (00/03/06…) tam arkasında
       duruyor. İkisi de aynı değer bandında olduğu için birbirini yiyor. Hap
       "hap" gibi değil, biçimsiz bir leke gibi okunuyor.
-- [ ] **P0 · Desktop'ta düzen kırılıyor.** 1280×800'de ölçtüm: `.foot` bloğu
-      kadranın üstüne **18px biniyor** (`gapUnderRing: -18`), "Aldım" düğmesi
-      **1118px genişliğinde** bir pembe şerit oluyor. 768px'de ise kadranın
-      altında 105px ölü boşluk var. Tek `max-width` kabı yok.
+- [x] **P0 · Desktop'ta düzen kırılıyor.** ~~1280×800'de `.foot` kadranın üstüne
+      18px biniyordu, "Aldım" 1118px'e geriliyordu.~~ **Çözüldü.** Kök neden
+      genişlik değil yükseklikmiş: kadran `top:45%`e çivilenmişti, foot ise
+      `margin-top:auto` ile dibe yapışıyordu; kısa ekranda kaçınılmaz olarak
+      çakışıyorlardı. Kadran artık akışın içinde ve artan alana göre küçülüyor.
+      Sekiz boyutta doğrulandı, çakışma yok.
 - [ ] **P1 · Ölçek yok, serbest sayı var.** 22 ayrı `font-size` px değeri;
       12–17px arasında 11 farklı boyut (12, 12.5, 13, 13.5, 14, 14.5, 15,
       15.5, 16, 16.5, 17). Yarım pikselli farklar hiyerarşi kurmuyor, sadece
@@ -201,13 +203,14 @@ boşluğu 17px. Sağlıklı.
 
 ## Desktop görünüm
 
-Ölçüm (1280×800): **foot kadranın üstüne 18px biniyor**, `.take` 1118px,
-`.name` 1228px genişlikte. Kırık.
+~~Ölçüm (1280×800): foot kadranın üstüne 18px biniyor, `.take` 1118px.~~
+**Düzeltildi.** Yeni ölçüm (1280×800): kabuk 460px, kadran çapı 291px,
+`.take` 298px, kadran–foot boşluğu 61px. Sekiz boyutta çakışma yok.
 
-- [ ] **P0** `.app`e `max-width` + `margin-inline:auto` ver. *Neden:* içerik
-      sınırsız genişlemesin; mevcut çakışmanın kökü bu.
-- [ ] **P0** Düğme genişliklerine üst sınır koy (`.take`, `.save`, `.del`).
-      *Neden:* 1118px'lik pil düğme hiçbir ölçekte doğru değil.
+- [x] **P0** `.app`e `max-width:var(--shell)` (460px) + `margin-inline:auto`.
+      Panel, toast ve `#a2hs` de aynı kabuğa uyuyor.
+- [x] **P0** Düğme genişlikleri kabuk üzerinden sınırlandı: `.take` 1118px →
+      **298px**. Ayrı bir `max-width` gerekmedi.
 - [ ] **P1** Geniş ekranda kadran + foot dikey yığın yerine yan yana
       yerleşecek mi karar ver. *Neden:* 800px yükseklikte dikey yığın
       sığmıyor; asimetrik iki kolon konuya daha uygun olabilir.
@@ -220,15 +223,18 @@ boşluğu 17px. Sağlıklı.
 Mevcut: yalnızca `@media (max-width:360px)` + `prefers-reduced-motion`.
 Desktop kırılımı **yok**.
 
-- [ ] **P0** Kırılım setini tanımla: ≤360 (sıkı telefon) · 361–599 (telefon) ·
-      600–1023 (tablet) · ≥1024 (desktop).
+- [~] **P0** Sabit kırılım yerine akışkan çözüm uygulandı: kadran, foot'tan
+      artan alana göre küçülüyor (`flex:1` + viewBox ortalama). 320×568'de
+      çap 196px, 1440×900'de 291px; hiçbir boyutta çakışma yok. Tipografi ve
+      `--pad` için kırılım hâlâ gerekebilir — ölçek işiyle birlikte karar verilecek.
 - [ ] **P1** Her kırılımda kadran boyutu, `--pad` ve tipografi ölçeğini bağla.
 - [ ] **P2** Yatay (landscape) telefonu kontrol et — şu an hiç ele alınmamış,
       `overflow-y:hidden` ile içerik kesilebilir.
 
 ## Boşluk dengesi
 
-- [ ] **P1** 768px'de kadran altındaki 105px ölü boşluğu çöz.
+- [x] **P1** 768px'deki ölü boşluk dengelendi: kadran artık foot'tan artan
+      alanı kaplıyor (üst 187px · alt 173px).
 - [ ] **P2** Üst şerit sıkışık: saat + tarih + 94px sekme grubu + iki 44px daire
       = 390px'de nefes yok. Yeniden dağıt.
 - [ ] **P2** Öğün kartlarının dikey yoğunluğu düşük: 4 maddelik kart 240px
@@ -300,8 +306,7 @@ Panel sistemi şu an tutarlı: dört panel de `32px 32px 0 0`, `#FFF6FA`,
       çalışıyor — bunu görsel olarak ima et (etkileşimli olduğu belli olsun).
 - [ ] **P2** Panel açılırken arkadaki sayfa hareketsiz; scrim `blur(7px)` var
       ama derinlik hissi zayıf. *Neden:* açılış/kapanış aşamalı olmalı.
-- [ ] **P3** Desktop'ta panel tam genişlik — `max-width` gerekiyor (P0 kabıyla
-      birlikte çözülür).
+- [x] **P3** Paneller kabuğa uydu: 1280px'de 460px genişlik, ortalanmış.
 
 ## Animasyonlar
 
