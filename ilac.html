@@ -307,38 +307,22 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .times:empty{display:none}
 .hd{font-size:13px;font-weight:700;color:var(--soft);margin:0 0 12px;letter-spacing:.02em}
 
-/* açılış — iki yarım kalp ekranın iki yanından gelir, aralarındaki
-   orta noktada (birleşme çizgisinde) dönerek tek kalpte buluşur */
-#boot{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
-  background:radial-gradient(125% 85% at 50% 38%,#FFF8FB 0%,#FFE6F0 52%,#FFD6E6 100%);
-  overflow:hidden;transition:opacity var(--d4) var(--ease-both)}
-#boot.gone{opacity:0;pointer-events:none}
-#boot.gone .bstage,#boot.gone .btitle{transform:scale(1.22);opacity:0;
-  transition:transform var(--d4) var(--ease-both),opacity var(--d3) ease}
-.bstage{position:relative;width:148px;height:148px;
-  transition:transform var(--d4) var(--ease-both),opacity var(--d3) ease}
-.half{position:absolute;top:0;width:74px;height:148px;overflow:hidden}
-.half svg{position:absolute;top:0;width:148px;height:148px;display:block}
-/* dönme ekseni ikisinin ortak sınırı — yani aralarındaki merkez nokta */
-.hl{left:0;transform-origin:right center}
-.hl svg{left:0}
-.hr{left:74px;transform-origin:left center}
-.hr svg{left:-74px}
-#boot.play .hl{animation:joinL var(--d5) var(--ease-both) .1s both}
-#boot.play .hr{animation:joinR var(--d5) var(--ease-both) .1s both}
-/* tek parça eğri: ara kare koyunca tarayıcı geçişi bölüyor ve
-   birleşme sürenin yarısında bitip kalanı boş geçiyordu */
-@keyframes joinL{from{transform:translateX(-62vw) rotate(-215deg)}to{transform:translateX(0) rotate(0)}}
-@keyframes joinR{from{transform:translateX(62vw) rotate(215deg)}to{transform:translateX(0) rotate(0)}}
-/* buluşma anında tek bir kalp atışı — dolgu yok ki perde kalkışı devralabilsin */
-#boot.play .bstage{animation:hbeat var(--d3) var(--ease-spring) .95s}
-@keyframes hbeat{0%{transform:scale(1)}40%{transform:scale(1.09)}100%{transform:scale(1)}}
+/* açılış — kalp WebGL'de gerçek 3B olarak çiziliyor (ışın izleme, kırılma,
+   iç tonlama). Bu katman saydam; yalnız uygulama adını taşır. */
+#boot{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;padding-bottom:24vh;pointer-events:none;
+  transition:opacity var(--d4) var(--ease-both)}
+#boot.gone{opacity:0}
 .btitle{display:flex;gap:1px;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:30px;
   letter-spacing:-.5px;color:var(--plum);
   transition:transform var(--d4) var(--ease-both),opacity var(--d3) ease}
+#boot.gone .btitle{transform:translateY(16px);opacity:0}
 .btitle i{font-style:normal;opacity:0}
 #boot.play .btitle i{animation:btIn var(--d3) var(--ease-out) both}
 @keyframes btIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* perde artık saydam olduğu için uygulamayı ayrıca gizlemek gerekiyor */
+.app{opacity:0}
+body.ready .app{opacity:1;transition:opacity var(--d4) ease}
 
 /* giriş hareketleri */
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
@@ -478,10 +462,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <canvas id="gl"></canvas>
 
 <div id="boot">
-  <div class="bstage">
-    <span class="half hl"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC6DA"/><stop offset="1" stop-color="#EF7FA6"/></linearGradient></defs><path d="M12 21s-8-4.9-8-10.5A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 20 10.5C20 16.1 12 21 12 21z" fill="url(#hg1)"/><ellipse cx="8.3" cy="11" rx="1.5" ry="2.5" fill="#fff" opacity=".42" transform="rotate(-24 8.3 11)"/></svg></span>
-    <span class="half hr"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC6DA"/><stop offset="1" stop-color="#EF7FA6"/></linearGradient></defs><path d="M12 21s-8-4.9-8-10.5A4.5 4.5 0 0 1 12 7.2 4.5 4.5 0 0 1 20 10.5C20 16.1 12 21 12 21z" fill="url(#hg2)"/><ellipse cx="8.3" cy="11" rx="1.5" ry="2.5" fill="#fff" opacity=".42" transform="rotate(-24 8.3 11)"/></svg></span>
-  </div>
   <div class="btitle" aria-hidden="true"><i style="animation-delay:.88s">İ</i><i style="animation-delay:.95s">l</i><i style="animation-delay:1.02s">a</i><i style="animation-delay:1.09s">ç</i></div>
 </div>
 
@@ -615,7 +595,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform vec2 u_res;
-uniform float u_time,u_split,u_alive,u_glow,u_shape,u_scale;
+uniform float u_time,u_split,u_alive,u_glow,u_shape,u_scale,u_apart;
 uniform vec3 u_col;
 
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
@@ -633,22 +613,46 @@ float sdEllipsoid(vec3 p,vec3 r){
   float k1=max(length(p/(r*r)),1e-4);
   return k0*(k0-1.)/k1;
 }
+/* kalp: 45° döndürülmüş kare (alt uç) + üst iki köşeye oturan iki daire.
+   Küreleri yumuşak birleştirince loblar arasındaki çentik kapanıp yumru oluyordu. */
+float sdBox2(vec2 p,vec2 b){vec2 d=abs(p)-b;return length(max(d,0.))+min(max(d.x,d.y),0.);}
+float heart2(vec2 p){
+  vec2 q=p*rot(.785398);
+  float d=sdBox2(q,vec2(.13));                  // alt uç: 45° döndürülmüş kare
+  d=min(d,length(p-vec2(-.11,.11))-.155);       // sol lob
+  d=min(d,length(p-vec2( .11,.11))-.155);       // sağ lob
+  return d;
+}
+float sdHeart(vec3 p){
+  p.y+=.04;
+  /* hacim z kalınlığından gelsin: yuvarlatmayı büyütmek siluetteki
+     çentiği de yuvarlayıp kalbi yumruya çeviriyordu */
+  vec2 w=vec2(heart2(p.xy),abs(p.z)-.13);
+  return min(max(w.x,w.y),0.)+length(max(w,vec2(0.)))-.035;
+}
 float body(vec3 p){
   if(u_shape<.5)  return sdCapsule(p,.22,.25);
   if(u_shape<1.5) return sdTablet(p);
-  return sdEllipsoid(p,vec3(.22,.30,.22));
+  if(u_shape<2.5) return sdEllipsoid(p,vec3(.22,.30,.22));
+  return sdHeart(p);
 }
-vec3 axis(){return (u_shape>.5&&u_shape<1.5)?vec3(1.,0.,0.):vec3(0.,1.,0.);}
+vec3 axis(){
+  if(u_shape>2.5) return vec3(1.,0.,0.);       // kalp sol/sağ ikiye ayrılır
+  return (u_shape>.5&&u_shape<1.5)?vec3(1.,0.,0.):vec3(0.,1.,0.);
+}
 vec2 map(vec3 p){
   p/=max(u_scale,.05);
+  /* kalp dik durmalı: hapa göre ayarlanmış -20° eğim silueti bozuyordu */
+  float hs=step(2.5,u_shape);
   p.y-=sin(u_time*.55)*.04;
-  p.xz*=rot(u_time*.22);
-  p.xy*=rot(-.36+sin(u_time*.34)*.06);
+  p.xz*=rot(mix(u_time*.22,sin(u_time*.45)*.30,hs));
+  p.xy*=rot(mix(-.36+sin(u_time*.34)*.06,sin(u_time*.3)*.05,hs));
   vec3 ax=axis();
-  float s=u_split*.38;
-  vec3 pa=p-ax*s; pa.xy*=rot(-u_split*.28);
+  float s=u_split*.38+u_apart*1.15;
+  float rr=u_split*.28+u_apart*2.3;
+  vec3 pa=p-ax*s; pa.xy*=rot(-rr);
   float da=max(body(pa),-dot(pa,ax));
-  vec3 pb=p+ax*s; pb.xy*=rot(u_split*.28);
+  vec3 pb=p+ax*s; pb.xy*=rot(rr);
   float db=max(body(pb), dot(pb,ax));
   float sc=max(u_scale,.05);
   return da<db?vec2(da*sc,1.):vec2(db*sc,2.);
@@ -801,7 +805,7 @@ const isLate=d=>!isDone(d.key)&&nowMin()-mins(d.time)>10;
 /* ---------------- WebGL ---------------- */
 const cv=$('gl');
 const gl=cv.getContext('webgl',{antialias:false,alpha:false})||cv.getContext('experimental-webgl');
-const U={};const scene={split:0,alive:1,glow:0,shape:0,scale:1,col:[1,.7,.8]};
+const U={};const scene={split:0,alive:1,glow:0,shape:0,scale:1,apart:0,col:[1,.7,.8]};
 function sh(t,src){const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);
   if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))console.warn(gl.getShaderInfoLog(s));return s}
 function initGL(){
@@ -817,7 +821,7 @@ function initGL(){
   gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
   const a=gl.getAttribLocation(p,'a');
   gl.enableVertexAttribArray(a);gl.vertexAttribPointer(a,2,gl.FLOAT,false,0,0);
-  ['u_res','u_time','u_split','u_alive','u_glow','u_shape','u_scale','u_col'].forEach(n=>U[n]=gl.getUniformLocation(p,n));
+  ['u_res','u_time','u_split','u_alive','u_glow','u_shape','u_scale','u_apart','u_col'].forEach(n=>U[n]=gl.getUniformLocation(p,n));
   resize();return true;
 }
 function resize(){
@@ -839,6 +843,7 @@ function frame(now){
     gl.uniform1f(U.u_glow,scene.glow);
     gl.uniform1f(U.u_shape,scene.shape);
     gl.uniform1f(U.u_scale,scene.scale);
+    gl.uniform1f(U.u_apart,scene.apart);
     gl.uniform3f(U.u_col,scene.col[0],scene.col[1],scene.col[2]);
     gl.drawArrays(gl.TRIANGLES,0,3);
   }
@@ -966,7 +971,7 @@ function playFinale(){
 }
 
 /* ---------------- ekran ---------------- */
-let active=null,manual=null,lastMin=-1,lastDay=todayKey();
+let active=null,manual=null,lastMin=-1,lastDay=todayKey(),booted=false;
 function render(swap,animate){
   const all=doses();
   const cur=(manual&&!isDone(manual.key))?manual:nextDose();
@@ -1013,9 +1018,11 @@ function render(swap,animate){
       $('nNote').textContent=cur.med.note||'';
       $('btnSkip').style.display='';
       $('btnTake').disabled=false;
-      scene.col=hex2rgb(cur.med.color);
-      scene.shape=Math.max(0,SHAPES.indexOf(cur.med.shape));
-      scene.alive=(curTab==='med')?1:0;scene.split=0;
+      if(booted){
+        scene.col=hex2rgb(cur.med.color);
+        scene.shape=Math.max(0,SHAPES.indexOf(cur.med.shape));
+        scene.alive=(curTab==='med')?1:0;scene.split=0;
+      }
     }else{
       $('nName').textContent=all.length?'Bugünlük bitti':'Liste boş';
       if(all.length){
@@ -1025,7 +1032,7 @@ function render(swap,animate){
       $('nNote').textContent='';
       $('btnSkip').style.display='none';
       $('btnTake').disabled=true;
-      scene.alive=0;
+      if(booted)scene.alive=0;
     }
     /* gün bitti ekranı: bugün için doz vardı ve hepsi kapandıysa */
     const isDone=!cur&&all.length>0,pg=$('pgMed');
@@ -1697,11 +1704,13 @@ load();renderWater();renderDiet(false);drawDial();bellState();
 if(initGL())requestAnimationFrame(frame);
 scene.scale=.12;
 tickClock();render(false,false);
-let booted=false;
 function bootDone(){
   if(booted)return;booted=true;
   $('boot').classList.add('gone');
-  playReveal(true);
+  document.body.classList.add('ready');
+  scene.apart=0;
+  /* kalp küçülerek çekilir, kadran onun yerinden açılır */
+  tween(scene.scale,.12,320,x=>scene.scale=x,()=>playReveal(true));
   setTimeout(()=>{const b=$('boot');if(b)b.remove()},1000);
 }
 $('boot').classList.add('play');
@@ -1709,6 +1718,10 @@ const bootStart=performance.now();
 /* hareket azaltma açıksa sekansı bekletmenin anlamı yok */
 const slow=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const HOLD=slow?1500:350;
+/* açılış sahnesi: 3B kalp, iki yarım ekranın dışından dönerek gelip birleşir */
+scene.shape=3;scene.col=hex2rgb('#EF7FA6');scene.alive=1;scene.split=0;scene.scale=PILL;
+scene.apart=slow?1:0;
+if(slow)tween(1,0,940,x=>scene.apart=x,()=>{scene.glow=1});
 const finishBoot=()=>setTimeout(bootDone,Math.max(0,HOLD-(performance.now()-bootStart)));
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(finishBoot);setTimeout(finishBoot,1200)}
 else finishBoot();
