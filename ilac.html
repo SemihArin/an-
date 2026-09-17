@@ -662,9 +662,12 @@ vec2 map(vec3 p){
   vec3 oB=vec3(-o.x,-o.y+cy,0.);
   float s=u_split*.38;
   float hinge=u_split*.28;
-  vec3 pa=p-ax*s-oA; pa.xy*=rot(-hinge-ang);
+  /* yarımlar kendi etraflarında Y ekseninde döner (xz düzlemi) —
+     ekran düzleminde dönmek onları fırıldak gibi yassı gösteriyordu.
+     Hap ikiye ayrılırken kullanılan menteşe xy'de kalır. */
+  vec3 pa=p-ax*s-oA; pa.xy*=rot(-hinge); pa.xz*=rot(-ang);
   float da=max(body(pa),-dot(pa,ax));
-  vec3 pb=p+ax*s-oB; pb.xy*=rot(hinge-ang);
+  vec3 pb=p+ax*s-oB; pb.xy*=rot(hinge);  pb.xz*=rot(-ang);
   float db=max(body(pb), dot(pb,ax));
   float sc=max(u_scale,.05);
   return da<db?vec2(da*sc,1.):vec2(db*sc,2.);
