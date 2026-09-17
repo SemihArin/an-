@@ -322,7 +322,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
 @keyframes btIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 /* perde artık saydam olduğu için uygulamayı ayrıca gizlemek gerekiyor */
 .app{opacity:0}
-body.ready .app{opacity:1;transition:opacity var(--d4) ease}
+body.ready .app{opacity:1}   /* kendi solması kadranın açılışıyla yarışıyordu */
 
 /* giriş hareketleri */
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
@@ -332,9 +332,9 @@ body.ready .app{opacity:1;transition:opacity var(--d4) ease}
 @keyframes draw{from{stroke-dashoffset:792}to{stroke-dashoffset:0}}
 @keyframes ripple{0%{transform:scale(.86);opacity:.9}100%{transform:scale(1.28);opacity:0}}
 @keyframes leave{to{opacity:0;transform:scale(.97) translateY(12px)}}
-.reveal-top{animation:fadeDown var(--d4) ease both}
+.reveal-top{animation:fadeDown var(--d4) var(--ease-out) both}
 .reveal-foot{animation:fadeUp var(--d5) var(--ease-out) both}
-.track.draw{stroke-dasharray:792;animation:draw var(--d6) var(--ease-both) both}
+.track.draw{stroke-dasharray:792;animation:draw var(--d6) var(--ease-out) both}
 circle.bead,text.dlab,circle.ripplering{transform-box:fill-box;transform-origin:center}
 .app.leaving{animation:leave var(--d3) ease forwards}
 
@@ -868,6 +868,10 @@ function frame(now){
   }
   requestAnimationFrame(frame);
 }
+/* CSS'teki --ease-out ile aynı karakterde tek bir JS eğrisi.
+   Önce açılış, küçülme, hap büyümesi ve ibre süpürmesi ayrı eğriler
+   kullanıyordu; iki sekans birbirine yabancı duruyordu. */
+const EOUT=k=>1-Math.pow(1-k,2.4);
 function tween(a,b,ms,set,end,ease){
   const st=performance.now();
   (function s(n){
@@ -961,25 +965,24 @@ function sweepHand(ms){
   const to=nowMinF(),st=performance.now();
   (function s(t){
     const k=Math.min(1,(t-st)/ms);
-    drawHand(to*(1-Math.pow(1-k,3)));
+    drawHand(to*EOUT(k));
     if(k<1)requestAnimationFrame(s);else handLock=false;
   })(st);
 }
 /* açılış / geri dönüş sekansı */
-function playReveal(full){
+function playReveal(full,keepScale){
   const top=document.querySelector('.top'),foot=$('foot'),track=document.querySelector('.track');
   [[top,'reveal-top'],[foot,'reveal-foot']].forEach(function(pair){
     pair[0].classList.remove(pair[1]);void pair[0].offsetWidth;pair[0].classList.add(pair[1]);
   });
   ['ticks','labels','glyphs'].forEach((id,i)=>{
     const el=$(id);el.style.animation='none';void el.getBBox;
-    el.style.animation='fadeIn .85s ease '+(i*175+(full?210:60))+'ms both';
+    el.style.animation='fadeIn var(--d4) var(--ease-out) '+(i*140+(full?190:60))+'ms both';
   });
   if(full){track.classList.remove('draw');void track.getBBox;track.classList.add('draw')}
   render(false,true);
-  sweepHand(full?1200:650);
-  scene.scale=.12;
-  tween(.12,PILL,full?950:600,x=>scene.scale=x);
+  sweepHand(full?1200:640);
+  if(!keepScale){scene.scale=.12;tween(.12,PILL,full?880:560,x=>scene.scale=x,null,EOUT)}
 }
 /* gün tamamlandığında kapanış */
 /* kutlama — kadran gün bitti ekranına yerini bıraktığı için halka dalgası düştü */
@@ -990,7 +993,7 @@ function playFinale(){
 }
 
 /* ---------------- ekran ---------------- */
-let active=null,manual=null,lastMin=-1,lastDay=todayKey(),booted=false;
+let active=null,manual=null,lastMin=-1,lastDay=todayKey(),booted=false,handoff=false;
 function render(swap,animate){
   const all=doses();
   const cur=(manual&&!isDone(manual.key))?manual:nextDose();
@@ -1037,7 +1040,7 @@ function render(swap,animate){
       $('nNote').textContent=cur.med.note||'';
       $('btnSkip').style.display='';
       $('btnTake').disabled=false;
-      if(booted){
+      if(booted&&!handoff){
         scene.col=hex2rgb(cur.med.color);
         scene.shape=Math.max(0,SHAPES.indexOf(cur.med.shape));
         scene.alive=(curTab==='med')?1:0;scene.split=0;
@@ -1051,7 +1054,7 @@ function render(swap,animate){
       $('nNote').textContent='';
       $('btnSkip').style.display='none';
       $('btnTake').disabled=true;
-      if(booted)scene.alive=0;
+      if(booted&&!handoff)scene.alive=0;
     }
     /* gün bitti ekranı: bugün için doz vardı ve hepsi kapandıysa */
     const isDone=!cur&&all.length>0,pg=$('pgMed');
@@ -1724,25 +1727,30 @@ if(initGL())requestAnimationFrame(frame);
 scene.scale=.12;
 tickClock();render(false,false);
 function bootDone(){
-  if(booted)return;booted=true;
+  if(booted)return;booted=true;handoff=true;
   $('boot').classList.add('gone');
-  document.body.classList.add('ready');
   scene.apart=0;
-  /* kalp küçülerek çekilir, kadran onun yerinden açılır */
-  tween(scene.scale,.12,320,x=>scene.scale=x,()=>playReveal(true));
-  setTimeout(()=>{const b=$('boot');if(b)b.remove()},1000);
+  /* kalp merkeze çekilirken kadran aynı noktadan açılmaya başlar —
+     arka arkaya iki ayrı hareket yerine üst üste binen tek bir jest */
+  tween(scene.scale,.10,380,x=>scene.scale=x,()=>{
+    handoff=false;                       // nesne görünmez küçüklükteyken kalp hapa döner
+    render(false,true);
+    tween(.10,PILL,880,x=>scene.scale=x,null,EOUT);
+  },EOUT);
+  setTimeout(()=>{document.body.classList.add('ready');playReveal(true,true)},190);
+  setTimeout(()=>{const b=$('boot');if(b)b.remove()},1100);
 }
 $('boot').classList.add('play');
 const bootStart=performance.now();
 /* hareket azaltma açıksa sekansı bekletmenin anlamı yok */
 const slow=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const HOLD=slow?1700:350;
+const HOLD=slow?1600:350;
 /* açılış sahnesi: 3B kalp, iki yarım ekranın dışından dönerek gelip birleşir */
 scene.shape=3;scene.col=hex2rgb('#EF7FA6');scene.alive=1;scene.split=0;scene.scale=PILL;
 scene.apart=slow?1:0;
 /* hızlı başlayıp buluşmaya doğru yavaşlar */
-if(slow)tween(1,0,1400,x=>scene.apart=x,()=>{scene.glow=1},
-  k=>1-Math.pow(1-k,1.7));   /* daha nazik yavaşlama; 2.2 fazla sert iniyordu */
+/* kadranın çizilmesiyle aynı süre ve aynı eğri — iki sekans birbirini yankılar */
+if(slow)tween(1,0,1200,x=>scene.apart=x,()=>{scene.glow=1},EOUT);
 const finishBoot=()=>setTimeout(bootDone,Math.max(0,HOLD-(performance.now()-bootStart)));
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(finishBoot);setTimeout(finishBoot,1200)}
 else finishBoot();
