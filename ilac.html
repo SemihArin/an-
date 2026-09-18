@@ -135,10 +135,13 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   width:min(50vw,200px);height:min(50vw,200px);border:0;background:none;border-radius:50%;
   z-index:2;pointer-events:auto}
 
-/* gün bitti — kadranın yerini alır, eylem düğmeleri erişilebilir kalır */
-.done{display:none;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;
+/* Gün bitti ekranı. Daha önce bu kurallar `.done` sınıfıyla yazılıydı, ama
+   tamamlanmış öğün kartı da `.meal.done` taşıyor: `.done{display:none}`
+   bitirilen öğünleri diyet listesinden tamamen siliyordu. Artık kimliğe
+   bağlı, çakışma yok. */
+#done{display:none;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;padding:0 var(--s2)}
-.page.is-done .done{display:flex}
+.page.is-done #done{display:flex}
 /* akışa girdiği için gizlemek yetmiyor; alanı .done'a bırakmalı */
 .page.is-done .ring{display:none}
 .page.is-done .name,.page.is-done .sub,.page.is-done .note,
@@ -150,8 +153,8 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 .dm-f{fill:none;stroke:var(--mint);stroke-width:5;stroke-linecap:round;stroke-dasharray:327;stroke-dashoffset:327}
 .dm-c{fill:none;stroke:var(--mint);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;
   stroke-dasharray:66;stroke-dashoffset:66}
-.done.in .dm-f{animation:dmDraw var(--d5) var(--ease-draw) .1s forwards}
-.done.in .dm-c{animation:dmDraw var(--d3) var(--ease-draw) .8s forwards}
+#done.in .dm-f{animation:dmDraw var(--d5) var(--ease-draw) .1s forwards}
+#done.in .dm-c{animation:dmDraw var(--d3) var(--ease-draw) .8s forwards}
 @keyframes dmDraw{to{stroke-dashoffset:0}}
 .dttl{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:var(--fs-dttl);
   line-height:1.1;margin:0;letter-spacing:-.5px;overflow-wrap:anywhere}
@@ -163,10 +166,10 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .dnext{margin:var(--s5) 0 0;font-size:var(--fs-3);color:var(--soft)}
 .dnext b{color:var(--rose-ink);font-weight:700;font-variant-numeric:tabular-nums}
-.done.in .dttl{animation:fadeUp var(--d4) var(--ease-out) .5s both}
-.done.in .dsub{animation:fadeUp var(--d4) var(--ease-out) .62s both}
-.done.in .dstats{animation:fadeUp var(--d4) var(--ease-out) .76s both}
-.done.in .dnext{animation:fadeUp var(--d4) var(--ease-out) .9s both}
+#done.in .dttl{animation:fadeUp var(--d4) var(--ease-out) .5s both}
+#done.in .dsub{animation:fadeUp var(--d4) var(--ease-out) .62s both}
+#done.in .dstats{animation:fadeUp var(--d4) var(--ease-out) .76s both}
+#done.in .dnext{animation:fadeUp var(--d4) var(--ease-out) .9s both}
 
 /* alt blok */
 .foot{margin-top:auto;transition:opacity var(--d2),transform var(--d2)}
@@ -303,7 +306,12 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .dots7 i.h{background:var(--rose2)}
 .dots7 i.e{border:1.5px solid rgba(90,44,70,.28)}
 .dots7 i.n{height:2px;border-radius:999px;background:rgba(90,44,70,.16);align-self:center}
-.hdrow span.lgd{font-size:var(--fs-1);color:var(--soft);font-weight:500}
+.hdrow span.lgd{display:inline-flex;align-items:center;gap:var(--s1);
+  font-size:var(--fs-1);color:var(--soft);font-weight:500}
+.lgd i{flex:0 0 auto;display:inline-block}
+.lgd i.m{width:6px;height:11px;border-radius:3px;background:var(--rose)}
+.lgd i.w{width:9px;height:9px;border-radius:50%;background:#7FB8E0}
+.lgd em{font-style:normal;margin-right:var(--s2)}
 /* nokta göstergesinin karşılığı */
 .lgnd{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);margin:var(--s4) var(--s0) var(--s0);font-size:var(--fs-1);color:var(--soft)}
 .lgnd em{font-style:normal;display:inline-flex;align-items:center;gap:var(--s2)}
@@ -331,16 +339,23 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .dwh{margin-bottom:var(--s2)}
 .dweek{display:flex;gap:var(--s2);margin-bottom:var(--s4)}
 .dw{flex:1;min-width:0;text-align:center}
-.dw .col{height:40px;display:flex;align-items:flex-end;justify-content:center;gap:var(--s1);margin-bottom:var(--s2);
+/* Önce her gün için yan yana iki ince çubuk vardı (öğün ve su) ve hangisinin
+   hangisi olduğu yalnız başlıktaki "sol: öğün · sağ: su" ipucundan anlaşılıyordu.
+   Artık öğün tek ve geniş bir çubuk, su ise gün adının altındaki dolan bir
+   nokta: iki rakip yerine bir ana ölçü, bir yan ölçü. */
+.dw .col{height:48px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:var(--s2);
   border-radius:var(--r-1);padding:var(--s1) var(--s0)}
-.dw .bar{width:11px;height:100%;border-radius:999px;background:rgba(90,44,70,.09);overflow:hidden;
-  display:flex;flex-direction:column;justify-content:flex-end}
-.dw .f{width:100%;height:100%;border-radius:999px;transform:scaleY(0);transform-origin:bottom;
+.dw .bar{width:100%;max-width:18px;height:100%;border-radius:var(--r-1);background:rgba(90,44,70,.09);
+  overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.dw .f{width:100%;height:100%;border-radius:var(--r-1);transform:scaleY(0);transform-origin:bottom;
   transition:transform var(--d4) var(--ease-out)}
 .dw .f.m{background:linear-gradient(180deg,var(--rose2),var(--rose))}
-.dw .f.w{background:linear-gradient(180deg,#C7E4F6,#7FB8E0)}
 .dw .dl{display:block;font-size:var(--fs-1);color:var(--soft)}
-.dw.today .col{box-shadow:inset 0 0 0 2px var(--rose-mid)}
+.dw .wd{display:block;width:9px;height:9px;margin:var(--s1) auto 0;border-radius:50%;
+  border:1.5px solid rgba(127,184,224,.6);box-sizing:border-box;
+  background:linear-gradient(to top,#7FB8E0 calc(var(--wf,0) * 100%),transparent 0);
+  transition:background var(--d4) var(--ease-out)}
+.dw.today .bar{box-shadow:inset 0 0 0 2px var(--rose-mid)}
 .dw.today .dl{color:var(--rose-ink);font-weight:700}
 .times:empty{display:none}
 .hd{font-size:var(--fs-2);font-weight:700;color:var(--soft);margin:0 0 var(--s3);letter-spacing:.02em}
@@ -441,7 +456,7 @@ textarea:focus{border-color:var(--rose2)}
 .del{width:100%;border:0;border-radius:999px;padding:var(--s4);margin-top:var(--s3);font-family:inherit;font-size:var(--fs-3);
   font-weight:700;color:var(--rose-ink);background:rgba(176,58,99,.12)}
 
-.meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);padding:var(--s4) var(--s4) var(--s3);margin-bottom:var(--s3);
+.meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);transition:opacity var(--d3) ease;padding:var(--s4) var(--s4) var(--s3);margin-bottom:var(--s3);
   box-shadow:var(--e1)}
 .meal h3{margin:0 0 var(--s2);font-size:var(--fs-4);font-weight:700;display:flex;align-items:baseline;gap:var(--s3);min-width:0}
 .meal h3 .mn{min-width:0;overflow-wrap:anywhere}
@@ -465,6 +480,9 @@ textarea:focus{border-color:var(--rose2)}
   transform:scaleX(0);transform-origin:left;transition:transform var(--d3) var(--ease-out)}
 @keyframes mealIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
 .meal.now{border-color:var(--rose2);box-shadow:var(--e3)}
+/* `mealIn` giriş animasyonu `both` ile bitince opaklığı 1'de kilitliyordu —
+   animasyonlar normal bildirimleri ezer — ve tamamlanmış öğün sönükleşmiyordu.
+   Animasyon `backwards`a çevrildi; geçiş sıçramayı yumuşatıyor. */
 .meal.done{opacity:.62}
 .mnow{margin:0 0 var(--s2);font-size:var(--fs-2);font-weight:700;color:var(--rose-ink)}
 /* işaretlenen tik çizilerek gelsin — hepsi birden değil, sadece dokunulan */
@@ -598,7 +616,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="card" id="dring"></div>
       <div class="card" id="water"></div>
     </div>
-    <div class="hdrow dwh"><b>Son 7 gün</b><span class="lgd">sol: öğün · sağ: su</span></div>
+    <div class="hdrow dwh"><b>Son 7 gün</b><span class="lgd"><i class="m"></i><em>öğün</em><i class="w"></i><em>su</em></span></div>
     <div class="dweek" id="dweek"></div>
     <div class="meals" id="meals"></div>
     <div class="bar">
@@ -1004,7 +1022,8 @@ function load(){
 const save=()=>{try{localStorage.setItem('ilac.v7',JSON.stringify(S))}catch(e){}};
 const DAYNAMES=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
 /* tek harf üç "P" ve iki "C" üretiyordu — iki harf ayırt edilebilir */
-const DAY2=['Pa','Pt','Sa','Ça','Pe','Cu','Ct'];
+/* İki harfte Pa/Pt (Pazar/Pazartesi) ve Cu/Ct (Cuma/Cumartesi) ayırt
+   edilemiyordu; üç harfli DAYNAMES her yerde tek anlama geliyor. */
 const DAYORDER=[1,2,3,4,5,6,0];
 const activeOn=(m,dt)=>(!m.added||keyOf(dt)>=m.added)&&(!m.days||!m.days.length||m.days.indexOf(dt.getDay())>=0);
 function dosesFor(dt){
@@ -1448,7 +1467,7 @@ function drawForm(){
   $('fShapes').innerHTML=SHAPES.map(s=>`<button class="shape${s===form.shape?' sel':''}" data-s="${s}">${pillSVG(s,form.color,28)}</button>`).join('');
   $('fTimes').innerHTML=form.times.map(t=>`<span class="chip">${t}<button data-t="${t}">${ico.x}</button></span>`).join('');
   $('fDays').innerHTML=DAYORDER.map(d=>{const on=!form.days.length||form.days.indexOf(d)>=0;
-    return `<button data-d="${d}" class="${on?'on':''}" aria-pressed="${on}" aria-label="${DAYNAMES[d]}">${DAY2[d]}</button>`}).join('');
+    return `<button data-d="${d}" class="${on?'on':''}" aria-pressed="${on}" aria-label="${DAYNAMES[d]}">${DAYNAMES[d]}</button>`}).join('');
   $('fSave').textContent=editing?'Güncelle':'Kaydet';
   $('fSave').disabled=!($('fName').value.trim()&&form.times.length);
 }
@@ -1550,7 +1569,7 @@ function drawWeek(grow){
       <span class="sfill"></span><span class="fill"></span></span><span class="dl"></span></button>`).join('');
   const rows=days.map((d,i)=>{
     const s2=dayStat(d,i===6);
-    return {k:keyOf(d),lab:DAY2[d.getDay()],
+    return {k:keyOf(d),lab:DAYNAMES[d.getDay()],
       t:s2.total?Math.round(s2.done/s2.total*100):0,
       sp:s2.total?Math.round(s2.skip/s2.total*100):0,pc:s2.total};
   });
@@ -1739,14 +1758,14 @@ function drawDietWeek(){
   for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d)}
   if(el.children.length!==7)
     el.innerHTML=days.map(()=>`<div class="dw">
-      <div class="col"><span class="bar"><i class="f m"></i></span><span class="bar"><i class="f w"></i></span></div>
-      <span class="dl"></span></div>`).join('');
+      <div class="col"><span class="bar"><i class="f m"></i></span></div>
+      <span class="dl"></span><span class="wd" aria-hidden="true"></span></div>`).join('');
   days.forEach((d,i)=>{
     const s2=dietDay(d),k=el.children[i];
     k.querySelector('.f.m').style.transform='scaleY('+(s2.total?s2.done/s2.total:0).toFixed(3)+')';
-    k.querySelector('.f.w').style.transform='scaleY('+(g?Math.min(1,s2.water/g):0).toFixed(3)+')';
-    k.querySelector('.dl').textContent=DAY2[d.getDay()];
-    k.title=DAY2[d.getDay()]+': '+s2.done+'/'+s2.total+' öğün · '+s2.water+'/'+g+' bardak';
+    k.querySelector('.wd').style.setProperty('--wf',(g?Math.min(1,s2.water/g):0).toFixed(3));
+    k.querySelector('.dl').textContent=DAYNAMES[d.getDay()];
+    k.title=DAYNAMES[d.getDay()]+': '+s2.done+'/'+s2.total+' öğün · '+s2.water+'/'+g+' bardak';
     k.classList.toggle('today',i===6);
   });
 }
@@ -1757,7 +1776,7 @@ function renderDiet(animate,justKey){
   $('meals').innerHTML=ms.length?ms.map((m,mi)=>{
     const done=m.items.filter((it,i)=>isEaten(eatenKey(m.id,i))).length;
     const full=m.items.length&&done===m.items.length,now=nx&&nx.id===m.id;
-    return `<div class="meal${full?' done':''}${now?' now':''}" data-id="${m.id}" style="${animate?'animation:mealIn .55s var(--ease-out) '+(mi*90+80)+'ms both':'animation:none'}">
+    return `<div class="meal${full?' done':''}${now?' now':''}" data-id="${m.id}" style="${animate?'animation:mealIn .55s var(--ease-out) '+(mi*90+80)+'ms backwards':'animation:none'}">
       <h3><span class="mn">${esc(m.name)}</span><em>${m.time}</em><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
       ${now?`<p class="mnow">${when(m.time)}</p>`:''}
       ${m.items.map((it,i)=>{

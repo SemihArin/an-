@@ -83,12 +83,14 @@ Bunlar korunacak — bozulmamaları öncelikli.
 - [ ] **P2 · Öğün kartları jenerik.** Beyaz yuvarlak kutu + başlık + boş
       dairelerden liste. Uygulamanın geri kalanının karakteri burada yok;
       "AI'ın ürettiği kart listesi" tam olarak bu.
-- [ ] **P2 · Haftalık çubuklar okunmuyor.** 11px genişlik, 40px yükseklik, 6px
-      yarıçap — çubuk değil, küçük kapsül gibi duruyorlar. Öğün/su ayrımı
-      yalnızca renkten anlaşılıyor, etiket yok (sağ üstteki "sol: öğün · sağ:
-      su" ipucuna bağlı).
-- [ ] **P2 · Gün kısaltmaları karışıyor.** `Pa`/`Pt` (Pazar/Pazartesi) ve
-      `Cu`/`Ct` (Cuma/Cumartesi) iki harfte ayırt edilemiyor.
+- [x] **P2 · Haftalık çubuklar okunmuyor.** ~~Günde yan yana iki ince çubuk,
+      hangisinin hangisi olduğu yalnız başlıktaki ipucundan.~~ **Yeniden
+      kuruldu:** öğün tek ve geniş çubuk (11 → 18px, yükseklik 40 → 48px), su
+      gün adının altında hedefe göre dolan bir nokta. İki rakip ölçü yerine bir
+      ana bir yan ölçü. Efsane artık kelime değil, işaretin kendisi.
+- [x] **P2 · Gün kısaltmaları karışıyor.** `DAY2` tamamen kaldırıldı; her yerde
+      üç harfli `DAYNAMES` (Paz · Pzt · Sal · Çar · Per · Cum · Cmt). 320px'de
+      sütun 33px, taşan etiket yok.
 - [ ] **P3 · Yükleme durumu yok.** Google Fonts `display=swap` ile geliyor,
       yani ilk açılışta Fraunces başlığı Georgia olarak parlayıp yerine
       oturuyor (FOUT). Açılış perdesi bunu gizlemiyor.
@@ -283,6 +285,20 @@ Desktop kırılımı **yok**.
       *Neden:* ilaç/çatal ikonları bağlamsız; ilk kullanımda belirsiz.
 - [ ] **P3** Kaydırma ile sekme geçişinde parmağı takip eden geri bildirim yok
       (şu an yalnızca bırakınca geçiyor). Sürüklerken sayfa hareket etmeli.
+
+## Düzeltilen hatalar (tasarım işi sırasında çıktı)
+
+- [x] **Tamamlanan öğün kartları listeden tamamen kayboluyordu.** Sınıf adı
+      çakışması: gün-bitti ekranı `.done` sınıfını kullanıyor ve
+      `.done{display:none}` yazıyordu; tamamlanmış öğün kartı da `.meal.done`
+      taşıyor. Yani kahvaltını bitirince kart siliniyordu. Gün-bitti kuralları
+      `#done` kimliğine bağlandı. *Bu hatayı bugünkü düzenleme getirmedi —
+      gün-bitti ekranını eklediğim daha önceki turda girmiş; P0 öncesi yedekte
+      de var. Kendi hatam, bugün fark ettim.*
+- [x] **Tamamlanan öğün sönükleşmiyordu.** `mealIn` giriş animasyonu `both` ile
+      bitiyor ve animasyonlar normal bildirimleri ezdiği için opaklığı 1'de
+      kilitliyordu; `.meal.done{opacity:.62}` hiç uygulanmıyordu. Animasyon
+      `backwards`a çevrildi, geçiş sıçramayı yumuşatıyor.
 
 ## Kartlar
 
