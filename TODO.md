@@ -173,11 +173,18 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Spacing sistemi
 
-- [ ] **P1** 21 serbest px değerini 4px tabanlı ölçeğe indir:
-      `--s1:4 · --s2:8 · --s3:12 · --s4:16 · --s5:24 · --s6:32 · --s7:48`.
-- [ ] **P1** `--pad`ı bu ölçeğe bağla (şu an 26px / 18px — ölçek dışı iki değer).
-- [ ] **P2** Dikey ritmi tek yerden yönet: `.bar` 20px, `.bar2` 10px, `.sub`
-      11px, `.note` 8px gibi noktasal marjinler ölçeğe oturtulacak.
+- [x] **P1** 120 `margin`/`padding`/`gap` bildirimi 4px ızgarasına oturdu:
+      `--s0:2` (mikro) · `--s1:4` · `--s2:8` · `--s3:12` · `--s4:16` ·
+      `--s5:20` · `--s6:24` · `--s7:32`. Serbest px kalmadı.
+- [x] **P1** `--pad` ölçeğe bağlandı: 26 → `--s6` (24), dar ekranda 18 → `--s5` (20).
+- [x] **P2** Dikey ritim artık token'lardan geliyor; noktasal marjin kalmadı.
+- [x] *Yakalanan regresyon:* 320px'de üst şerit tam doluymuş — 56+100+44+44+3×12
+      = 280px, yani sıfır pay. `--pad` 18→20 ve şerit aralığı 10→12 olunca tarih
+      66px isterken 56px alıyordu. Aralık dar ekranda `--s2`ye (8px) çekildi.
+      *İkinci ders:* ilk denemede bu kuralı `:root`un hemen ardına koydum, yani
+      `.top` tanımından önce — aynı özgüllükteki sonraki kural onu ezdi. Kural
+      stil sayfasının sonuna taşındı. Bu bir yama; asıl sorun dört kontrol
+      grubunun tek şeride sığmaması (bkz. Header).
 
 ## Border radius sistemi
 

@@ -75,7 +75,10 @@
   --e-sheet:0 -18px 50px rgba(90,44,70,.15);
   /* Tek gradyan, tek açı — aynı malzeme iki farklı açıda kullanılıyordu. */
   --grad:linear-gradient(120deg,var(--rose),var(--rose-ink));
-  --pad:26px;
+  /* Boşluk: 21 serbest px değeri vardı (1px'den 26px'e), tek token `--pad`di.
+     4px ızgarası + tek bir 2px mikro adım. */
+  --s0:2px; --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px;
+  --pad:24px;
   --hit:44px;
   /* fare girdisi için tek ton */
   --hov:rgba(176,58,99,.07);
@@ -83,7 +86,7 @@
   /* telefon için tasarlandı; geniş ekranda gerilmek yerine sütun kalır */
   --shell:460px;
 }
-@media (max-width:360px){:root{--pad:18px}}
+@media (max-width:360px){:root{--pad:var(--s5)}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0;overflow-y:hidden;overflow-x:clip}
 body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,system-ui,sans-serif;
@@ -97,13 +100,13 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   padding:calc(env(safe-area-inset-top) + 18px) var(--pad) calc(env(safe-area-inset-bottom) + 22px)}
 
 /* üst şerit — saat/tarih istiflenir, 320px'de taşmaz */
-.top{display:flex;align-items:center;gap:10px;min-width:0}
+.top{display:flex;align-items:center;gap:var(--s3);min-width:0}
 .stamp{display:flex;flex-direction:column;min-width:0;margin-right:auto}
 .clock{font-size:var(--fs-4);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.15}
 .date{font-size:var(--fs-1);color:var(--soft);white-space:nowrap}  /* 320px'de şerit dar: 12.5px'te taşıyordu */
 /* ilerleme artık doz bağlamının yanında — üst şeritte değil */
 .count{font-size:var(--fs-2);color:var(--soft);font-variant-numeric:tabular-nums;
-  display:block;margin:0 0 10px;letter-spacing:.01em}
+  display:block;margin:0 0 var(--s3);letter-spacing:.01em}
 .count:empty{display:none}
 .bell{width:var(--hit);height:var(--hit);flex:0 0 auto;border-radius:50%;border:1px solid var(--cardline);background:var(--card);
   display:grid;place-items:center;transition:transform var(--d1)}
@@ -112,7 +115,7 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 /* kadran */
 /* kadran %45'e çivilenmişti: 1280x800'de foot onun üstüne 18px biniyordu.
    Artık foot'tan artan alanı kaplıyor ve o alana sığacak kadar küçülüyor. */
-.ring{position:relative;flex:1 1 auto;min-height:0;display:grid;padding-block:8px;
+.ring{position:relative;flex:1 1 auto;min-height:0;display:grid;padding-block:var(--s2);
   pointer-events:none;transition:opacity var(--d3) ease}
 /* kutuyu doldurur, viewBox içeriği kendi oranında ortalar: dar ekranda
    genişlik, basık ekranda yükseklik sınırlar — ikisi de taşmaz */
@@ -134,14 +137,14 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 
 /* gün bitti — kadranın yerini alır, eylem düğmeleri erişilebilir kalır */
 .done{display:none;flex:1;min-height:0;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;padding:0 8px}
+  text-align:center;padding:0 var(--s2)}
 .page.is-done .done{display:flex}
 /* akışa girdiği için gizlemek yetmiyor; alanı .done'a bırakmalı */
 .page.is-done .ring{display:none}
 .page.is-done .name,.page.is-done .sub,.page.is-done .note,
 .page.is-done .count,.page.is-done .bar{display:none}
 .page.is-done .bar2{margin-top:0}
-.dmark{width:118px;height:118px;margin-bottom:20px}
+.dmark{width:118px;height:118px;margin-bottom:var(--s5)}
 .dmark svg{width:100%;height:100%;display:block}
 .dm-t{fill:none;stroke:rgba(90,44,70,.10);stroke-width:5}
 .dm-f{fill:none;stroke:var(--mint);stroke-width:5;stroke-linecap:round;stroke-dasharray:327;stroke-dashoffset:327}
@@ -152,13 +155,13 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 @keyframes dmDraw{to{stroke-dashoffset:0}}
 .dttl{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:var(--fs-dttl);
   line-height:1.1;margin:0;letter-spacing:-.5px;overflow-wrap:anywhere}
-.dsub{margin:10px 0 0;font-size:var(--fs-3);color:var(--soft)}
-.dstats{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
-.dstats span{background:var(--card);border:1px solid var(--cardline);border-radius:var(--r-2);padding:10px 17px;
+.dsub{margin:var(--s3) 0 0;font-size:var(--fs-3);color:var(--soft)}
+.dstats{display:flex;gap:var(--s3);margin-top:var(--s5);flex-wrap:wrap;justify-content:center}
+.dstats span{background:var(--card);border:1px solid var(--cardline);border-radius:var(--r-2);padding:var(--s3) var(--s4);
   font-size:var(--fs-1);color:var(--soft);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.dstats b{display:block;margin-bottom:1px;font-size:var(--fs-5);font-weight:700;color:var(--plum);
+.dstats b{display:block;margin-bottom:var(--s0);font-size:var(--fs-5);font-weight:700;color:var(--plum);
   font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-.dnext{margin:18px 0 0;font-size:var(--fs-3);color:var(--soft)}
+.dnext{margin:var(--s5) 0 0;font-size:var(--fs-3);color:var(--soft)}
 .dnext b{color:var(--rose-ink);font-weight:700;font-variant-numeric:tabular-nums}
 .done.in .dttl{animation:fadeUp var(--d4) var(--ease-out) .5s both}
 .done.in .dsub{animation:fadeUp var(--d4) var(--ease-out) .62s both}
@@ -172,32 +175,32 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 /* düz (roman) — eğik serif başlık hem okunurluğu düşürüyordu hem de bir yapay-zekâ klişesi */
 .name{font-family:Fraunces,Georgia,serif;font-style:normal;font-weight:600;font-size:var(--fs-name);
   line-height:1.05;margin:0;letter-spacing:-.5px;overflow-wrap:anywhere;min-width:0}
-.sub{margin:11px 0 0;display:flex;align-items:baseline;gap:11px;font-size:var(--fs-3);color:var(--soft);flex-wrap:wrap}
+.sub{margin:var(--s3) 0 0;display:flex;align-items:baseline;gap:var(--s3);font-size:var(--fs-3);color:var(--soft);flex-wrap:wrap}
 .sub b{font-size:var(--fs-5);font-weight:700;color:var(--rose-ink);font-variant-numeric:tabular-nums}
 
 /* eylem çubuğu — birincil eylemin artık adı var */
-.bar{display:flex;gap:10px;margin-top:20px;align-items:center}
-.bar2{display:flex;gap:10px;margin-top:10px}
+.bar{display:flex;gap:var(--s3);margin-top:var(--s5);align-items:center}
+.bar2{display:flex;gap:var(--s3);margin-top:var(--s3)}
 /* birincil: "Aldım" — daha önce kadranın üstünde görünmez bir dairedeydi */
 .take{flex:1 1 auto;min-width:0;height:54px;border:0;border-radius:999px;display:flex;align-items:center;
-  justify-content:center;gap:9px;padding:0 18px;font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
+  justify-content:center;gap:var(--s2);padding:0 var(--s5);font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
   background:var(--grad);box-shadow:var(--e3);
   white-space:nowrap;transition:transform var(--d1) var(--ease-spring)}
 .take:active{transform:scale(.97)}
 .take:disabled{opacity:.34;box-shadow:none}
 /* ikincil: metin etiketli — daha önce yalnız ikondu */
 .lbl{flex:1 1 0;min-width:0;height:44px;border-radius:var(--r-2);border:1px solid var(--cardline);background:var(--card);
-  display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:var(--fs-3);
+  display:flex;align-items:center;justify-content:center;gap:var(--s2);font-family:inherit;font-size:var(--fs-3);
   font-weight:500;color:var(--plum);white-space:nowrap;transition:transform var(--d1) var(--ease-spring)}
 .lbl:active{transform:scale(.94)}
 .lbl svg{flex:0 0 auto}
-.lbl.skip{flex:0 0 auto;height:54px;padding:0 20px;border-radius:999px;font-weight:700;color:var(--soft)}
+.lbl.skip{flex:0 0 auto;height:54px;padding:0 var(--s5);border-radius:999px;font-weight:700;color:var(--soft)}
 
 /* bildirim — üst şeridin altına iner; eskiden ekranın dibindeydi ve
    az önce kullandığın eylem düğmelerinin üstünü kapatıyordu */
 .toast{position:fixed;left:14px;right:14px;max-width:calc(var(--shell) - 28px);margin-inline:auto;
   top:calc(env(safe-area-inset-top) + 76px);z-index:9;
-  display:flex;align-items:center;gap:11px;padding:11px 11px 11px 13px;border-radius:var(--r-2);background:#fff;
+  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s3) var(--s3) var(--s3);border-radius:var(--r-2);background:#fff;
   border:1px solid var(--cardline);box-shadow:var(--e2);
   font-size:var(--fs-3);font-weight:500;overflow:hidden;
   transform:translateY(calc(-100% - 96px));transition:transform var(--d3) var(--ease-both)}
@@ -206,8 +209,8 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   display:grid;place-items:center}
 #toastMsg{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.3}
 .toast button{flex:0 0 auto;border:0;background:rgba(176,58,99,.1);color:var(--rose-ink);
-  font-family:inherit;font-size:var(--fs-3);font-weight:700;padding:0 15px;min-height:var(--hit);border-radius:999px;
-  display:inline-flex;align-items:center;gap:6px;transition:transform var(--d1)}
+  font-family:inherit;font-size:var(--fs-3);font-weight:700;padding:0 var(--s4);min-height:var(--hit);border-radius:999px;
+  display:inline-flex;align-items:center;gap:var(--s2);transition:transform var(--d1)}
 .toast button:active{transform:scale(.93)}
 /* geri alma penceresinin ne kadar kaldığını gösterir */
 .tbar{position:absolute;left:0;bottom:0;height:2.5px;width:100%;background:var(--rose2);transform-origin:left}
@@ -223,46 +226,46 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   transform:translateY(110%);transition:transform var(--d3) var(--ease-both);max-height:88vh;overflow-y:auto;will-change:transform}
 .sheet.open{transform:translateY(0);transition:transform var(--d4) var(--ease-spring)}
 .grab{width:38px;height:4px;border-radius:999px;background:var(--faint);margin:4px auto 20px}
-.field{display:flex;gap:10px;margin-bottom:12px}
+.field{display:flex;gap:var(--s3);margin-bottom:var(--s3)}
 input[type=text],input[type=time]{flex:1;width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);
-  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:15px 16px;outline:none}
+  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none}
 input:focus{border-color:var(--rose2)}
 input::placeholder{color:rgba(90,44,70,.3)}
 .mini{width:52px;min-height:var(--hit);flex:0 0 auto;border-radius:var(--r-2);border:0;background:var(--rose-ink);display:grid;place-items:center}
 .mini:active{transform:scale(.92)}
-.picks{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.picks{display:flex;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s4)}
 .pick{width:38px;height:38px;border-radius:50%;border:2.5px solid transparent;transition:var(--d2)}
 .pick.sel{border-color:var(--plum);transform:scale(1.12)}
 .shape{width:56px;height:48px;border-radius:var(--r-2);border:1.5px solid var(--hair);background:#fff;display:grid;place-items:center}
 .shape.sel{border-color:var(--plum);border-width:2.5px}
-.days{display:flex;gap:6px;margin-bottom:18px}
+.days{display:flex;gap:var(--s2);margin-bottom:var(--s5)}
 .days button{flex:1;min-width:0;height:var(--hit);border-radius:var(--r-2);border:1.5px solid var(--hair);background:#fff;
   font-family:inherit;font-size:var(--fs-3);font-weight:700;color:var(--soft);transition:var(--d2)}
 /* beyaz-üstü-açık-pembe 1.7:1 idi — mürekkep rengi 6.7:1 */
 .days button.on{background:var(--rose2);border-color:var(--rose-ink);color:var(--plum)}
 .days button:active{transform:scale(.92)}
-.times{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
-.chip{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--hair);
-  border-radius:var(--r-2);padding:9px 10px 9px 13px;font-size:var(--fs-3);font-weight:500;font-variant-numeric:tabular-nums}
+.times{display:flex;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s5)}
+.chip{display:flex;align-items:center;gap:var(--s2);background:#fff;border:1.5px solid var(--hair);
+  border-radius:var(--r-2);padding:var(--s2) var(--s3) var(--s2) var(--s3);font-size:var(--fs-3);font-weight:500;font-variant-numeric:tabular-nums}
 .chip button{border:0;background:none;padding:0;display:grid;place-items:center}
 /* beyaz-üstü-açık-pembe 2.4:1 idi — mürekkep ucu 5.8:1 */
-.save{width:100%;border:0;border-radius:999px;padding:18px;font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
+.save{width:100%;border:0;border-radius:999px;padding:var(--s5);font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
   background:var(--grad);transition:transform var(--d1)}
 .save:active{transform:scale(.97)}
 .save:disabled{opacity:.3}
-.row{display:flex;align-items:center;gap:13px;padding:12px;border-radius:var(--r-2);background:#fff;margin-bottom:10px;
+.row{display:flex;align-items:center;gap:var(--s3);padding:var(--s3);border-radius:var(--r-2);background:#fff;margin-bottom:var(--s3);
   border:1.5px solid rgba(90,44,70,.05);transition:transform var(--d1) var(--ease-spring),box-shadow var(--d2)}
 .row:active{transform:scale(.985);box-shadow:var(--e1)}
 .row .txt{flex:1;min-width:0}
 .row b{display:block;font-size:var(--fs-4);font-weight:500;overflow-wrap:anywhere}
 .row small{color:var(--soft);font-size:var(--fs-2);font-variant-numeric:tabular-nums;letter-spacing:.05em}
-.empty{text-align:center;color:var(--soft);font-size:var(--fs-3);padding:24px 0 14px}
+.empty{text-align:center;color:var(--soft);font-size:var(--fs-3);padding:var(--s6) 0 var(--s4)}
 /* haftalık grafik: alınan altta, atlanan üstünde — bugün çerçeveli */
-.week{display:flex;gap:7px;margin-bottom:8px;align-items:flex-end}
+.week{display:flex;gap:var(--s2);margin-bottom:var(--s2);align-items:flex-end}
 .week .wk{flex:1;min-width:0;display:block;padding:0;border:0;background:none;font-family:inherit;text-align:center}
 .week .wk:active{transform:scale(.94)}
 .week .col{height:66px;border-radius:var(--r-1);background:rgba(90,44,70,.07);position:relative;overflow:hidden;
-  margin-bottom:7px;display:flex;flex-direction:column;justify-content:flex-end;
+  margin-bottom:var(--s2);display:flex;flex-direction:column;justify-content:flex-end;
   transition:box-shadow var(--d2)}
 .week .fill,.week .sfill{position:absolute;left:0;right:0;bottom:0;height:100%;
   transform:scaleY(0);transform-origin:bottom;transition:transform var(--d4) var(--ease-out)}
@@ -283,18 +286,18 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .row.on{border-color:var(--rose2)}
 .row.on .chk{background:var(--rose-ink);border-color:transparent}
 .lnk{border:0;background:none;font-family:inherit;font-size:var(--fs-2);font-weight:700;color:var(--rose-ink);
-  min-height:var(--hit);padding:0 4px;display:inline-flex;align-items:center}
-.empty em{display:block;margin-top:6px;font-style:normal;font-size:var(--fs-2);opacity:.75}
+  min-height:var(--hit);padding:0 var(--s1);display:inline-flex;align-items:center}
+.empty em{display:block;margin-top:var(--s2);font-style:normal;font-size:var(--fs-2);opacity:.75}
 .eico{display:block;margin:0 auto 10px;opacity:.45}
 /* üst şerit: uyum · seri · ilaç sayısı */
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:2px 0 18px}
-.st{background:#fff;border:1.5px solid var(--hair);border-radius:var(--r-2);padding:12px 6px;text-align:center;
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s0) 0 var(--s5)}
+.st{background:#fff;border:1.5px solid var(--hair);border-radius:var(--r-2);padding:var(--s3) var(--s2);text-align:center;
   box-shadow:var(--e1)}
 .st b{display:block;font-size:var(--fs-5);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1.1}
 .st.k b{color:var(--rose-ink)}
-.st span{display:block;margin-top:3px;font-size:var(--fs-1);color:var(--soft)}
+.st span{display:block;margin-top:var(--s1);font-size:var(--fs-1);color:var(--soft)}
 /* ilaç başına son 7 gün */
-.dots7{display:flex;gap:4px;margin-top:7px}
+.dots7{display:flex;gap:var(--s1);margin-top:var(--s2)}
 .dots7 i{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-sizing:border-box}
 .dots7 i.f{background:var(--rose-mid)}
 .dots7 i.h{background:var(--rose2)}
@@ -302,17 +305,17 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .dots7 i.n{height:2px;border-radius:999px;background:rgba(90,44,70,.16);align-self:center}
 .hdrow span.lgd{font-size:var(--fs-1);color:var(--soft);font-weight:500}
 /* nokta göstergesinin karşılığı */
-.lgnd{display:flex;flex-wrap:wrap;gap:6px 14px;margin:15px 2px 2px;font-size:var(--fs-1);color:var(--soft)}
-.lgnd em{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+.lgnd{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);margin:var(--s4) var(--s0) var(--s0);font-size:var(--fs-1);color:var(--soft)}
+.lgnd em{font-style:normal;display:inline-flex;align-items:center;gap:var(--s2)}
 .lgnd i{width:9px;height:9px;border-radius:50%;box-sizing:border-box;flex:0 0 auto}
 .lgnd i.f{background:var(--rose-mid)}
 .lgnd i.h{background:var(--rose2)}
 .lgnd i.e{border:1.5px solid rgba(90,44,70,.28)}
 .lgnd i.n{height:2px;border-radius:999px;background:rgba(90,44,70,.16)}
 /* form bölüm başlıkları */
-.hd.t{margin-top:20px}
+.hd.t{margin-top:var(--s5)}
 /* su hedefi seçici */
-.goal{display:flex;align-items:center;justify-content:center;gap:18px;margin:4px 0 18px}
+.goal{display:flex;align-items:center;justify-content:center;gap:var(--s5);margin:var(--s1) 0 var(--s5)}
 .gbtn{width:56px;height:56px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--hair);background:#fff;
   font-family:inherit;font-size:var(--fs-6);font-weight:500;color:var(--plum);line-height:1;
   display:grid;place-items:center;box-shadow:var(--e1);
@@ -321,15 +324,15 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .gbtn:disabled{opacity:.28;box-shadow:none}
 .gnum{text-align:center;min-width:88px}
 .gnum b{display:block;font-size:var(--fs-d);font-weight:700;line-height:1;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
-.gnum em{display:block;margin-top:4px;font-style:normal;font-size:var(--fs-2);color:var(--soft)}
-.gprev{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px;min-height:19px}
+.gnum em{display:block;margin-top:var(--s1);font-style:normal;font-size:var(--fs-2);color:var(--soft)}
+.gprev{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s2);margin-bottom:var(--s4);min-height:19px}
 .ghint{margin:0;text-align:center;font-size:var(--fs-2);color:var(--soft);line-height:1.45}
 /* diyet haftalık geçmiş: çubuk öğün oranı, altındaki nokta su hedefi */
-.dwh{margin-bottom:8px}
-.dweek{display:flex;gap:5px;margin-bottom:14px}
+.dwh{margin-bottom:var(--s2)}
+.dweek{display:flex;gap:var(--s2);margin-bottom:var(--s4)}
 .dw{flex:1;min-width:0;text-align:center}
-.dw .col{height:40px;display:flex;align-items:flex-end;justify-content:center;gap:4px;margin-bottom:6px;
-  border-radius:var(--r-1);padding:3px 2px}
+.dw .col{height:40px;display:flex;align-items:flex-end;justify-content:center;gap:var(--s1);margin-bottom:var(--s2);
+  border-radius:var(--r-1);padding:var(--s1) var(--s0)}
 .dw .bar{width:11px;height:100%;border-radius:999px;background:rgba(90,44,70,.09);overflow:hidden;
   display:flex;flex-direction:column;justify-content:flex-end}
 .dw .f{width:100%;height:100%;border-radius:999px;transform:scaleY(0);transform-origin:bottom;
@@ -340,7 +343,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .dw.today .col{box-shadow:inset 0 0 0 2px var(--rose-mid)}
 .dw.today .dl{color:var(--rose-ink);font-weight:700}
 .times:empty{display:none}
-.hd{font-size:var(--fs-2);font-weight:700;color:var(--soft);margin:0 0 12px;letter-spacing:.02em}
+.hd{font-size:var(--fs-2);font-weight:700;color:var(--soft);margin:0 0 var(--s3);letter-spacing:.02em}
 
 /* açılış — kalp WebGL'de gerçek 3B olarak çiziliyor (ışın izleme, kırılma,
    iç tonlama). Bu katman saydam; yalnız uygulama adını taşır. */
@@ -348,7 +351,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
   justify-content:flex-end;padding-bottom:24vh;pointer-events:none;
   transition:opacity var(--d4) var(--ease-both)}
 #boot.gone{opacity:0}
-.btitle{display:flex;gap:1px;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:var(--fs-d);
+.btitle{display:flex;gap:var(--s0);font-family:Fraunces,Georgia,serif;font-weight:600;font-size:var(--fs-d);
   letter-spacing:-.5px;color:var(--plum);
   transition:transform var(--d4) var(--ease-both),opacity var(--d3) ease}
 #boot.gone .btitle{transform:translateY(16px);opacity:0}
@@ -374,7 +377,7 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .app.leaving{animation:leave var(--d3) ease forwards}
 
 /* sayfalar */
-.pagewrap{position:relative;flex:1;min-height:0;margin-top:14px}
+.pagewrap{position:relative;flex:1;min-height:0;margin-top:var(--s4)}
 /* geçiş: giden sayfa geri çekilip bulanıklaşır, gelen sayfa yaylanarak oturur */
 .page{position:absolute;inset:0;display:flex;flex-direction:column;
   opacity:0;pointer-events:none;transform:translateX(var(--x,14%)) scale(.92);
@@ -382,7 +385,7 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
   transition:opacity var(--d2) ease,transform var(--d4) var(--ease-out)}
 .page.on{opacity:1;transform:none;pointer-events:auto;
   transition:opacity var(--d3) ease,transform var(--d4) var(--ease-spring)}
-.tabs{position:relative;display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--card);border:1px solid var(--cardline);flex:0 0 auto}
+.tabs{position:relative;display:flex;gap:var(--s0);padding:var(--s1);border-radius:999px;background:var(--card);border:1px solid var(--cardline);flex:0 0 auto}
 .tabs .ind{position:absolute;top:3px;left:3px;width:44px;height:44px;border-radius:999px;background:#fff;
   box-shadow:var(--e1);transition:transform var(--d3) var(--ease-spring)}
 .tabs button{position:relative;z-index:1;width:44px;height:44px;border:0;border-radius:999px;background:none;
@@ -394,10 +397,10 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .dsum{animation:fadeUp var(--d4) var(--ease-out) both}
 
 /* diyet — günün özeti iki kartta: öğün halkası ve dolan bardak */
-.dsum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:14px}
-.card{background:#fff;border:1.5px solid var(--hair);border-radius:var(--r-3);padding:13px 10px;
+.dsum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s3);margin-bottom:var(--s4)}
+.card{background:#fff;border:1.5px solid var(--hair);border-radius:var(--r-3);padding:var(--s3) var(--s3);
   box-shadow:var(--e1);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:5px;min-width:0}
+  justify-content:center;gap:var(--s2);min-width:0}
 .cl{margin:0;font-size:var(--fs-2);font-weight:500;color:var(--soft);letter-spacing:.04em}
 .rgwrap{position:relative;width:78px;height:78px}
 .rg{width:100%;height:100%;display:block}
@@ -427,26 +430,26 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .wmin:active{transform:scale(.88)}
 .wmin[hidden]{visibility:hidden;display:grid}
 .hint{margin-left:auto;align-self:center;font-size:var(--fs-2);font-weight:700;color:var(--rose-ink);white-space:nowrap}
-.meals{flex:1;min-height:0;overflow-y:auto;padding-right:2px;scrollbar-width:none;
+.meals{flex:1;min-height:0;overflow-y:auto;padding-right:var(--s0);scrollbar-width:none;
   -webkit-mask-image:linear-gradient(180deg,#000 90%,transparent);
   mask-image:linear-gradient(180deg,#000 90%,transparent)}
 .meals::-webkit-scrollbar{display:none}
 textarea{width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);line-height:1.5;
-  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:14px 16px;outline:none;
-  min-height:110px;resize:none;margin-bottom:12px}
+  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;
+  min-height:110px;resize:none;margin-bottom:var(--s3)}
 textarea:focus{border-color:var(--rose2)}
-.del{width:100%;border:0;border-radius:999px;padding:15px;margin-top:10px;font-family:inherit;font-size:var(--fs-3);
+.del{width:100%;border:0;border-radius:999px;padding:var(--s4);margin-top:var(--s3);font-family:inherit;font-size:var(--fs-3);
   font-weight:700;color:var(--rose-ink);background:rgba(176,58,99,.12)}
 
-.meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);padding:14px 16px 12px;margin-bottom:12px;
+.meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);padding:var(--s4) var(--s4) var(--s3);margin-bottom:var(--s3);
   box-shadow:var(--e1)}
-.meal h3{margin:0 0 6px;font-size:var(--fs-4);font-weight:700;display:flex;align-items:baseline;gap:10px;min-width:0}
+.meal h3{margin:0 0 var(--s2);font-size:var(--fs-4);font-weight:700;display:flex;align-items:baseline;gap:var(--s3);min-width:0}
 .meal h3 .mn{min-width:0;overflow-wrap:anywhere}
 .meal h3 em{flex:0 0 auto;font-style:normal;font-size:var(--fs-2);font-weight:500;color:var(--soft);font-variant-numeric:tabular-nums}
 .meal h3 button{margin-left:auto;flex:0 0 auto;border:0;background:none;width:var(--hit);height:36px;display:grid;place-items:center}
 /* satırın tamamı tek hedef: daha önce dairelerin 44px görünmez alanları komşu
    satıra taşıyor ve yanlış maddeyi işaretleyebiliyordu */
-.food{display:flex;align-items:center;gap:11px;width:100%;min-height:var(--hit);padding:3px 0;
+.food{display:flex;align-items:center;gap:var(--s3);width:100%;min-height:var(--hit);padding:var(--s1) 0;
   border:0;background:none;font-family:inherit;font-size:var(--fs-4);color:var(--plum);text-align:left;
   transition:opacity var(--d2),color var(--d2)}
 .food .t{min-width:0;overflow-wrap:anywhere;transition:text-decoration-color var(--d2)}
@@ -457,13 +460,13 @@ textarea:focus{border-color:var(--rose2)}
 .food.ok{color:var(--soft)}
 .food.ok .t{text-decoration:line-through}
 .food.ok .c{background:rgba(143,208,180,.22);border-color:transparent}
-.mbar{height:4px;border-radius:999px;background:rgba(90,44,70,.07);margin-top:8px;overflow:hidden}
+.mbar{height:4px;border-radius:999px;background:rgba(90,44,70,.07);margin-top:var(--s2);overflow:hidden}
 .mbar i{display:block;height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--rose2),var(--rose));
   transform:scaleX(0);transform-origin:left;transition:transform var(--d3) var(--ease-out)}
 @keyframes mealIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
 .meal.now{border-color:var(--rose2);box-shadow:var(--e3)}
 .meal.done{opacity:.62}
-.mnow{margin:0 0 9px;font-size:var(--fs-2);font-weight:700;color:var(--rose-ink)}
+.mnow{margin:0 0 var(--s2);font-size:var(--fs-2);font-weight:700;color:var(--rose-ink)}
 /* işaretlenen tik çizilerek gelsin — hepsi birden değil, sadece dokunulan */
 .food .c.just{animation:cpop var(--d3) var(--ease-spring)}
 @keyframes cpop{0%{transform:scale(1)}42%{transform:scale(1.24)}100%{transform:scale(1)}}
@@ -472,21 +475,21 @@ textarea:focus{border-color:var(--rose2)}
 
 :focus-visible{outline:3px solid var(--rose-ink);outline-offset:3px;border-radius:var(--r-2)}
 input[type=number]{flex:1;width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);
-  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:15px 16px;outline:none;-moz-appearance:textfield}
+  background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .name{text-shadow:0 2px 22px rgba(255,255,255,.55)}
-.note{margin:8px 0 0;font-size:var(--fs-3);color:var(--soft);font-style:italic}
+.note{margin:var(--s2) 0 0;font-size:var(--fs-3);color:var(--soft);font-style:italic}
 .nudge{animation:nudge 2.6s ease-in-out infinite}
 @keyframes nudge{0%,88%,100%{transform:none}92%{transform:scale(1.1)}96%{transform:scale(.96)}}
-.tag{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;font-size:var(--fs-1);font-weight:700;
+.tag{display:inline-block;margin-left:var(--s2);padding:var(--s0) var(--s2);border-radius:999px;font-size:var(--fs-1);font-weight:700;
   background:rgba(176,58,99,.12);color:var(--rose-ink);vertical-align:2px}
 .tag.low{background:rgba(154,84,22,.14);color:var(--amber-ink)}
-.hdrow{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:0 0 12px}
+.hdrow{display:flex;align-items:center;gap:var(--s3);justify-content:space-between;margin:0 0 var(--s3)}
 .hdrow b{font-size:var(--fs-2);font-weight:700;color:var(--soft)}
 .hdrow span{font-size:var(--fs-2);color:var(--rose-ink);font-weight:700}
 #a2hs{position:fixed;left:20px;right:20px;max-width:calc(var(--shell) - 40px);margin-inline:auto;
   bottom:calc(env(safe-area-inset-bottom) + 20px);z-index:7;
-  display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:var(--r-3);background:#fff;
+  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-3);background:#fff;
   box-shadow:var(--e2);font-size:var(--fs-3);color:var(--soft);
   transform:translateY(140%);transition:transform var(--d3) var(--ease-out)}
 #a2hs.on{transform:translateY(0)}
@@ -521,6 +524,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   .food:hover .c{border-color:var(--hov-line)}
   .food.ok:hover .t{color:var(--soft)}
   .tabs button:not(.on):hover{opacity:.85}
+}
+
+/* 320px'de üst şerit tam dolu: 56+100+44+44+3×12 = 280px. Tarih 66px istiyor,
+   56px alıyor. Aralığı 8px'e çekmek 12px kazandırıyor. Bu bir yama — asıl
+   sorun dört ayrı kontrol grubunun tek şeride sığmaması (bkz. TODO: Header). */
+@media (max-width:360px){
+  .top{gap:var(--s2)}
 }
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
