@@ -305,6 +305,15 @@ Desktop kırılımı **yok**.
 
 ## Düzeltilen hatalar (tasarım işi sırasında çıktı)
 
+- [x] **Geri alma çubuğu yalan söylüyordu.** Bildirimin altındaki ince çubuk
+      "geri alma penceresinden ne kadar kaldı" demek için var, ama süresi
+      `--d6`ya (1200ms) bağlıydı; asıl pencere ise 5 saniye. Çubuk pencere
+      dolmadan **3.8 saniye önce** boşalıyor, yani "kaçırdım" izlenimi veriyordu.
+      Süre tek kaynağa (`UNDO=5000`) bağlandı, JS hem zamanlayıcıyı hem çubuğun
+      `animationDuration`ını oradan veriyor. Ölçüldü: çubuk ve bildirim aynı
+      anda bitiyor (fark 0ms). *Bu da benim hatam — 15 eğriyi tek hareket
+      sistemine indirirken bu çubuğu dekoratif bir hareket sandım; oysa sayaç.*
+
 - [x] **Tamamlanan öğün kartları listeden tamamen kayboluyordu.** Sınıf adı
       çakışması: gün-bitti ekranı `.done` sınıfını kullanıyor ve
       `.done{display:none}` yazıyordu; tamamlanmış öğün kartı da `.meal.done`
