@@ -103,7 +103,7 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 .top{display:flex;align-items:center;gap:var(--s3);min-width:0}
 .stamp{display:flex;flex-direction:column;min-width:0;margin-right:auto}
 .clock{font-size:var(--fs-4);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1.15}
-.date{font-size:var(--fs-1);color:var(--soft);white-space:nowrap}  /* 320px'de şerit dar: 12.5px'te taşıyordu */
+.date{font-size:var(--fs-2);color:var(--soft);white-space:nowrap}
 /* ilerleme artık doz bağlamının yanında — üst şeritte değil */
 .count{font-size:var(--fs-2);color:var(--soft);font-variant-numeric:tabular-nums;
   display:block;margin:0 0 var(--s3);letter-spacing:.01em}
@@ -322,6 +322,10 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .lgnd i.n{height:2px;border-radius:999px;background:rgba(90,44,70,.16)}
 /* form bölüm başlıkları */
 .hd.t{margin-top:var(--s5)}
+/* ayar satırındaki durum simgesi */
+.sic{width:34px;height:34px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
+  background:rgba(90,44,70,.07);transition:background var(--d3) ease}
+#bell.on .sic{background:rgba(240,138,174,.22)}
 /* su hedefi seçici */
 .goal{display:flex;align-items:center;justify-content:center;gap:var(--s5);margin:var(--s1) 0 var(--s5)}
 .gbtn{width:56px;height:56px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--hair);background:#fff;
@@ -445,7 +449,7 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .wmin:active{transform:scale(.88)}
 .wmin[hidden]{visibility:hidden;display:grid}
 .hint{margin-left:auto;align-self:center;font-size:var(--fs-2);font-weight:700;color:var(--rose-ink);white-space:nowrap}
-.meals{flex:1;min-height:0;overflow-y:auto;padding-right:var(--s0);scrollbar-width:none;
+.meals{flex:1;min-height:0;overflow-y:auto;padding-right:var(--s0);padding-top:var(--s0);scrollbar-width:none;
   -webkit-mask-image:linear-gradient(180deg,#000 90%,transparent);
   mask-image:linear-gradient(180deg,#000 90%,transparent)}
 .meals::-webkit-scrollbar{display:none}
@@ -456,11 +460,30 @@ textarea:focus{border-color:var(--rose2)}
 .del{width:100%;border:0;border-radius:999px;padding:var(--s4);margin-top:var(--s3);font-family:inherit;font-size:var(--fs-3);
   font-weight:700;color:var(--rose-ink);background:rgba(176,58,99,.12)}
 
-.meal{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);transition:opacity var(--d3) ease;padding:var(--s4) var(--s4) var(--s3);margin-bottom:var(--s3);
-  box-shadow:var(--e1)}
-.meal h3{margin:0 0 var(--s2);font-size:var(--fs-4);font-weight:700;display:flex;align-items:baseline;gap:var(--s3);min-width:0}
+/* Öğünler bir günün sırası, aynı kutudan yedi tane değil. Saat sol oluğa taşındı
+   ve display yazı tipiyle kuruldu; kartları bir omurga bağlıyor, her öğünün
+   noktası kendi ilerlemesini taşıyor. İçerik gerçekten sıralı olduğu için zaman
+   çizelgesi burada süs değil, doğru yapısal araç. */
+.meal{display:grid;grid-template-columns:58px minmax(0,1fr);margin-bottom:var(--s3);
+  transition:opacity var(--d3) ease}
+.mt{position:relative;padding:var(--s5) var(--s4) 0 0;text-align:right}  /* saat ile öğün adının taban çizgisi hizalansın */
+.mt b{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:var(--fs-3);
+  font-variant-numeric:tabular-nums;color:var(--soft);letter-spacing:-.2px}
+/* omurga: oluğun sağ kenarında sürekli çizgi, son öğünde kısalır */
+.mt::before{content:"";position:absolute;right:0;top:0;bottom:calc(-1 * var(--s3));
+  width:2px;background:var(--faint)}
+.meal:last-child .mt::before{bottom:auto;height:26px}
+/* nokta: o öğünün ne kadarının bittiğini gösterir — altındaki ince çubuğun yerini aldı */
+.mt::after{content:"";position:absolute;right:-5px;top:17px;width:12px;height:12px;border-radius:50%;
+  background:conic-gradient(from 180deg,var(--rose-mid) calc(var(--mp,0) * 360deg),rgba(90,44,70,.15) 0);
+  transition:background var(--d3) var(--ease-out),box-shadow var(--d3)}
+.meal.now .mt::after{box-shadow:0 0 0 4px rgba(176,58,99,.16)}
+.meal.done .mt::after{background:var(--mint)}
+.meal.done .mt b{color:var(--soft)}
+.mb{background:#fff;border:1.5px solid rgba(90,44,70,.05);border-radius:var(--r-3);
+  padding:var(--s3) var(--s4);box-shadow:var(--e1)}
+.meal h3{margin:0 0 var(--s2);font-size:var(--fs-4);font-weight:700;display:flex;align-items:center;gap:var(--s2);min-width:0}
 .meal h3 .mn{min-width:0;overflow-wrap:anywhere}
-.meal h3 em{flex:0 0 auto;font-style:normal;font-size:var(--fs-2);font-weight:500;color:var(--soft);font-variant-numeric:tabular-nums}
 .meal h3 button{margin-left:auto;flex:0 0 auto;border:0;background:none;width:var(--hit);height:36px;display:grid;place-items:center}
 /* satırın tamamı tek hedef: daha önce dairelerin 44px görünmez alanları komşu
    satıra taşıyor ve yanlış maddeyi işaretleyebiliyordu */
@@ -475,15 +498,12 @@ textarea:focus{border-color:var(--rose2)}
 .food.ok{color:var(--soft)}
 .food.ok .t{text-decoration:line-through}
 .food.ok .c{background:rgba(143,208,180,.22);border-color:transparent}
-.mbar{height:4px;border-radius:999px;background:rgba(90,44,70,.07);margin-top:var(--s2);overflow:hidden}
-.mbar i{display:block;height:100%;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--rose2),var(--rose));
-  transform:scaleX(0);transform-origin:left;transition:transform var(--d3) var(--ease-out)}
 @keyframes mealIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
-.meal.now{border-color:var(--rose2);box-shadow:var(--e3)}
+.meal.now .mb{border-color:var(--rose2)}
 /* `mealIn` giriş animasyonu `both` ile bitince opaklığı 1'de kilitliyordu —
    animasyonlar normal bildirimleri ezer — ve tamamlanmış öğün sönükleşmiyordu.
    Animasyon `backwards`a çevrildi; geçiş sıçramayı yumuşatıyor. */
-.meal.done{opacity:.62}
+.meal.done{opacity:.82}
 .mnow{margin:0 0 var(--s2);font-size:var(--fs-2);font-weight:700;color:var(--rose-ink)}
 /* işaretlenen tik çizilerek gelsin — hepsi birden değil, sadece dokunulan */
 .food .c.just{animation:cpop var(--d3) var(--ease-spring)}
@@ -544,13 +564,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   .tabs button:not(.on):hover{opacity:.85}
 }
 
-/* 320px'de üst şerit tam dolu: 56+100+44+44+3×12 = 280px. Tarih 66px istiyor,
-   56px alıyor. Aralığı 8px'e çekmek 12px kazandırıyor. Bu bir yama — asıl
-   sorun dört ayrı kontrol grubunun tek şeride sığmaması (bkz. TODO: Header). */
-@media (max-width:360px){
-  .top{gap:var(--s2)}
-}
-
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -565,7 +578,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   <div class="top">
     <span class="stamp"><span class="clock" id="clock">--:--</span><span class="date" id="date"></span></span>
     <div class="tabs"><span class="ind" id="tabInd"></span><button id="tabMed" class="on" aria-label="İlaçlar" aria-pressed="true"></button><button id="tabDiet" aria-label="Diyet" aria-pressed="false"></button></div>
-    <button class="bell" id="bell" aria-label="Bildirimler"></button>
     <button class="bell" id="btnSet" aria-label="Ayarlar"></button>
   </div>
 
@@ -658,6 +670,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
   <div class="gprev" id="sPrev" aria-hidden="true"></div>
   <p class="ghint">Gün içinde diyet sekmesindeki bardağa dokunarak işaretle.</p>
+  <p class="hd t">Bildirim</p>
+  <button class="row hrow" id="bell">
+    <span class="sic" id="bellIco"></span>
+    <span class="txt"><b>Doz hatırlatıcı</b><small id="bellTxt"></small></span>
+  </button>
 </div>
 
 <div class="sheet" id="sheetMeal">
@@ -1414,8 +1431,15 @@ $('btnSkip').addEventListener('click',()=>{
 /* ---------------- bildirim ---------------- */
 const notified={};
 function bellState(){
-  const ok=('Notification'in window)&&Notification.permission==='granted';
-  $('bell').innerHTML=ok?ico.bellOn:ico.bellOff;
+  const has='Notification'in window;
+  const perm=has?Notification.permission:'yok';
+  const ok=perm==='granted';
+  $('bellIco').innerHTML=ok?ico.bellOn:ico.bellOff;
+  $('bell').classList.toggle('on',ok);
+  $('bellTxt').textContent=!has?'Bu tarayıcı desteklemiyor'
+    :ok?'Açık — sayfa açıkken hatırlatır'
+    :perm==='denied'?'Tarayıcı ayarlarından açman gerekiyor'
+    :'Kapalı — açmak için dokun';
 }
 $('bell').addEventListener('click',()=>{
   if(!('Notification'in window)){toast('Bu tarayıcı bildirimi desteklemiyor');return}
@@ -1777,13 +1801,15 @@ function renderDiet(animate,justKey){
     const done=m.items.filter((it,i)=>isEaten(eatenKey(m.id,i))).length;
     const full=m.items.length&&done===m.items.length,now=nx&&nx.id===m.id;
     return `<div class="meal${full?' done':''}${now?' now':''}" data-id="${m.id}" style="${animate?'animation:mealIn .55s var(--ease-out) '+(mi*90+80)+'ms backwards':'animation:none'}">
-      <h3><span class="mn">${esc(m.name)}</span><em>${m.time}</em><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
+      <div class="mt" style="--mp:${(m.items.length?done/m.items.length:0).toFixed(3)}"><b>${m.time}</b></div>
+      <div class="mb">
+      <h3><span class="mn">${esc(m.name)}</span><button data-meal="${m.id}" aria-label="Düzenle">${ico.pen}</button></h3>
       ${now?`<p class="mnow">${when(m.time)}</p>`:''}
       ${m.items.map((it,i)=>{
         const ek=eatenKey(m.id,i),ok=isEaten(ek);
         return `<button class="food${ok?' ok':''}" data-eat="${ek}" aria-pressed="${ok}"><span class="c${ok&&ek===justKey?' just':''}">${ok?ico.tick:''}</span><span class="t">${esc(it)}</span></button>`;
       }).join('')}
-      <div class="mbar"><i style="transform:scaleX(${m.items.length?(done/m.items.length).toFixed(3):0})"></i></div>
+      </div>
     </div>`;
   }).join(''):'<div class="empty">Öğün eklemek için aşağıdaki düğmeye dokun</div>';
 }
@@ -1822,7 +1848,7 @@ $('meals').addEventListener('click',e=>{
       const m=S.diet.filter(x=>x.id===card.dataset.id)[0];
       if(m){
         const done=m.items.filter((it,i)=>isEaten(eatenKey(m.id,i))).length;
-        card.querySelector('.mbar i').style.transform='scaleX('+(m.items.length?done/m.items.length:0).toFixed(3)+')';
+        card.querySelector('.mt').style.setProperty('--mp',(m.items.length?done/m.items.length:0).toFixed(3));
         card.classList.toggle('done',!!m.items.length&&done===m.items.length);
       }
     }

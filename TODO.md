@@ -80,9 +80,12 @@ Bunlar korunacak — bozulmamaları öncelikli.
       ayrı yarıçap), gölgede (13 ayrı elevation).
 - [x] **P2 · Hover durumu hiç yok.** ~~CSS'te `:hover` sayısı 0.~~ **Katman
       kuruldu.** Tek jest, iki rol: *hover renklendirir, basma hareket ettirir.*
-- [ ] **P2 · Öğün kartları jenerik.** Beyaz yuvarlak kutu + başlık + boş
-      dairelerden liste. Uygulamanın geri kalanının karakteri burada yok;
-      "AI'ın ürettiği kart listesi" tam olarak bu.
+- [x] **P2 · Öğün kartları jenerik.** ~~Beyaz kutu + başlık + boş daireler.~~
+      **Günün sırasına dönüştürüldü:** saat sol oluğa taşındı ve Fraunces ile
+      kuruldu, kartları bir omurga bağlıyor, her öğünün noktası kendi
+      ilerlemesini konik dolguyla taşıyor. Alttaki ince çubuk (`.mbar`) kaldırıldı
+      — işini nokta yapıyor. İçerik gerçekten sıralı (bir günün öğünleri) olduğu
+      için zaman çizelgesi burada süs değil, doğru yapısal araç.
 - [x] **P2 · Haftalık çubuklar okunmuyor.** ~~Günde yan yana iki ince çubuk,
       hangisinin hangisi olduğu yalnız başlıktaki ipucundan.~~ **Yeniden
       kuruldu:** öğün tek ve geniş çubuk (11 → 18px, yükseklik 40 → 48px), su
@@ -121,9 +124,16 @@ Bunlar korunacak — bozulmamaları öncelikli.
 - [ ] **P2 · Birincil eylem iki tabda aynı görünüyor.** İlaç tabında "Aldım"
       (uygulamanın ana eylemi) ile diyet tabında "Öğün ekle" (ikincil, ayarlama
       işi) aynı gradyan pili. Hiyerarşi yanlış sinyal veriyor.
-- [ ] **P2 · İki özet kartı birbirine benzemiyor.** Solda halka grafiği, sağda
-      skeuomorfik su bardağı çizimi. Aynı boyutta iki kart ama iki ayrı görsel
-      dil. Bardağın `−` düğmesi kart kenarına biniyor.
+- [~] **P2 · İki özet kartı birbirine benzemiyor.** *Bu tespitin bir yarısı
+      yanlıştı.* Ölçtüm: `−` düğmesi kart kenarına **binmiyor** — sağ kenarın
+      26px, alt kenarın 64px içinde; iki kart da tam olarak 165×155. Gördüğüm
+      şey düğmenin bardak çiziminin üstünde durmasıydı, kartın taşması değil.
+      Geriye kalan gerçek fark: sayının konumu (halkanın içinde vs bardağın
+      altında). İki işareti aynılaştırmaya kalkışmadım — halka bir listenin ne
+      kadarının bittiğini, bardak ise kaç bardak içildiğini gösteriyor; ikisi de
+      kendi verisine uygun. Zorlamak ikisini de bozardı. Açık bırakıyorum:
+      sayı konumunu hizalamak mümkün, ama önce gerçekten sorun mu diye
+      telefonda bakılmalı.
 
 ---
 
@@ -271,10 +281,15 @@ Desktop kırılımı **yok**.
 
 ## Header
 
-- [ ] **P2** Dört ayrı kontrol biçimini (metin yığını · sekme pili · iki cam
-      daire) iki gruba indir. *Neden:* şu an üst şeritte dört farklı görsel
-      dil var.
-- [ ] **P2** Bildirim ve ayarlar düğmelerini tek gruba al.
+- [x] **P2** Üst şerit dört gruptan üçe indi. Bildirim zili kaldırıldı:
+      yaptığı tek iş bildirim izni istemek, yani bir **ayar** — sürekli görünen
+      bir krom değil. Ayarlar paneline durum satırı olarak taşındı ("Doz
+      hatırlatıcı · Kapalı — açmak için dokun"), artık durumunu da söylüyor;
+      eskiden yalnız ikon değişiyordu.
+- [x] **P2** 320px'deki sıkışıklık gerçekten çözüldü, yamayla değil: şerit
+      66+100+44+2×12 = 234px kullanıyor, 46px payı var. Önceki turda koyduğum
+      iki yama geri alındı — dar ekran aralık kısıtlaması ve `.date`in 11px'e
+      düşürülmesi. Tarih 12.5px'e döndü, taşma yok.
 - [ ] **P3** Saat/tarih yığınına almanak karakteri ver (Fraunces + tabular
       rakam denemesi). *Neden:* belirlenen yöne bağlanır.
 
@@ -306,7 +321,8 @@ Desktop kırılımı **yok**.
 - [ ] **P2** Öğün kartını yeniden tasarla: jenerik beyaz kutudan çıkar,
       saat/ritüel bağlamını göster. *Neden:* en jenerik bileşen bu.
 - [ ] **P2** İki özet kartını (halka + bardak) aynı dile getir.
-- [ ] **P2** Bardağın `−` düğmesinin kart kenarına binmesini düzelt.
+- [x] **P2** ~~Bardağın `−` düğmesi kart kenarına biniyor~~ — ölçüldü,
+      binmiyordu; tespit yanlıştı (yukarı bkz.).
 - [ ] **P2** Haftalık çubukları okunur hale getir: genişlik, etiket, öğün/su
       ayrımı.
 - [ ] **P2** Gün kısaltmalarını ayırt edilebilir yap (`Pa`/`Pt`, `Cu`/`Ct`).
