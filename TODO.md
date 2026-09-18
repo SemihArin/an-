@@ -98,12 +98,14 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Tutarsız alanlar
 
-- [ ] **P1 · İki ayrı yüzey dili, kuralı yok.** Cam (`--card` + `backdrop-filter`)
-      ve dolu beyaz (`#fff`) yan yana kullanılıyor, hangisinin nerede olacağını
-      belirleyen bir kural yok. Somut çelişki: `.bell` (üst şerit, yuvarlak
-      düğme) **cam**, `.gbtn` (ayarlar, yuvarlak düğme) **dolu beyaz**. Aynı
-      rolde iki farklı malzeme. `.tabs` saydam ama içindeki `.tabs .ind`
-      dolu beyaz.
+- [x] **P1 · İki ayrı yüzey dili** — *bu tespitim yanlıştı, düzeltiyorum.*
+      `.bell` ile `.gbtn`i "aynı rolde iki malzeme" diye işaretlemiştim; değiller.
+      `.bell` üst şeritte, canlı canvas'ın üstünde duruyor — cam orada doğru.
+      `.gbtn` bir panelin içinde, opak `#FFF6FA` üstünde — cam orada anlamsız
+      olurdu. `.tabs .ind`in dolu beyaz olması da doğru: hareket eden gösterge
+      okunaklı olmalı. Yürürlükteki kural aslında tutarlı: **cam = canvas
+      üstündeki krom, dolu = içerik yüzeyi.** Kuralı değiştirmek yerine CSS'e
+      yazdım ki ileride kayma olmasın.
 - [ ] **P1 · Aynı gradyan iki farklı açıda.** `linear-gradient(120deg, rose,
       rose-ink)` iki yerde, `135deg` bir yerde (`.btn.key`). Aynı malzemenin
       açısı tutmuyor.
@@ -153,10 +155,14 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Typography
 
-- [ ] **P1** 22 px değerini ~7 adımlı ölçeğe indir. Öneri (1.25 oranı, tabular
-      rakamlarla uyumlu): 11 · 13 · 15 · 17 · 21 · 27 · 34 + `clamp()` başlık.
-      *Neden:* 0.5px farklar hiyerarşi kurmuyor, sadece bakımı zorlaştırıyor.
-- [ ] **P1** Ölçeği `--fs-*` token'ları olarak tanımla; serbest px bırakma.
+- [x] **P1** 52 kural, **7 basamağa** indi: `--fs-1:11` · `--fs-2:12.5` ·
+      `--fs-3:14` · `--fs-4:16` · `--fs-5:20` · `--fs-6:26` · `--fs-d:34`,
+      artı `--fs-name` ve `--fs-dttl` clamp'leri. 16px alt sınır input'larda
+      korundu (altında iOS odaklanınca sayfayı yakınlaştırıyor).
+      *Ölçekten bilinçli olarak dışarıda:* `.hlab` ve `.dlab` — onlar SVG
+      kullanıcı-uzayında, ekran pikseli değil; kadranla birlikte ölçekleniyorlar.
+      *Yakalanan regresyon:* `.date` 12→12.5px olunca 320px'de üst şeritte
+      3px taşıyordu (`nowrap`), `--fs-1`e alındı.
 - [ ] **P2** Fraunces'i şu an yalnızca `.name`, `.dttl`, `.btitle` kullanıyor —
       sayı göstergelerinde (`gnum b`, `st b`, `dstats b`) de kullanılıp
       kullanılmayacağına karar ver. *Neden:* almanak karakteri sayılarda
@@ -175,21 +181,21 @@ Bunlar korunacak — bozulmamaları öncelikli.
 
 ## Border radius sistemi
 
-- [ ] **P1** 14 yarıçapı 4 adıma indir: `--r-sm:10` (küçük kontrol) ·
-      `--r-md:16` (input, düğme) · `--r-lg:22` (kart) · `--r-xl:32` (panel),
-      artı anlamsal `999px` (pil) ve `50%` (daire). *Neden:* 11px ile 13px
-      arasındaki fark görünmüyor ama iki ayrı karar olarak bakım yükü.
-- [ ] **P2** Tek panel içindeki dört yarıçapı tek role bağla (form kontrolleri
-      hep `--r-md`).
+- [x] **P1** 14 yarıçap **4 basamağa** indi: `--r-1:10` (çubuk) ·
+      `--r-2:16` (form kontrolü, düğme, satır) · `--r-3:22` (kart) ·
+      `--r-4:32` (panel), artı anlamsal `999px` ve `50%`. 4px'in altındaki
+      minik öğeler (`.grab`, `.mbar`, nokta çizgileri) `999px`e alındı —
+      zaten pil biçimindeydiler, 1px/2px yarıçap gereksiz karardı.
+- [x] **P2** Panel içindeki dört yarıçap tek role bağlandı: form kontrolleri
+      hep `--r-2`.
 
 ## Shadow sistemi
 
-- [ ] **P1** 13 elevation'ı 3 basamağa indir: `--e1` (yüzey/kart) ·
-      `--e2` (kalkık: toast, panel) · `--e3` (birincil eylem, renkli gölge).
-      *Neden:* `0 5px 16px .05` ile `0 6px 18px .05` arasındaki fark ölçülebilir
-      ama görülemez.
-- [ ] **P2** Gölge rengini tek yerden türet (şu an `rgba(90,44,70,…)` ve
-      `rgba(176,58,99,…)` elle yazılıyor).
+- [x] **P1** 13 elevation **3 + 1**'e indi: `--e1` (yüzey) · `--e2` (kalkık:
+      bildirim, ipucu) · `--e3` (birincil eylem, renkli) · `--e-sheet`
+      (panelin yukarı bakan gölgesi — yönlü olduğu için ayrı).
+- [ ] **P2** Gölge rengi hâlâ iki ayrı `rgba()` olarak yazılı; token'dan
+      türetilecek.
 
 ---
 
@@ -288,7 +294,8 @@ Desktop kırılımı **yok**.
       (yüzey) · sessiz (metin). Şu an `.take`, `.lbl`, `.lbl.skip`, `.btn`,
       `.btn.key`, `.mini`, `.save`, `.del`, `.ghost`, `.lnk`, `.gbtn` = 11
       ayrı düğme sınıfı.
-- [ ] **P1** Gradyan açısını tek değere sabitle (120° vs 135°).
+- [x] **P1** Gradyan `--grad` token'ı oldu, tek açı (120°). `.btn.key`in
+      135°'si bu token'a bağlandı.
 - [ ] **P2** "Aldım" ile "Öğün ekle" ayrımını kur. *Neden:* ana eylem ile
       ayarlama eylemi aynı görünmemeli.
 - [ ] **P2** Gradyanın kendisini sorgula: `linear-gradient(120deg, açık pembe,
@@ -359,6 +366,18 @@ oturuyor (`--ease-spring`). Korunacak.
 
 - [ ] **P3** Kaydırma sırasında parmağı takip eden ara durum ekle
       (bkz. Navigation).
+
+## Dokunma hedefleri
+
+- [x] **P1** 44px eşiğinin altında kalan beş hedef yükseltildi: sekme düğmeleri
+      42×40 → **44×44** (gösterge de), bildirimdeki "Geri al" 40 → **44**,
+      geçmiş düzenleme bağlantıları (`.lnk`) 40 → **44**, ipucu kapatma düğmesi
+      23 → **44**. Su eksiltme düğmesi görsel olarak 38px kaldı ama dokunma
+      alanı görünmez `::after` ile 44px'e çıktı — dört eksende de doğrulandı,
+      köşeler dairesel olduğu için komşu hedefi yemiyor.
+- [x] Ölçüm yöntemi notu: ilk taramada `.lbl` düğmeleri 40px görünüyordu; bu
+      gerçek değil, pasif sayfanın `scale(.92)` dönüşümünün eseriymiş. Sayfa
+      etkinken 164×**44**. Dönüşüm altında ölçüm yapmamak gerekiyor.
 
 ## Tıklama geri bildirimleri
 
