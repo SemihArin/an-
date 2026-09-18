@@ -140,6 +140,43 @@ Bunlar denetimde ölçüldü ve sorun çıkmadı. Değiştirme.
 
 ---
 
+# Erişilebilirlik taraması (yeni)
+
+Kontrast hatasını kaçırmış olmam örneklemenin yetmediğini gösterdi; aynı
+sistematik taramayı klavye ve ekran okuyucu tarafına da uyguladım. **10 kontrol,
+başlangıçta 4'ü başarısız — dördü de düzeltildi.**
+
+- [x] **E1 · Üç kontrolün adı yoktu.** `fTime` (doz saati), `fAddTime` (saati
+      ekle), `mTime` (öğün saati) — ekran okuyucu bunlarda hiçbir şey
+      duyurmuyordu. `aria-label` eklendi.
+- [x] **E2 · Escape paneli kapatmıyordu.** Perdeye dokunma ve aşağı sürükleme
+      vardı, klavye yolu yoktu. Eklendi.
+- [x] **E3 · Odak panelden dışarı kaçıyordu.** Panel açıkken Tab'lamak
+      perdenin **altındaki** düğmelere düşürüyordu (`btnSkip`, `btnAdd`,
+      `btnList`) — yani klavye kullanıcısı görünmeyen kontrollerle etkileşime
+      giriyordu. Panel içinde döngü kuran bir tuzak eklendi; Tab sonuncudan
+      başa, Shift+Tab ilkinden sonuncuya sarıyor.
+- [x] **E4 · Panel kapanınca odak kayboluyordu.** `a2hsX`e (ekran dışındaki
+      ipucu kapatma düğmesi) düşüyordu. Artık paneli açan düğmeye dönüyor.
+- [x] **E5 · Paneller gerçek diyalog semantiği kazandı:** `role="dialog"`,
+      `aria-modal="true"`, her birine `aria-label`.
+      *Karar notu:* odak ilk input'a değil **panelin kendisine** veriliyor.
+      Metin alanına programatik odaklanmak mobilde klavyeyi açıp paneli
+      kapatabiliyor; panele odaklanınca Tab yine ilk kontrole geçiyor.
+      Ölçüldü: üç panelde de kaydırma sıçraması yok, ad alanından Tab hâlâ
+      panel içinde ilerliyor.
+
+**Temiz geçenler:** odak halkası 3px ve görünür · Tab gövdede dolaşıyor ·
+bildirim canlı bölge (`role=status` + `aria-live=polite`) · sekmeler
+`aria-pressed` bildiriyor · sayfa dili `tr` · öğün durumu yalnız renge
+dayanmıyor, metinle de var.
+
+*Test yöntemi notu:* ilk turda tuzak testi "başarısız" göründü; aslında Escape
+düzelince panelin yeniden açılma adımı atlanıyordu — test hatası, uygulama
+hatası değil. Düzeltildi.
+
+---
+
 # Denetim dışı, açık kalan işler
 
 Birinci turdan devreden ve kodla kapatılamayan / karar bekleyen maddeler.

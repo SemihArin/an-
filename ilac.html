@@ -709,11 +709,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="ticon" id="toastIco"></span><span id="toastMsg"></span><button id="toastBtn">Geri al</button><span class="tbar" id="toastBar"></span></div>
 
 <div class="scrim" id="scrim"></div>
-<div class="sheet" id="sheetAdd">
+<div class="sheet" id="sheetAdd" role="dialog" aria-modal="true" aria-label="İlaç ekle" tabindex="-1">
   <div class="grab"></div>
   <div class="field"><input type="text" id="fName" placeholder="İlaç adı" autocomplete="off"></div>
   <p class="hd t">Saatler</p>
-  <div class="field"><input type="time" id="fTime" value="09:00"><button class="mini" id="fAddTime"></button></div>
+  <div class="field"><input type="time" id="fTime" value="09:00" aria-label="Doz saati"><button class="mini" id="fAddTime" aria-label="Saati listeye ekle"></button></div>
   <div class="times" id="fTimes"></div>
   <p class="hd t">Günler</p>
   <div class="days" id="fDays"></div>
@@ -725,7 +725,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   <div class="field"><input type="number" id="fStock" placeholder="Kalan adet" inputmode="numeric" min="0"></div>
   <button class="save" id="fSave" disabled>Kaydet</button>
 </div>
-<div class="sheet" id="sheetSet">
+<div class="sheet" id="sheetSet" role="dialog" aria-modal="true" aria-label="Ayarlar" tabindex="-1">
   <div class="grab"></div>
   <p class="hd">Günlük su hedefi</p>
   <div class="goal">
@@ -742,16 +742,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </button>
 </div>
 
-<div class="sheet" id="sheetMeal">
+<div class="sheet" id="sheetMeal" role="dialog" aria-modal="true" aria-label="Öğün" tabindex="-1">
   <div class="grab"></div>
   <div class="field"><input type="text" id="mName" placeholder="Öğün adı — örn. Kahvaltı" autocomplete="off"></div>
-  <div class="field"><input type="time" id="mTime" value="08:00"></div>
+  <div class="field"><input type="time" id="mTime" value="08:00" aria-label="Öğün saati"></div>
   <textarea id="mItems" placeholder="Her satıra bir şey yaz&#10;2 yumurta&#10;1 dilim ekmek&#10;yeşillik"></textarea>
   <button class="save" id="mSave" disabled>Kaydet</button>
   <button class="del" id="mDel" style="display:none">Öğünü sil</button>
 </div>
 
-<div class="sheet" id="sheetList">
+<div class="sheet" id="sheetList" role="dialog" aria-modal="true" aria-label="İlaçlarım ve geçmiş" tabindex="-1">
   <div class="grab"></div>
   <div class="stats" id="stats"></div>
   <div class="hdrow"><b>Son 7 gün</b><span id="streak"></span></div>
@@ -1542,19 +1542,44 @@ function checkNotify(){
 }
 
 /* ---------------- sheet ---------------- */
-let openId=null;
+let openId=null,openerEl=null;
+/* Panel açıkken odak arkadaki sayfaya kaçıyordu: klavye kullanıcısı paneli açıp
+   Tab'layınca perdenin altındaki düğmelere düşüyordu. Bu üçü birlikte çözer. */
+const FOCUSABLE='button:not([disabled]),input:not([disabled]),textarea:not([disabled]),'+
+  'select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])';
+const focusablesIn=el=>Array.prototype.filter.call(el.querySelectorAll(FOCUSABLE),
+  e=>e.offsetParent!==null||getComputedStyle(e).position==='fixed');
 const show=id=>{
   tlog('panel_acildi',{panel:id});
+  openerEl=(document.activeElement&&document.activeElement!==document.body)?document.activeElement:null;
   openId=id;const s=$(id);
   s.classList.add('open');$('scrim').classList.add('open');
+  /* Odağı panelin kendisine al, ilk input'a değil: metin alanına programatik
+     odaklanmak mobilde klavyeyi açabiliyor ve paneli kapatıyor. Tab ilk
+     kontrole geçer. Geçiş bitince odaklanıyoruz, yoksa görünmezken oluyor. */
+  setTimeout(()=>{if(openId!==id)return;try{s.focus({preventScroll:true})}catch(e){s.focus()}},260);
   Array.prototype.slice.call(s.children).forEach((el,i)=>{
     el.style.animation='none';void el.offsetWidth;
     el.style.animation='fadeUp .5s var(--ease-out) '+(140+i*50)+'ms both';
   });
 };
 const hide=()=>{if(openId){tlog('panel_kapandi',{panel:openId});$(openId).classList.remove('open')}
-  $('scrim').classList.remove('open');openId=null};
+  $('scrim').classList.remove('open');openId=null;
+  /* odak paneli açan düğmeye dönsün; dönmezse sayfanın başına savruluyordu */
+  if(openerEl&&document.contains(openerEl)){try{openerEl.focus()}catch(e){}}
+  openerEl=null};
 $('scrim').addEventListener('click',hide);
+document.addEventListener('keydown',e=>{
+  if(!openId)return;
+  if(e.key==='Escape'){e.preventDefault();hide();return}
+  if(e.key!=='Tab')return;
+  const f=focusablesIn($(openId));
+  if(!f.length)return;
+  const ilk=f[0],son=f[f.length-1],a=document.activeElement;
+  /* panelin içinde döngü: son elemandan sonra başa, ilkten geriye sonuncuya */
+  if(e.shiftKey&&(a===ilk||!$(openId).contains(a))){e.preventDefault();son.focus()}
+  else if(!e.shiftKey&&(a===son||!$(openId).contains(a))){e.preventDefault();ilk.focus()}
+});
 let form={times:[],color:COLORS[0],shape:'capsule',days:[]},editing=null;
 function drawForm(){
   $('fColors').innerHTML=COLORS.map(c=>`<button class="pick${c===form.color?' sel':''}" data-c="${c}" style="background:${c}"></button>`).join('');
