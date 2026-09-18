@@ -78,8 +78,8 @@ Bunlar korunacak — bozulmamaları öncelikli.
       15.5, 16, 16.5, 17). Yarım pikselli farklar hiyerarşi kurmuyor, sadece
       gürültü. Aynı durum boşlukta (1px'den 26px'e 21 ayrı değer), köşede (14
       ayrı yarıçap), gölgede (13 ayrı elevation).
-- [ ] **P2 · Hover durumu hiç yok.** CSS'te `:hover` sayısı: **0**. Yalnızca
-      `:active` var. Fare ile açıldığında arayüz hiçbir şeye tepki vermiyor.
+- [x] **P2 · Hover durumu hiç yok.** ~~CSS'te `:hover` sayısı 0.~~ **Katman
+      kuruldu.** Tek jest, iki rol: *hover renklendirir, basma hareket ettirir.*
 - [ ] **P2 · Öğün kartları jenerik.** Beyaz yuvarlak kutu + başlık + boş
       dairelerden liste. Uygulamanın geri kalanının karakteri burada yok;
       "AI'ın ürettiği kart listesi" tam olarak bu.
@@ -290,10 +290,10 @@ Desktop kırılımı **yok**.
 
 ## Butonlar
 
-- [ ] **P1** Hiyerarşiyi üç seviyeye indir: birincil (gradyan) · ikincil
-      (yüzey) · sessiz (metin). Şu an `.take`, `.lbl`, `.lbl.skip`, `.btn`,
-      `.btn.key`, `.mini`, `.save`, `.del`, `.ghost`, `.lnk`, `.gbtn` = 11
-      ayrı düğme sınıfı.
+- [~] **P1** Düğme sınıfı 11 → **8**: `.btn`, `.btn.key`, `.ghost` ölü kod
+      olarak silindi. Kalanlar `.take` · `.lbl` · `.lbl.skip` · `.save` ·
+      `.del` · `.mini` · `.gbtn` · `.lnk`. Üç seviyeye indirmek için
+      `.save`/`.take` ve `.mini`/`.gbtn` birleştirilebilir — ayrı bir geçişte.
 - [x] **P1** Gradyan `--grad` token'ı oldu, tek açı (120°). `.btn.key`in
       135°'si bu token'a bağlandı.
 - [ ] **P2** "Aldım" ile "Öğün ekle" ayrımını kur. *Neden:* ana eylem ile
@@ -342,12 +342,27 @@ Hareket sistemi zaten tek merkezde ve ölü geçiş yok. Korunacak.
 
 ## Hover efektleri
 
-- [ ] **P1** Hover katmanını sıfırdan kur — şu an CSS'te `:hover` sayısı **0**.
-      Kapsam: `.take`, `.lbl`, `.btn`, `.save`, `.row`, `.meal`, `.food`,
-      `.tabs button`, `.wk`, `.dw`, `.bell`, `.gbtn`, `.lnk`, `.chip button`.
-- [ ] **P1** Hover'ı `@media (hover:hover)` içine al. *Neden:* dokunmatikte
-      hover "yapışıyor", mobil birincil hedef.
-- [ ] **P2** Hover ile `:active`i tek sistemde tut (aynı eğri/süre token'ları).
+- [x] **P1** Hover katmanı kuruldu: `.bell`, `.lbl`, `.gbtn`, `.chip`, `.row`,
+      `.shape`, `.days button`, `.wtap`, `.wmin`, `.wk`, `.dw`, `.take`,
+      `.save`, `.mini`, `.del`, `.lnk`, `.food`, `.tabs button` + imleç.
+- [x] **P1** `@media (hover:hover) and (pointer:fine)` içinde — dokunmatikte hiç
+      tanımlanmıyor, yapışma riski yok (`hasTouch` bağlamında sorgu `false`).
+- [x] **P1** Ton, `background-color`ı değiştirmeden `background-image` olarak
+      üstüne biniyor. *Neden:* cam yüzeylerin `backdrop-filter`ı bozulmasın.
+      Gradyanlı düğmelerde ton bindirilemediği için `filter` kullanıldı.
+- [x] **P2** Hover ile `:active` ayrı roller: hover yalnız renk, basma yalnız
+      ölçek. Böylece dokunmatikte kaybolan tek şey renk oluyor.
+- [x] **Bilinçli olarak yapılmadı:** tıklanmayan kartlara (`.card`, `.meal`,
+      `.st`) hover verilmedi. *Neden:* frontend-design skill'inin açıkça
+      "jenerik" saydığı şey bu — her kartı hover'da kaldırmak hem yanlış vaat
+      hem de AI imzası.
+
+## Ölü kod
+
+- [x] Kullanılmayan sınıflar silindi: `.btn` / `.btn:active` / `.btn.key` (eski
+      tasarımdan kalma; "Aldım" ad kazanınca öksüz kalmış), `.ghost`, `.hit44`,
+      `.pair` / `.pair .save`, artı `circle.ripplering` kalıntısı. HTML ve JS
+      tarandı, hiçbiri kullanılmıyordu. CSS 808 karakter küçüldü.
 
 ## Loading durumları
 

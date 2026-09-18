@@ -74,9 +74,12 @@
   --e3:0 10px 26px rgba(176,58,99,.3);   /* birincil eylem */
   --e-sheet:0 -18px 50px rgba(90,44,70,.15);
   /* Tek gradyan, tek açı — aynı malzeme iki farklı açıda kullanılıyordu. */
-  --grad:var(--grad);
+  --grad:linear-gradient(120deg,var(--rose),var(--rose-ink));
   --pad:26px;
   --hit:44px;
+  /* fare girdisi için tek ton */
+  --hov:rgba(176,58,99,.07);
+  --hov-line:rgba(176,58,99,.24);
   /* telefon için tasarlandı; geniş ekranda gerilmek yerine sütun kalır */
   --shell:460px;
 }
@@ -87,10 +90,6 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   -webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
 /* içerik metni seçilebilir kalsın — yedek/not kopyalamak için */
 .name,.sub,.note,.row .txt,.meal,.empty,input,textarea{-webkit-user-select:text;user-select:text}
-/* 44px dokunma alanı, görsel boyutu büyütmeden */
-.hit44{position:relative}
-.hit44::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:var(--hit);height:var(--hit)}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
 
 .app{position:relative;z-index:1;height:100%;width:100%;max-width:var(--shell);margin-inline:auto;
@@ -179,11 +178,6 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 /* eylem çubuğu — birincil eylemin artık adı var */
 .bar{display:flex;gap:10px;margin-top:20px;align-items:center}
 .bar2{display:flex;gap:10px;margin-top:10px}
-.btn{width:50px;height:50px;flex:0 0 auto;border-radius:var(--r-2);border:1px solid var(--cardline);background:var(--card);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;place-items:center;
-  transition:transform var(--d1) var(--ease-spring)}
-.btn:active{transform:scale(.86)}
-.btn.key{border:0;background:var(--grad);box-shadow:var(--e3)}
 /* birincil: "Aldım" — daha önce kadranın üstünde görünmez bir dairedeydi */
 .take{flex:1 1 auto;min-width:0;height:54px;border:0;border-radius:999px;display:flex;align-items:center;
   justify-content:center;gap:9px;padding:0 18px;font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
@@ -247,9 +241,6 @@ input::placeholder{color:rgba(90,44,70,.3)}
 /* beyaz-üstü-açık-pembe 1.7:1 idi — mürekkep rengi 6.7:1 */
 .days button.on{background:var(--rose2);border-color:var(--rose-ink);color:var(--plum)}
 .days button:active{transform:scale(.92)}
-.pair{display:flex;gap:10px;margin-bottom:12px}
-.pair .save{margin:0}
-.ghost{background:rgba(176,58,99,.12)!important;color:var(--rose-ink)!important;box-shadow:none!important}
 .times{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .chip{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--hair);
   border-radius:var(--r-2);padding:9px 10px 9px 13px;font-size:var(--fs-3);font-weight:500;font-variant-numeric:tabular-nums}
@@ -379,7 +370,7 @@ body.ready .app{opacity:1}   /* kendi solması kadranın açılışıyla yarış
 .reveal-top{animation:fadeDown var(--d4) var(--ease-out) both}
 .reveal-foot{animation:fadeUp var(--d5) var(--ease-out) both}
 .track.draw{stroke-dasharray:792;animation:draw var(--d6) var(--ease-out) both}
-circle.bead,text.dlab,circle.ripplering{transform-box:fill-box;transform-origin:center}
+circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .app.leaving{animation:leave var(--d3) ease forwards}
 
 /* sayfalar */
@@ -504,6 +495,34 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 .bit{position:fixed;z-index:9;pointer-events:none;animation:fly var(--d6) var(--ease-out) forwards}
 @keyframes fly{0%{transform:translate(0,0) scale(.35);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.05);opacity:0}}
+
+/* Fare girdisi. Daha önce tek bir :hover kuralı yoktu — arayüz imleçle ölüydü.
+   Tek jest, iki rol: hover renklendirir, basma hareket ettirir. İkisi karışmaz,
+   böylece dokunmatikte kaybolan tek şey renk oluyor.
+   Kart kaldırma / gölge büyütme refleksine bilerek girilmedi ve hover yalnız
+   gerçekten tıklanabilir şeylere verildi: tıklanmayan bir kartı hover'da
+   oynatmak yanlış vaat. Ton arka planı değiştirmeden üstüne biniyor, cam
+   yüzeylerin backdrop-filter'ı bozulmasın diye. */
+@media (hover:hover) and (pointer:fine){
+  button,.tap,.food,.wk,.hrow{cursor:pointer}
+  button:disabled{cursor:default}
+  .bell:hover,.lbl:hover,.gbtn:not(:disabled):hover,.chip:hover,
+  .row:hover,.shape:hover,.days button:hover,.wtap:hover,.wmin:hover,
+  .week .wk:hover .col,.dw:hover .col{
+    background-image:linear-gradient(var(--hov),var(--hov))}
+  .bell:hover,.lbl:hover,.chip:hover,.shape:hover,
+  .days button:hover,.gbtn:not(:disabled):hover{border-color:var(--hov-line)}
+  /* gradyan zaten background-image; ton bindirilemez, canlandırılır */
+  .take:not(:disabled):hover,.save:not(:disabled):hover,.mini:hover,
+  .del:hover{filter:saturate(1.1) brightness(1.05)}
+  .lnk:hover,.toast button:hover,.meal h3 button:hover,#a2hs button:hover{
+    background-image:linear-gradient(var(--hov),var(--hov));border-radius:999px}
+  .food:hover .t{color:var(--rose-ink)}
+  .food:hover .c{border-color:var(--hov-line)}
+  .food.ok:hover .t{color:var(--soft)}
+  .tabs button:not(.on):hover{opacity:.85}
+}
+
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
