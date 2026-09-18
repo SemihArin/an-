@@ -24,7 +24,7 @@ denetimden çıktı. Birinci tur (yol haritası, P0–P2, tasarım eleştirisi) 
 
 ## 1. Damga yalan söylüyor
 
-- [ ] **K1** Dosyanın ilk satırındaki Hallmark damgası `macrostructure: Workbench`
+- [x] **K1** Dosyanın ilk satırındaki Hallmark damgası `macrostructure: Workbench`
       diyor. Workbench bir **pazarlama sayfası** iskeleti: ekran görüntüsü
       çerçeveleri, altyazılar, üçüncü görselden sonra yapışkan "Try it free →"
       çubuğu. `ilac.html` bir **uygulama** — ne ekran görüntüsü var, ne altyazı,
@@ -37,13 +37,13 @@ denetimden çıktı. Birinci tur (yol haritası, P0–P2, tasarım eleştirisi) 
       *Neden kritik:* audit verb'ü bunu açıkça "stamp lies → critical structural
       finding" olarak tanımlıyor. Damga bir sonraki turun okuyacağı kayıt;
       yanlışsa zararlı.
-- [ ] **K1b** Damganın `pass:` satırı ("contrast ramp, 44px targets, named primary
+- [x] **K1b** Damganın `pass:` satırı ("contrast ramp, 44px targets, named primary
       action, 320px safety") çok tur öncesine ait ve bayat. Güncellensin ya da
       düşsün.
 
 ## 2. Saf beyaz yüzey
 
-- [ ] **K2** `background:#fff` **15 yerde**. Anti-pattern kataloğu bunu kritik
+- [x] **K2** `background:#fff` **15 yerde**. Anti-pattern kataloğu bunu kritik
       sayıyor: *"`#ffffff` surface — reads flat and synthetic. Fix: tint toward
       your anchor hue."*
       Etkilenen yüzeyler: `.card` · `.meal .mb` · `.row` · `.st` · `.chip` ·
@@ -62,7 +62,7 @@ denetimden çıktı. Birinci tur (yol haritası, P0–P2, tasarım eleştirisi) 
 
 ## 3. `transition-all`
 
-- [ ] **M1** Üç yerde özellik listesi olmayan geçiş var — `transition:var(--d2)`
+- [x] **M1** Üç yerde özellik listesi olmayan geçiş var — `transition:var(--d2)`
       yazmak `transition-property:all` demek, yani odak halkası ve `visibility`
       dahil her şey animasyona giriyor:
       `.scrim` · `.pick` · `.days button`.
@@ -74,7 +74,7 @@ denetimden çıktı. Birinci tur (yol haritası, P0–P2, tasarım eleştirisi) 
 
 ## 4. UI durumunda yaylanma (overshoot)
 
-- [ ] **M2 · karar gerektiriyor, körlemesine düzeltme değil.**
+- [x] **M2 · uygulandı (önerilen orta yol).**
       `--ease-spring:cubic-bezier(.34,1.46,.64,1)` — katalogdaki tell'in
       neredeyse birebir aynısı (`cubic-bezier(0.34, 1.56, 0.64, 1) and friends
       on buttons, modals, tooltips`). **14 yerde** kullanılıyor ve büyük kısmı
@@ -95,16 +95,19 @@ denetimden çıktı. Birinci tur (yol haritası, P0–P2, tasarım eleştirisi) 
       sekme göstergesi (kaydırmayla sürülüyor), sayfa geçişi (kaydırma jesti).
       Basma (`:active`) ve durum geçişlerinde `--ease-out`a dön. Böylece
       akışkanlık kalır, klişe gider.
-      *Ölçüm:* değişiklikten sonra açılış sekansıyla ana ekran girişinin uyumu
-      yeniden ölçülecek (`getAnimations`, sayfa içi rAF).
+      **Sonuç:** 12 yer `--ease-out`a döndü, **3'ü korundu** — `.sheet.open`
+      (parmakla sürüklenip bırakılıyor), `.tabs .ind` ve `.page.on` (kaydırma
+      jestiyle sürülüyor). `tabPop` ayrıca dönmesini kaybetti: ölçek onayı
+      kaldı, sallanma gitti (katalogdaki "icons that wobble").
+      Açılış/regresyon yeniden ölçüldü, sapma yok.
 
 ---
 
 # Küçük
 
-- [ ] **m1** `.card{padding:var(--s3) var(--s3)}` — aynı değer iki kez; `var(--s3)`
+- [x] **m1** `.card{padding:var(--s3) var(--s3)}` — aynı değer iki kez; `var(--s3)`
       yeterli.
-- [ ] **m2** `.hallmark/log.json` kayıtlarındaki `macrostructure: Workbench`
+- [x] **m2** `.hallmark/log.json` kayıtlarındaki `macrostructure: Workbench`
       alanları K1 ile birlikte düzeltilsin; yoksa bir sonraki tur yanlış kaydı
       okur.
 
@@ -162,6 +165,24 @@ Birinci turdan devreden ve kodla kapatılamayan / karar bekleyen maddeler.
       eklenebilir ama node bağımlılığı demek — **kullanıcının kararı.**
 
 ---
+
+---
+
+# Denetim sırasında çıkan yeni bulgu
+
+- [x] **YENİ · Birincil düğmenin etiketi AA'yı geçmiyordu.** `--grad`ın açık
+      ucunda beyaz metnin kontrastı **2.58:1**, etiketin oturduğu ortada
+      **~3.5:1**. 16px kalın metin WCAG'de "büyük metin" saymıyor (eşik
+      18.66px kalın), yani gereken 4.5:1. **Bu bir erişilebilirlik hatasıydı ve
+      daha önceki kontrast turlarım kaçırmıştı — yalnız düz renkleri ölçmüş,
+      gradyanın kendisini hiç ölçmemiştim.**
+
+      *Ve bu, geçen turdaki kararımı çürütüyor.* Gradyanı "gece bandına tabi
+      kalıyor" diye bırakmıştım (ortalama parlaklık 0.270 vs bandın 0.107).
+      Ama açık ucu AA'ya çekmek için L ≤ 0.183 gerekiyor — o da gradyanı zaten
+      reddettiğim dolu rengin (0.159) koyuluğuna getiriyor. Yani gradyanın tek
+      gerekçesi ölçümle birlikte ortadan kalktı.
+      *Karar:* dolu `--act` (`--rose-ink`). Ölçüldü: beyaz etiketle **5.77:1**.
 
 ## Sıra önerisi
 

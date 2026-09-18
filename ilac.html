@@ -13,10 +13,26 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
 <style>
-/* Hallmark · macrostructure: Workbench · genre: playful · tone: soft
+/* Hallmark · macrostructure: yok — bu bir uygulama, sayfa değil.
+ *   Damga bir tur boyunca "Workbench" diyordu; Workbench bir pazarlama sayfası
+ *   iskeleti (ekran görüntüsü çerçeveleri, altyazılar, yapışkan "Try it free").
+ *   Burada ne çerçeve var ne CTA. Hallmark'ın 21 iskeletinin hepsi sayfa şekli,
+ *   hiçbiri uymuyor — başka bir ad yazmak ikinci bir yalan olurdu.
+ * genre: playful · tone: soft
  * theme: custom (brand-preserved) · paper oklch(95% 0.03 350) · accent oklch(52% 0.16 359)
- * pre-emit critique: P4 H5 E5 S5 R4 V4
- * pass: redesign — contrast ramp, 44px targets, named primary action, 320px safety
+ * pre-emit critique: P5 H5 E5 S5 R4 V4
+ *
+ * Sevk edilen yapı:
+ *   · 24 saatlik kadran — ekranın kahramanı; gece bandı (21:00→06:00) tek koyu
+ *     kütle, parlaklık 0.107, kâğıda karşı 5.16:1
+ *   · hap kadranın merkezinde, u_off ile her karede kadrana hizalanıyor
+ *   · diyet: günün zaman çizelgesi — saat sol olukta, omurga, ilerleme noktası
+ *   · token sistemleri: 9 tipografi · 4 yarıçap · 3+1 gölge · 8 boşluk ·
+ *     2 kenarlık tonu · 3 basma ölçeği — stil sayfasında serbest px yok
+ *   · hareket: yaylanma yalnız fiziksel olanda (sürüklenen panel, kaydırılan
+ *     sekme göstergesi, sayfa geçişi); basma ve durum geçişi ease-out
+ *   · birincil eylem dolu `--act` (beyaz etiketle 5.77:1) — gradyan ölçümde
+ *     kaldı: açık ucunda 2.58:1
  */
 :root{
   --bg:#FFEFF5;
@@ -44,11 +60,18 @@
   /* Yüzey kuralı: cam yalnız canlı canvas'ın üstündeki kromda (üst şerit
      düğmeleri, sekme grubu, gün-bitti rozetleri). İçerik yüzeyleri ve panel
      içindeki kontroller dolu beyaz — opak zemin üstünde cam anlamsız. */
+  /* Saf `#fff` yüzey anti-pattern kataloğunda kritik: düz ve sentetik okunuyor.
+     Panel zemini (#FFF6FA) zaten tonluydu, kartlar onun üstünde ondan daha
+     soğuk kalıyordu. Tek kart tonu, pembeye doğru ısıtılmış. */
+  --paper-card:#FEF7FA;
   --card:rgba(255,255,255,.62);
   --cardline:rgba(255,255,255,.9);
   /* hareket sistemi — 4 eğri, 6 süre. Daha önce 15 ayrı eğri vardı,
      her eleman kendi fiziğine göre hareket ettiği için uyumsuz duruyordu. */
   --ease-out:cubic-bezier(.22,1,.36,1);
+  /* Yaylanma yalnız gerçekten fiziksel olanda: sürüklenen panel, kaydırılan
+     sekme göstergesi, kaydırmayla gelen sayfa. Basma ve durum geçişi ease-out —
+     bir düğmeye basınca ölçeğin geri sekmesi fiziksel bir olay değil. */
   --ease-spring:cubic-bezier(.34,1.46,.64,1);
   --ease-both:cubic-bezier(.65,0,.35,1);
   --ease-draw:cubic-bezier(.3,.75,.3,1);
@@ -77,8 +100,12 @@
   --e2:0 13px 32px rgba(90,44,70,.17);   /* kalkık: bildirim, ipucu */
   --e3:0 10px 26px rgba(176,58,99,.3);   /* birincil eylem */
   --e-sheet:0 -18px 50px rgba(90,44,70,.15);
-  /* Tek gradyan, tek açı — aynı malzeme iki farklı açıda kullanılıyordu. */
-  --grad:linear-gradient(120deg,var(--rose),var(--rose-ink));
+  /* Birincil eylemin dolgusu. Gradyandı; ölçüm gradyanın beyaz etiketi
+     taşıyamadığını gösterdi: açık uçta kontrast 2.58:1, etiketin oturduğu
+     ortada ~3.5:1 — 16px kalın metin "büyük metin" saymıyor, 4.5:1 gerekiyor.
+     Açık ucu AA'ya çekmek gradyanı zaten dolu renk kadar koyu yapıyordu,
+     yani gradyanın tek gerekçesi (gece bandına tabi kalması) ortadan kalktı. */
+  --act:var(--rose-ink);
   /* Boşluk: 21 serbest px değeri vardı (1px'den 26px'e), tek token `--pad`di.
      4px ızgarası + tek bir 2px mikro adım. */
   --s0:2px; --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s7:32px;
@@ -137,7 +164,7 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 .dlab{font-size:11px;font-weight:700;fill:#5A2C46;letter-spacing:.02em}
 .hand{stroke:var(--rose);stroke-width:1.8;stroke-linecap:round}
 .handdot{fill:var(--rose)}
-.bead{transition:r var(--d3) var(--ease-spring),fill var(--d3) ease,opacity var(--d3) ease,stroke-width var(--d3) ease}
+.bead{transition:r var(--d3) var(--ease-out),fill var(--d3) ease,opacity var(--d3) ease,stroke-width var(--d3) ease}
 .late{animation:ping 1.8s ease-out infinite}
 @keyframes ping{0%{r:7;opacity:.5}70%,100%{r:15;opacity:0}}
 .tap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -196,14 +223,14 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 /* birincil: "Aldım" — daha önce kadranın üstünde görünmez bir dairedeydi */
 .take{flex:1 1 auto;min-width:0;height:54px;border:0;border-radius:999px;display:flex;align-items:center;
   justify-content:center;gap:var(--s2);padding:0 var(--s5);font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
-  background:var(--grad);box-shadow:var(--e3);
-  white-space:nowrap;transition:transform var(--d1) var(--ease-spring)}
+  background:var(--act);box-shadow:var(--e3);
+  white-space:nowrap;transition:transform var(--d1) var(--ease-out)}
 .take:active{transform:scale(var(--press-lg))}
 .take:disabled{opacity:.34;box-shadow:none}
 /* ikincil: metin etiketli — daha önce yalnız ikondu */
 .lbl{flex:1 1 0;min-width:0;height:44px;border-radius:var(--r-2);border:1px solid var(--cardline);background:var(--card);
   display:flex;align-items:center;justify-content:center;gap:var(--s2);font-family:inherit;font-size:var(--fs-3);
-  font-weight:500;color:var(--plum);white-space:nowrap;transition:transform var(--d1) var(--ease-spring)}
+  font-weight:500;color:var(--plum);white-space:nowrap;transition:transform var(--d1) var(--ease-out)}
 .lbl:active{transform:scale(var(--press))}
 .lbl svg{flex:0 0 auto}
 .lbl.skip{flex:0 0 auto;height:54px;padding:0 var(--s5);border-radius:999px;font-weight:700;color:var(--soft)}
@@ -215,7 +242,7 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   display:flex;align-items:center;justify-content:center;gap:var(--s2);
   font-family:inherit;font-size:var(--fs-3);font-weight:700;color:var(--rose-ink);
-  transition:transform var(--d1) var(--ease-spring)}
+  transition:transform var(--d1) var(--ease-out)}
 .add:active{transform:scale(var(--press))}
 .add svg{flex:0 0 auto}
 
@@ -223,11 +250,11 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
    az önce kullandığın eylem düğmelerinin üstünü kapatıyordu */
 .toast{position:fixed;left:14px;right:14px;max-width:calc(var(--shell) - 28px);margin-inline:auto;
   top:calc(env(safe-area-inset-top) + 76px);z-index:9;
-  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s3) var(--s3) var(--s3);border-radius:var(--r-2);background:#fff;
+  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s3) var(--s3) var(--s3);border-radius:var(--r-2);background:var(--paper-card);
   border:1px solid var(--cardline);box-shadow:var(--e2);
   font-size:var(--fs-3);font-weight:500;overflow:hidden;
   transform:translateY(calc(-100% - 96px));transition:transform var(--d3) var(--ease-both)}
-.toast.on{transform:translateY(0);transition:transform var(--d4) var(--ease-spring)}
+.toast.on{transform:translateY(0);transition:transform var(--d4) var(--ease-out)}
 .ticon{width:27px;height:27px;flex:0 0 auto;border-radius:50%;background:rgba(143,208,180,.26);
   display:grid;place-items:center}
 #toastMsg{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.3}
@@ -244,43 +271,47 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 @keyframes tcount{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
 /* sheet */
-.scrim{position:fixed;inset:0;z-index:5;background:rgba(90,44,70,.28);backdrop-filter:blur(7px);opacity:0;pointer-events:none;transition:var(--d2)}
+.scrim{position:fixed;inset:0;z-index:5;background:rgba(90,44,70,.28);backdrop-filter:blur(7px);
+  opacity:0;pointer-events:none;transition:opacity var(--d2) var(--ease-out)}
 .scrim.open{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:var(--shell);margin-inline:auto;
   z-index:6;background:#FFF6FA;border-radius:var(--r-4) var(--r-4) 0 0;
   padding:var(--s3) var(--s6) calc(env(safe-area-inset-bottom) + var(--s6));box-shadow:var(--e-sheet);
   transform:translateY(110%);transition:transform var(--d3) var(--ease-both);max-height:88vh;overflow-y:auto;will-change:transform}
-.sheet.open{transform:translateY(0);transition:transform var(--d4) var(--ease-spring)}
+.sheet.open{transform:translateY(0);transition:transform var(--d4) var(--ease-spring)}  /* fiziksel: sürüklenip bırakılıyor */
 .grab{width:38px;height:4px;border-radius:999px;background:var(--faint);margin:var(--s1) auto var(--s5)}
 .field{display:flex;gap:var(--s3);margin-bottom:var(--s3)}
 input[type=text],input[type=time]{flex:1;width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);
-  background:#fff;border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none}
+  background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none}
 input:focus{border-color:var(--rose2)}
 input::placeholder{color:rgba(90,44,70,.3)}
 .mini{width:52px;min-height:var(--hit);flex:0 0 auto;border-radius:var(--r-2);border:0;background:var(--rose-ink);display:grid;place-items:center}
 .mini:active{transform:scale(var(--press-sm))}
 .picks{display:flex;gap:var(--s3);flex-wrap:wrap;margin-bottom:var(--s4)}
-.pick{width:38px;height:38px;border-radius:50%;border:2px solid transparent;transition:var(--d2)}
+.pick{width:38px;height:38px;border-radius:50%;border:2px solid transparent;
+  transition:border-color var(--d2) var(--ease-out),transform var(--d2) var(--ease-out)}
 .pick.sel{border-color:var(--plum);transform:scale(1.12)}
-.shape{width:56px;height:48px;border-radius:var(--r-2);border:1.5px solid var(--line);background:#fff;display:grid;place-items:center}
+.shape{width:56px;height:48px;border-radius:var(--r-2);border:1.5px solid var(--line);background:var(--paper-card);display:grid;place-items:center}
 .shape.sel{border-color:var(--plum);border-width:2px}
 .days{display:flex;gap:var(--s2);margin-bottom:var(--s5)}
-.days button{flex:1;min-width:0;height:var(--hit);border-radius:var(--r-2);border:1.5px solid var(--line);background:#fff;
-  font-family:inherit;font-size:var(--fs-3);font-weight:700;color:var(--soft);transition:var(--d2)}
+.days button{flex:1;min-width:0;height:var(--hit);border-radius:var(--r-2);border:1.5px solid var(--line);background:var(--paper-card);
+  font-family:inherit;font-size:var(--fs-3);font-weight:700;color:var(--soft);
+  transition:background-color var(--d2) var(--ease-out),border-color var(--d2) var(--ease-out),
+    color var(--d2) var(--ease-out)}
 /* beyaz-üstü-açık-pembe 1.7:1 idi — mürekkep rengi 6.7:1 */
 .days button.on{background:var(--rose2);border-color:var(--rose-ink);color:var(--plum)}
 .days button:active{transform:scale(var(--press-sm))}
 .times{display:flex;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s5)}
-.chip{display:flex;align-items:center;gap:var(--s2);background:#fff;border:1.5px solid var(--line);
+.chip{display:flex;align-items:center;gap:var(--s2);background:var(--paper-card);border:1.5px solid var(--line);
   border-radius:var(--r-2);padding:var(--s2) var(--s3) var(--s2) var(--s3);font-size:var(--fs-3);font-weight:500;font-variant-numeric:tabular-nums}
 .chip button{border:0;background:none;padding:0;display:grid;place-items:center}
 /* beyaz-üstü-açık-pembe 2.4:1 idi — mürekkep ucu 5.8:1 */
 .save{width:100%;border:0;border-radius:999px;padding:var(--s5);font-family:inherit;font-size:var(--fs-4);font-weight:700;color:#fff;
-  background:var(--grad);transition:transform var(--d1)}
+  background:var(--act);transition:transform var(--d1)}
 .save:active{transform:scale(var(--press-lg))}
 .save:disabled{opacity:.3}
-.row{display:flex;align-items:center;gap:var(--s3);padding:var(--s3);border-radius:var(--r-2);background:#fff;margin-bottom:var(--s3);
-  border:1.5px solid var(--line);transition:transform var(--d1) var(--ease-spring),box-shadow var(--d2)}
+.row{display:flex;align-items:center;gap:var(--s3);padding:var(--s3);border-radius:var(--r-2);background:var(--paper-card);margin-bottom:var(--s3);
+  border:1.5px solid var(--line);transition:transform var(--d1) var(--ease-out),box-shadow var(--d2)}
 .row:active{transform:scale(var(--press-lg));box-shadow:var(--e1)}
 .row .txt{flex:1;min-width:0}
 .row b{display:block;font-size:var(--fs-4);font-weight:500;overflow-wrap:anywhere}
@@ -317,7 +348,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .eico{display:block;margin:0 auto var(--s3);opacity:.45}
 /* üst şerit: uyum · seri · ilaç sayısı */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s0) 0 var(--s5)}
-.st{background:#fff;border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s3) var(--s2);text-align:center;
+.st{background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s3) var(--s2);text-align:center;
   box-shadow:var(--e1)}
 .st b{display:block;font-size:var(--fs-5);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1.1}
 .st.k b{color:var(--rose-ink)}
@@ -351,10 +382,10 @@ input::placeholder{color:rgba(90,44,70,.3)}
 #bell.on .sic{background:rgba(240,138,174,.22)}
 /* su hedefi seçici */
 .goal{display:flex;align-items:center;justify-content:center;gap:var(--s5);margin:var(--s1) 0 var(--s5)}
-.gbtn{width:56px;height:56px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--line);background:#fff;
+.gbtn{width:56px;height:56px;flex:0 0 auto;border-radius:50%;border:1.5px solid var(--line);background:var(--paper-card);
   font-family:inherit;font-size:var(--fs-6);font-weight:500;color:var(--plum);line-height:1;
   display:grid;place-items:center;box-shadow:var(--e1);
-  transition:transform var(--d1) var(--ease-spring)}
+  transition:transform var(--d1) var(--ease-out)}
 .gbtn:active{transform:scale(var(--press-sm))}
 .gbtn:disabled{opacity:.28;box-shadow:none}
 .gnum{text-align:center;min-width:88px}
@@ -428,19 +459,20 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .page.on{opacity:1;transform:none;pointer-events:auto;
   transition:opacity var(--d3) ease,transform var(--d4) var(--ease-spring)}
 .tabs{position:relative;display:flex;gap:var(--s0);padding:var(--s1);border-radius:999px;background:var(--card);border:1px solid var(--cardline);flex:0 0 auto}
-.tabs .ind{position:absolute;top:3px;left:3px;width:44px;height:44px;border-radius:999px;background:#fff;
+.tabs .ind{position:absolute;top:3px;left:3px;width:44px;height:44px;border-radius:999px;background:var(--paper-card);
   box-shadow:var(--e1);transition:transform var(--d3) var(--ease-spring)}
 .tabs button{position:relative;z-index:1;width:44px;height:44px;border:0;border-radius:999px;background:none;
-  display:grid;place-items:center;opacity:.55;transition:opacity var(--d2) ease,transform var(--d2) var(--ease-spring)}
+  display:grid;place-items:center;opacity:.55;transition:opacity var(--d2) ease,transform var(--d2) var(--ease-out)}
 .tabs button.on{opacity:1}
 .tabs button:active{transform:scale(var(--press-sm))}
-.tabs button.on svg{animation:tabPop var(--d4) var(--ease-spring)}
-@keyframes tabPop{0%{transform:scale(.7) rotate(-14deg)}60%{transform:scale(1.14) rotate(4deg)}100%{transform:none}}
+.tabs button.on svg{animation:tabPop var(--d4) var(--ease-out)}
+/* dönme sallanmaydı — katalogdaki "icons that wobble" tell'i. Ölçek onayı kalıyor. */
+@keyframes tabPop{0%{transform:scale(.78)}58%{transform:scale(1.1)}100%{transform:none}}
 .dsum{animation:fadeUp var(--d4) var(--ease-out) both}
 
 /* diyet — günün özeti iki kartta: öğün halkası ve dolan bardak */
 .dsum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s3);margin-bottom:var(--s4)}
-.card{background:#fff;border:1.5px solid var(--line);border-radius:var(--r-3);padding:var(--s3) var(--s3);
+.card{background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-3);padding:var(--s3);
   box-shadow:var(--e1);display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:var(--s2);min-width:0}
 .cl{margin:0;font-size:var(--fs-2);font-weight:500;color:var(--soft);letter-spacing:.04em}
@@ -461,11 +493,11 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
 .w1{fill:#AFD6F0;animation:wave 3.4s linear infinite}
 .w2{fill:#7FB8E0;opacity:.5;animation:wave 2.2s linear infinite reverse}
 @keyframes wave{from{transform:translateX(0)}to{transform:translateX(-48px)}}
-.wtap{position:absolute;inset:0;border:0;background:none;border-radius:var(--r-2);transition:transform var(--d1) var(--ease-spring)}
+.wtap{position:absolute;inset:0;border:0;background:none;border-radius:var(--r-2);transition:transform var(--d1) var(--ease-out)}
 .wtap:active{transform:scale(var(--press-sm))}
 .wmin{position:absolute;right:0;bottom:0;z-index:2;width:38px;height:38px;border-radius:50%;
   /* görsel 38px kalsın, dokunma alanı 44px olsun */
-  border:1.5px solid var(--line);background:#fff;box-shadow:var(--e1);
+  border:1.5px solid var(--line);background:var(--paper-card);box-shadow:var(--e1);
   display:grid;place-items:center;transition:transform var(--d1)}
 .wmin::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:var(--hit);height:var(--hit);border-radius:50%}
@@ -477,7 +509,7 @@ circle.bead,text.dlab{transform-box:fill-box;transform-origin:center}
   mask-image:linear-gradient(180deg,#000 90%,transparent)}
 .meals::-webkit-scrollbar{display:none}
 textarea{width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);line-height:1.5;
-  background:#fff;border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;
+  background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;
   min-height:110px;resize:none;margin-bottom:var(--s3)}
 textarea:focus{border-color:var(--rose2)}
 .del{width:100%;border:0;border-radius:999px;padding:var(--s4);margin-top:var(--s3);font-family:inherit;font-size:var(--fs-3);
@@ -503,7 +535,7 @@ textarea:focus{border-color:var(--rose2)}
 .meal.now .mt::after{box-shadow:0 0 0 4px rgba(176,58,99,.16)}
 .meal.done .mt::after{background:var(--mint)}
 .meal.done .mt b{color:var(--soft)}
-.mb{background:#fff;border:1.5px solid var(--line);border-radius:var(--r-3);
+.mb{background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-3);
   padding:var(--s3) var(--s4);box-shadow:var(--e1)}
 .meal h3{margin:0 0 var(--s2);font-size:var(--fs-4);font-weight:700;display:flex;align-items:center;gap:var(--s2);min-width:0}
 .meal h3 .mn{min-width:0;overflow-wrap:anywhere}
@@ -516,7 +548,7 @@ textarea:focus{border-color:var(--rose2)}
 .food .t{min-width:0;overflow-wrap:anywhere;transition:text-decoration-color var(--d2)}
 .food .c{width:30px;height:30px;flex:0 0 auto;border-radius:50%;border:2px solid var(--faint);
   display:grid;place-items:center;
-  transition:background var(--d2),border-color var(--d2),transform var(--d1) var(--ease-spring)}
+  transition:background var(--d2),border-color var(--d2),transform var(--d1) var(--ease-out)}
 .food:active .c{transform:scale(var(--press-sm))}
 .food.ok{color:var(--soft)}
 .food.ok .t{text-decoration:line-through}
@@ -539,14 +571,14 @@ textarea:focus{border-color:var(--rose2)}
 .meal.done.open .msum .chev{transform:rotate(180deg)}
 .mnow{margin:0 0 var(--s2);font-size:var(--fs-2);font-weight:700;color:var(--rose-ink)}
 /* işaretlenen tik çizilerek gelsin — hepsi birden değil, sadece dokunulan */
-.food .c.just{animation:cpop var(--d3) var(--ease-spring)}
+.food .c.just{animation:cpop var(--d3) var(--ease-out)}
 @keyframes cpop{0%{transform:scale(1)}42%{transform:scale(1.24)}100%{transform:scale(1)}}
 .food .c.just svg path{stroke-dasharray:32;stroke-dashoffset:32;animation:tickdraw var(--d3) var(--ease-out) .05s forwards}
 @keyframes tickdraw{to{stroke-dashoffset:0}}
 
 :focus-visible{outline:3px solid var(--rose-ink);outline-offset:3px;border-radius:var(--r-2)}
 input[type=number]{flex:1;width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);
-  background:#fff;border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;-moz-appearance:textfield}
+  background:var(--paper-card);border:1.5px solid var(--line);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none;-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .name{text-shadow:0 2px 22px rgba(255,255,255,.55)}
 .note{margin:var(--s2) 0 0;font-size:var(--fs-3);color:var(--soft);font-style:italic}
@@ -560,7 +592,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .hdrow span{font-size:var(--fs-2);color:var(--rose-ink);font-weight:700}
 #a2hs{position:fixed;left:20px;right:20px;max-width:calc(var(--shell) - 40px);margin-inline:auto;
   bottom:calc(env(safe-area-inset-bottom) + 20px);z-index:7;
-  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-3);background:#fff;
+  display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);border-radius:var(--r-3);background:var(--paper-card);
   box-shadow:var(--e2);font-size:var(--fs-3);color:var(--soft);
   transform:translateY(140%);transition:transform var(--d3) var(--ease-out)}
 #a2hs.on{transform:translateY(0)}
