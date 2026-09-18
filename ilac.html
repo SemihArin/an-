@@ -97,7 +97,7 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 
 .app{position:relative;z-index:1;height:100%;width:100%;max-width:var(--shell);margin-inline:auto;
   display:flex;flex-direction:column;
-  padding:calc(env(safe-area-inset-top) + 18px) var(--pad) calc(env(safe-area-inset-bottom) + 22px)}
+  padding:calc(env(safe-area-inset-top) + var(--s5)) var(--pad) calc(env(safe-area-inset-bottom) + var(--s6))}
 
 /* üst şerit — saat/tarih istiflenir, 320px'de taşmaz */
 .top{display:flex;align-items:center;gap:var(--s3);min-width:0}
@@ -225,10 +225,10 @@ body{background:var(--bg);color:var(--plum);font-family:"DM Sans",-apple-system,
 .scrim.open{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:var(--shell);margin-inline:auto;
   z-index:6;background:#FFF6FA;border-radius:var(--r-4) var(--r-4) 0 0;
-  padding:12px 24px calc(env(safe-area-inset-bottom) + 26px);box-shadow:var(--e-sheet);
+  padding:var(--s3) var(--s6) calc(env(safe-area-inset-bottom) + var(--s6));box-shadow:var(--e-sheet);
   transform:translateY(110%);transition:transform var(--d3) var(--ease-both);max-height:88vh;overflow-y:auto;will-change:transform}
 .sheet.open{transform:translateY(0);transition:transform var(--d4) var(--ease-spring)}
-.grab{width:38px;height:4px;border-radius:999px;background:var(--faint);margin:4px auto 20px}
+.grab{width:38px;height:4px;border-radius:999px;background:var(--faint);margin:var(--s1) auto var(--s5)}
 .field{display:flex;gap:var(--s3);margin-bottom:var(--s3)}
 input[type=text],input[type=time]{flex:1;width:100%;font-family:inherit;font-size:var(--fs-4);font-weight:500;color:var(--plum);
   background:#fff;border:1.5px solid rgba(90,44,70,.08);border-radius:var(--r-2);padding:var(--s4) var(--s4);outline:none}
@@ -291,7 +291,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .lnk{border:0;background:none;font-family:inherit;font-size:var(--fs-2);font-weight:700;color:var(--rose-ink);
   min-height:var(--hit);padding:0 var(--s1);display:inline-flex;align-items:center}
 .empty em{display:block;margin-top:var(--s2);font-style:normal;font-size:var(--fs-2);opacity:.75}
-.eico{display:block;margin:0 auto 10px;opacity:.45}
+.eico{display:block;margin:0 auto var(--s3);opacity:.45}
 /* üst şerit: uyum · seri · ilaç sayısı */
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2);margin:var(--s0) 0 var(--s5)}
 .st{background:#fff;border:1.5px solid var(--hair);border-radius:var(--r-2);padding:var(--s3) var(--s2);text-align:center;
@@ -309,7 +309,7 @@ input::placeholder{color:rgba(90,44,70,.3)}
 .hdrow span.lgd{display:inline-flex;align-items:center;gap:var(--s1);
   font-size:var(--fs-1);color:var(--soft);font-weight:500}
 .lgd i{flex:0 0 auto;display:inline-block}
-.lgd i.m{width:6px;height:11px;border-radius:3px;background:var(--rose)}
+.lgd i.m{width:6px;height:11px;border-radius:999px;background:var(--rose)}
 .lgd i.w{width:9px;height:9px;border-radius:50%;background:#7FB8E0}
 .lgd em{font-style:normal;margin-right:var(--s2)}
 /* nokta göstergesinin karşılığı */

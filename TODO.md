@@ -453,42 +453,78 @@ Bu bölüm tasarım bitince doldurulacak; şimdilik mevcut durumun tespiti.
 
 ## Generic AI görünümü var mı?
 
-- [ ] **Kısmen var.** Lehine: WebGL 3B kalp/hap, 24 saatlik kadran, Fraunces
-      başlıklar — bunlar şablon değil. Aleyhine: (a) gradyan dolu pil düğme,
-      (b) beyaz yuvarlak kart listesi, (c) tek doygunlukta pastel pembe
-      monokrom. Üçü de "AI frontend" imzası. Gradyan ve kart bu yol
-      haritasında ele alınıyor.
-- [ ] Tasarım bitince yeniden değerlendir.
+- [x] **Büyük ölçüde temizlendi.** Üç imzadan ikisi gitti: beyaz kart listesi
+      günün zaman çizelgesine dönüştü, pastel monokrom gece bandıyla kırıldı.
+      **Kalan:** gradyan dolu pil düğme (`--grad`) hâlâ orada. Bilinçli bıraktım
+      — sahibinin sevdiği pembe kimliğin taşıyıcısı ve tek bir role indirgendi
+      (yalnız birincil eylem). Yine de en klişe parça bu; alternatif denenmeli.
 
 ## Tüm bileşenler aynı dili konuşuyor mu?
 
-- [ ] **Hayır.** Ölçülen çatışmalar: iki yüzey dili (cam vs dolu beyaz, kuralsız),
-      aynı gradyanın iki açısı, dört kenarlık rengi, dört kenarlık kalınlığı,
-      14 yarıçap, 13 gölge, 22 font boyutu, 11 düğme sınıfı, 8 farklı `:active`
-      ölçeği.
-- [ ] Tasarım bitince yeniden değerlendir.
+- [x] **Artık büyük ölçüde evet.** Son sayım: **9 tipografi token'ı** (+2
+      bilinçli istisna, SVG kullanıcı-uzayı), **4 yarıçap** (+`999px`/`50%`),
+      **3+1 gölge**, **8 boşluk adımı** — stil sayfasında serbest px kalmadı.
+      Gradyan tek token, tek açı. Yüzey kuralı (cam = canvas üstü krom,
+      dolu = içerik) CSS'e yazıldı. Düğme sınıfı 11 → 8.
+      **Kalan:** dört kenarlık rengi ve dört kenarlık kalınlığı hâlâ duruyor;
+      `:active` ölçeği hâlâ 8 ayrı değer. İkisi de token'lanmadı.
 
 ## Mobil deneyim iyi mi?
 
-- [ ] **Büyük ölçüde iyi.** 390px'de düzen sağlıklı, 44px hedefler tutuyor,
-      kaydırma hareketleri var, `env(safe-area-inset-*)` kullanılıyor.
-      Eksikler: kadran/hap çakışması, üst şerit sıkışıklığı, öğün kartı
-      yoğunluğu.
-- [ ] **Doğrulanmamış:** gerçek telefonda hiç test edilmedi. iOS Safari'de
-      `env()` davranışı, PWA standalone modu ve düşük donanımda animasyon
-      akıcılığı bu kum havuzundan ölçülemiyor.
-- [ ] Tasarım bitince yeniden değerlendir.
+- [x] **Daha iyi.** Kadran/hap çakışması ve üst şerit sıkışıklığı çözüldü;
+      44px eşiğinin altında hedef kalmadı; sekiz ekran boyutunda çakışma yok.
+      **Kalan:** öğün listesinin yoğunluğu hâlâ düşük — 390×844'te aynı anda
+      ~1.5 öğün görünüyor, dört öğünlük bir gün için çok kaydırma demek.
+- [ ] **Hâlâ doğrulanmamış:** gerçek telefonda test edilmedi. iOS Safari'de
+      `env()`, PWA standalone modu ve düşük donanımda akıcılık bu kum
+      havuzundan ölçülemiyor. Bu, listedeki en büyük bilinmeyen.
 
 ## Görsel hiyerarşi doğru mu?
 
-- [ ] **Hayır — en büyük sorun bu.** Ekranı kaplayan yüzeyler 0.58–0.90
-      parlaklık bandında; düğmeden büyük koyu alan yok. Kadran ile hap aynı
-      yeri paylaşıp birbirini siliyor. İki tabın birincil eylemi aynı görünüyor.
-- [ ] Tasarım bitince yeniden değerlendir.
+- [x] **Artık evet, ilaç ekranında.** Gece bandı odak noktası oldu (parlaklık
+      0.107, kâğıda karşı 5.16:1); kadran ile hap ayrıştı; sıralama net:
+      kadran → ilaç adı → saat → eylem.
+      **Kalan:** iki tabın birincil eylemi hâlâ aynı görünüyor — "Aldım"
+      (günün ana eylemi) ile "Öğün ekle" (ayarlama işi) aynı gradyan pil.
+      Bunu çözmedim.
 
 ---
 
 ## Son tasarım eleştirisi
 
-- [ ] Tüm işler bitince yazılacak: ne çalıştı, ne çalışmadı, ne yarım kaldı,
-      hangi kararı geri almak gerekir. Ölçümle, tahminle değil.
+**Ne işe yaradı.** En büyük kazanç tek bir karardan geldi: gece bandını görünür
+yapmak. Ekranın eksiği renk değil değerdi, ve onu konudan türeyen tek bir yere
+koymak (gece = uyku = ilaç alınmayan saatler) hem hiyerarşiyi kurdu hem kadranı
+kahraman yaptı. İkinci kazanç öğün listesinin zaman çizelgesine dönüşmesi:
+"aynı kutudan dört tane" gitti, günün kendisi geldi.
+
+**Ne işe yaramadı / geri alındı.** Yol haritasına "tüm paleti saate göre kaydır"
+yazmıştım; uygularken vazgeçtim, çünkü cesareti ekrana yaymak kimliği bozuyordu.
+320px'deki üst şerit sıkışıklığını önce aralık kısarak yamadım — yanlış çözümdü,
+sonra zili ayarlara taşıyınca kök neden gitti ve yamayı geri aldım.
+
+**Üç tespitim yanlıştı, üçü de düzeltildi.** (1) Cam/dolu yüzey çelişkisi diye
+işaretlediğim şey aslında tutarlıydı, kuralı yazmak yetti. (2) Su kartının `−`
+düğmesi kart kenarına binmiyordu — 26px içeride. (3) Sekme hover'ı "çalışmıyor"
+dedim, çalışıyordu; bu kum havuzunda geçiş ilk karesini ~540ms sonra alıyor.
+Üçü de ölçmeden bakınca doğru görünüyordu; ders şu ki "bakmak" da bir ölçüm
+değil, ölçmenin yerini tutmuyor.
+
+**İki gerçek hata çıktı, ikisi de benim.** `--grad:var(--grad)` kendine referans
+verip bütün birincil düğmelerin arka planını sildi — geometri ölçümü bunu
+göremezdi, boyayı okumak gerekti. Ve `.done` sınıf çakışması tamamlanan öğün
+kartlarını listeden tamamen siliyordu; bu bugünün işi değil, gün-bitti ekranını
+eklediğim önceki turdan kalmış.
+
+**Yarım kalanlar (dürüst liste).**
+1. Gerçek telefonda hiç denenmedi. En büyük bilinmeyen bu.
+2. İki tabın birincil eylemi hâlâ aynı görünüyor.
+3. Gradyan dolu pil düğme — en klişe parça, bilinçli bırakıldı.
+4. Öğün listesinin yoğunluğu düşük; dört öğünlük günde çok kaydırma.
+5. Kenarlık rengi/kalınlığı ve `:active` ölçekleri token'lanmadı.
+6. İlaç ekranında kadranın üstünde ve altında geniş boş alan var — sakin ama
+   kompozisyon biraz savruk.
+
+**Geri almayı düşünmem gereken karar:** hapı kadranın merkezine koymak. Şu an
+iyi duruyor, ama kadran gerçekten kahramansa merkezinde ikinci bir parlak nesne
+olması gerekmeyebilir. Telefonda görülmeden karar verilmemeli.
