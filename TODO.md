@@ -117,8 +117,8 @@ Bunlar korunacak — bozulmamaları öncelikli.
 - [ ] **P1 · Dört ayrı kenarlık rengi.** `--cardline` (beyaz .9), `--hair`
       (.08), `--faint` (.12) ve satır içi `rgba(90,44,70,.05)`. Aralarındaki
       fark görünmüyor ama dört ayrı karar olarak yaşıyorlar.
-- [ ] **P1 · Kenarlık kalınlığı dört değer:** 1px, 1.5px, 2px, 2.5px
-      (+ SVG'de 2.4px).
+- [x] **P1 · Kenarlık kalınlığı** dörtten üçe indi: 2.5px kaldırıldı. Kalan üçü
+      ayrı rollerde — 1px cam kenarı, 1.5px yüzey, 2px kontrol/seçili.
 - [ ] **P2 · Tek panelde dört yarıçap.** `sheetAdd` içinde: input 16px,
       `.days button` 13px, `.shape` 15px, `.pick` %50, `.mini` 16px.
 - [ ] **P2 · Birincil eylem iki tabda aynı görünüyor.** İlaç tabında "Aldım"
@@ -158,8 +158,10 @@ Bunlar korunacak — bozulmamaları öncelikli.
 - [ ] **P1** Sabah/akşam için ara ton gerekli mi karar ver. *Neden:* şu an ikili
       (gece/gündüz); üçüncü bir ton hiyerarşiyi güçlendirebilir ya da
       gürültü yapabilir — ölçülerek denenecek.
-- [ ] **P1** Dört kenarlık rengini iki role indir: `--line` (yapısal) ve
-      `--line-soft` (dekoratif).
+- [x] **P1** Dört kenarlık tonu (.05/.08/.12/.28) **iki role** indi:
+      `--line` (yapısal ince çizgi) ve `--line-strong` (vurgulu kenar).
+      14 bildirim token'a bağlandı, kullanılmayan `--hair` silindi.
+      `--cardline` ayrı bırakıldı — o cam yüzeyin beyaz kenarı, başka malzeme.
 - [ ] **P2** `--mint`in rolünü tanımla: şu an hem "tamamlandı" hem "gün bitti"
       hem tik rengi; tek anlama bağla.
 - [ ] Kontrast: paleti değiştirdikten sonra tüm metin/zemin çiftlerini **yeniden
@@ -335,11 +337,17 @@ Desktop kırılımı **yok**.
       `.save`/`.take` ve `.mini`/`.gbtn` birleştirilebilir — ayrı bir geçişte.
 - [x] **P1** Gradyan `--grad` token'ı oldu, tek açı (120°). `.btn.key`in
       135°'si bu token'a bağlandı.
-- [ ] **P2** "Aldım" ile "Öğün ekle" ayrımını kur. *Neden:* ana eylem ile
-      ayarlama eylemi aynı görünmemeli.
-- [ ] **P2** Gradyanın kendisini sorgula: `linear-gradient(120deg, açık pembe,
-      koyu pembe)` dolu düğme, tam olarak kaçınmak istediğimiz klişe. Alternatif
-      dene (dolu tek renk + renkli gölge, ya da malzeme farkı).
+- [x] **P2** "Aldım" ile "Öğün ekle" ayrıldı. Diyet sekmesindeki düğme yeni
+      `.add` sınıfına geçti: cam yüzey, rose-ink metin (ölçülen kontrast
+      **5.47:1**), 44px. Birincil dolgu artık tek bir eyleme ayrılmış —
+      günün asıl işi olan doz almaya.
+- [x] **P2 · Gradyan sorgulandı, ölçüldü, kalmasına karar verildi.** Dolu
+      `--rose-ink` alternatifini kurup ekrandaki ağırlığını ölçtüm: gradyanlı
+      düğmenin ortalama parlaklığı **0.270**, dolu hali **0.159**, gece bandı
+      **0.107**. Yani dolu dolgu, ekranın odak noktası olması gereken gece
+      bandıyla neredeyse aynı ağırlıkta ikinci bir koyu kütle yaratıyor.
+      Gradyan daha açık kaldığı için banda tabi kalıyor. Klişe olması pahasına
+      doğru karar bu — ve artık gerekçesi ölçüm, tahmin değil.
 
 ## Form elemanları
 
@@ -438,9 +446,9 @@ oturuyor (`--ease-spring`). Korunacak.
 `:active` ölçek geri bildirimi neredeyse her etkileşimli öğede var
 (`.86`–`.985` arası). Korunacak.
 
-- [ ] **P2** Ölçek değerlerini standartlaştır: şu an .86, .88, .9, .92, .93,
-      .94, .97, .985 = 8 ayrı değer. İki-üç role indir (küçük kontrol /
-      düğme / büyük yüzey).
+- [x] **P2** 15 ayrı `:active` ölçek bildirimi **3 role** indi:
+      `--press-sm:.90` (ikon düğmesi, daire, sekme) · `--press:.94` (standart
+      düğme) · `--press-lg:.97` (birincil pil, liste satırı).
 - [ ] **P3** Tik çizilme animasyonu (`cpop` + `tickdraw`) yalnızca öğün
       maddelerinde var; kadran beadlerinde ve geçmiş düzenlemede de olmalı mı
       karar ver. *Neden:* aynı eylemin geri bildirimi her yerde aynı olmalı.
@@ -473,8 +481,10 @@ Bu bölüm tasarım bitince doldurulacak; şimdilik mevcut durumun tespiti.
 
 - [x] **Daha iyi.** Kadran/hap çakışması ve üst şerit sıkışıklığı çözüldü;
       44px eşiğinin altında hedef kalmadı; sekiz ekran boyutunda çakışma yok.
-      **Kalan:** öğün listesinin yoğunluğu hâlâ düşük — 390×844'te aynı anda
-      ~1.5 öğün görünüyor, dört öğünlük bir gün için çok kaydırma demek.
+      Öğün listesi yoğunluğu da çözüldü: biten öğünler kapanıyor (Kahvaltı
+      290px → **114px**), dokununca geri açılıyor. Dört öğünlük bir günde toplam
+      liste ~900px'den **655px**'e indi ve aynı anda üç öğün görünüyor. Son madde
+      işaretlendiğinde kart parmağın altında kapanmıyor.
 - [ ] **Hâlâ doğrulanmamış:** gerçek telefonda test edilmedi. iOS Safari'de
       `env()`, PWA standalone modu ve düşük donanımda akıcılık bu kum
       havuzundan ölçülemiyor. Bu, listedeki en büyük bilinmeyen.
@@ -516,14 +526,27 @@ göremezdi, boyayı okumak gerekti. Ve `.done` sınıf çakışması tamamlanan 
 kartlarını listeden tamamen siliyordu; bu bugünün işi değil, gün-bitti ekranını
 eklediğim önceki turdan kalmış.
 
+**Sonradan kapatılanlar.** İlk eleştiriyi yazdıktan sonra listenin beş
+maddesi kapandı: iki tabın eylem hiyerarşisi ayrıldı, öğün listesi yoğunluğu
+çözüldü (biten öğünler kapanıyor), kenarlık rengi/kalınlığı ve `:active`
+ölçekleri token'landı. Gradyan maddesi ise *kapanmadı ama karara bağlandı* —
+ölçüm bırakmaktan yana çıktı (aşağıda).
+
 **Yarım kalanlar (dürüst liste).**
-1. Gerçek telefonda hiç denenmedi. En büyük bilinmeyen bu.
-2. İki tabın birincil eylemi hâlâ aynı görünüyor.
-3. Gradyan dolu pil düğme — en klişe parça, bilinçli bırakıldı.
-4. Öğün listesinin yoğunluğu düşük; dört öğünlük günde çok kaydırma.
-5. Kenarlık rengi/kalınlığı ve `:active` ölçekleri token'lanmadı.
-6. İlaç ekranında kadranın üstünde ve altında geniş boş alan var — sakin ama
+1. **Gerçek telefonda hiç denenmedi.** En büyük bilinmeyen bu ve bu kum
+   havuzundan kapatılamaz. iOS Safari'de `env(safe-area-inset-*)`, PWA
+   standalone modu, düşük donanımda WebGL akıcılığı.
+2. Gradyan dolu pil düğme duruyor. Klişe, ama alternatifi ölçtüm: dolu dolgu
+   gece bandıyla aynı ağırlıkta ikinci bir koyu kütle yaratıyor. Bırakmak
+   bilinçli; yine de daha iyi üçüncü bir yol olabilir.
+3. İlaç ekranında kadranın üstünde ve altında geniş boş alan var — sakin ama
    kompozisyon biraz savruk.
+4. İki özet kartında sayının konumu farklı (halkanın içinde vs bardağın
+   altında). İşaretleri aynılaştırmak yanlış olur, ama sayı hizası
+   düzeltilebilir.
+5. Bildirimler yalnız sayfa açıkken çalışıyor; arka plan hatırlatıcısı için
+   service worker gerekir, tek dosyada mümkün değil. Tasarım işi değil ama
+   kullanıcının beklentisini etkiler.
 
 **Geri almayı düşünmem gereken karar:** hapı kadranın merkezine koymak. Şu an
 iyi duruyor, ama kadran gerçekten kahramansa merkezinde ikinci bir parlak nesne
