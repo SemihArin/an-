@@ -1,0 +1,123 @@
+[
+  {
+    "date": "2026-09-18",
+    "scope": "single-page",
+    "verb": "audit + fix",
+    "macrostructure": "n/a — uygulama, sayfa değil",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "Tier-A — kadran merkezinde 3B hap",
+    "brief": "İlaç · anti-pattern denetimi: damga düzeltildi, beyaz yüzeyler tonlandı, transition-all kapatıldı, yaylanma fiziksel olanla sınırlandı, birincil dolgu AA'ya çekildi"
+  },
+  {
+    "date": "2026-09-17",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "Tier-A — 3B kalp, yörüngeli sarmal giriş",
+    "brief": "İlaç · açılış: aşağıdan merkez etrafında kovalayarak dönüp yükselen iki yarım"
+  },
+  {
+    "date": "2026-09-17",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "Tier-A — WebGL ışın izlemeli 3B kalp, mevcut motorda",
+    "brief": "İlaç · açılış: 3B kalbin iki yarısının dönerek birleşmesi"
+  },
+  {
+    "date": "2026-09-17",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "Tier-A — iki yarım kalp, saf CSS/SVG",
+    "brief": "İlaç · açılış ekranı: ortak eksende dönerek birleşen iki yarım kalp"
+  },
+  {
+    "date": "2026-09-17",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none",
+    "brief": "İlaç · hareket sistemi, düzen animasyonlarının GPU'ya taşınması, kaydırmalı sekme"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "E-none — gün bitti işareti el yapımı SVG",
+    "brief": "İlaç · gün bitti ekranı ve bildirim şeridinin yeniden konumlanması"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none",
+    "brief": "İlaç · ölü geçişler, geriye dönük düzeltme, stok ve gece yarısı hataları"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none",
+    "brief": "İlaç · ayarlar su hedefine indi, diyete haftalık geçmiş, dokunma ve render hataları"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none — haftalık grafik ve uyum noktaları el yapımı",
+    "brief": "İlaç · İlaçlarım paneli, uyum istatistikleri ve form bölümleri"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "E-none — açılış sekansı + dalga dolumu el yapımı SVG/CSS",
+    "brief": "İlaç · açılış sekansı, sayfa geçişleri ve diyet sekmesinin yeniden kurgusu"
+  },
+  {
+    "date": "2026-09-16",
+    "scope": "single-page",
+    "verb": "redesign",
+    "macrostructure": "n/a — uygulama, sayfa değil (düzeltildi: damga yanlıştı)",
+    "genre": "playful",
+    "theme": "custom (brand-preserved)",
+    "theme_axes": "light / roman-serif / warm",
+    "enrichment": "none — mevcut WebGL zemin korundu",
+    "brief": "İlaç · ilaç ve diyet takip PWA'sı — kullanılabilirlik ve kontrast geçişi"
+  }
+]
