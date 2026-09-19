@@ -181,25 +181,46 @@ hatası değil. Düzeltildi.
 
 Birinci turdan devreden ve kodla kapatılamayan / karar bekleyen maddeler.
 
-- [ ] **A1 · Gerçek telefonda test.** Hiç yapılmadı, bu ortamdan yapılamaz.
-      iOS Safari'de `env(safe-area-inset-*)`, PWA standalone modu, düşük
-      donanımda WebGL akıcılığı. **Listedeki en büyük bilinmeyen.**
-- [ ] **A2 · Kadran çevresindeki boşluk.** İlaç ekranında kadranın üstünde ~97px,
-      altında ~81px boşluk var. Sakin mi savruk mu — telefonda görülmeden
-      karar verilmemeli.
-- [ ] **A3 · İki özet kartında sayı konumu farklı** (halkanın içinde vs bardağın
-      altında). İşaretleri aynılaştırmak yanlış olur — her biri kendi verisine
-      uygun — ama sayı hizası düzeltilebilir.
-- [ ] **A4 · Hapın kadran merkezindeki yeri.** Geri almayı düşünmem gereken
-      karar bu. Kadran kahramansa merkezinde ikinci bir parlak nesne
-      gerekmeyebilir. Telefonda görülmeden karar verme.
-- [ ] **A5 · Arka plan bildirimleri.** Service worker gerekiyor, yani ayrı bir
-      `.js` dosyası. Uygulamanın tek dosya olması kurulumun temeli; bu bir
-      **ürün kararı**, tek başıma vermem doğru olmaz.
-- [ ] **A6 · Test takımı kalıcı değil.** Playwright kontrolleri (15 davranış +
-      8 ekran boyutu + kontrast/animasyon ölçümleri) scratchpad'de, konteynerle
-      birlikte kaybolacak. Üç gerçek hata buldu. Repoya `test/` olarak
-      eklenebilir ama node bağımlılığı demek — **kullanıcının kararı.**
+- [x] **A1 · Gerçek telefonda test** — *kapsam dışı bırakıldı (kullanıcı kararı).*
+      Düşük donanım bir endişe değil; genel telefon testi gerekmiyor.
+- [x] **A2 · Kadran çevresindeki boşluk** — *sakinlik korunacak (kullanıcı kararı).*
+      Üstte ~97px, altta ~81px kalıyor; doldurulmayacak.
+- [x] **A3 · İki özet kartında sayı konumu farklı.** İki varyant render edilip
+      karşılaştırıldı; **sayı ikisinde de işaretin altına** alındı, yani ortak
+      iskelet `[işaret] / [sayı] / [etiket]`. Halka saf gösterge oldu (78→62px),
+      bardak da küçüldü (44×60 → 40×54). Yan kazanç: kartlar kısaldı, öğün
+      listesine yer açıldı. Kontrast yeniden ölçüldü, değişmedi.
+- [~] **A4 · Hapın kadran merkezindeki yeri.** Üç varyant render edildi
+      (şimdiki · hapsız · %62 küçük) ve kullanıcıya sunuldu. **Karar bekliyor.**
+      Öneri: küçük varyant — el işçiliği kalıyor, kadran nefes alıyor, gece bandı
+      tek ağır kütle olmayı sürdürüyor.
+- [x] **A5 · Arka plan bildirimleri — tek dosyada mümkün değil, ölçüldü.**
+      Gerçek bir origin üzerinde denendi: `blob:` ve `data:` URL'den service
+      worker kaydı tarayıcı tarafından reddediliyor (`TypeError: The URL protocol
+      of the script is not supported`). SW'siz alternatif olan zamanlanmış
+      bildirim API'si de yok (`Notification.prototype.showTrigger` ve
+      `TimestampTrigger` tanımsız — Chrome'dan kaldırıldı). `periodicSync` var
+      ama o da bir SW gerektiriyor.
+      **Sonuç:** ikinci bir `sw.js` dosyası olmadan çözüm yok. Uygulama onsuz
+      da çalışır; dosya varsa arka plan hatırlatıcısı kazanır. Kullanıcıya
+      sunuldu, karar bekliyor.
+- [x] **A6 · Test takımı repoya alındı.** `test/` altında beş takım, ortak
+      yardımcılar (`lib.mjs`) ve tek koşturucu (`npm test`): **94 kontrol,
+      hepsi geçiyor.** `node_modules` yoksayılıyor, uygulama hâlâ tek dosya —
+      test klasörü bağımsız.
+
+      *Takımı yazarken dört kendi hatamı yakaladım, dördü de ölçüm tuzağı:*
+      (1) `settle()` "şu an animasyon yok" dediği için açılış sekansı başlamadan
+      dönüyordu — testler perde altına tıklıyordu; artık `booted`ı bekliyor.
+      (2) `booted` betiğin tepesinde `let` ile tanımlı, yani `window.booted`
+      daima `undefined` — global sözcüksel ortamdan okumak gerekti.
+      (3) Sabit `waitForTimeout` yerine durum beklemek gerekti.
+      (4) Kontrast testi birincil düğmeyi panel açıkken ölçüyordu, düğme yerine
+      panelin yüzeyini okuyordu.
+- [x] **A7 · Yan bulgu: su hedefte sınırlanıyor** (`Math.min(goal, cur+1)`).
+      10 bardak içilse 8'de duruyor. Kasıtlı görünüyor (hedef kutlaması buna
+      bağlı) ve dokunmadım, ama teste açık bir kontrol olarak yazıldı ki
+      ileride kazara değişirse fark edilsin.
 
 ---
 
