@@ -3,13 +3,24 @@
     ".read": false,
     ".write": false,
 
-    "devices": {
-      "$did": {
-        ".read": false,
+    "_aciklama": [
+      "Okuma yalnız panel hesabına açık: PANEL_UID yerine Firebase Console →",
+      "Authentication → Users listesindeki kullanıcı UID'sini yaz.",
+      "Yazma kimliksiz kalıyor, çünkü uygulamada giriş yok — kayıtlar yalnız",
+      "oluşturulabiliyor, üzerine yazılamıyor ve silinemiyor."
+    ],
 
+    "panel": {
+      ".read":  "auth != null && auth.uid === 'PANEL_UID'",
+      ".write": "auth != null && auth.uid === 'PANEL_UID'"
+    },
+
+    "devices": {
+      ".read": "auth != null && auth.uid === 'PANEL_UID'",
+
+      "$did": {
         "events": {
           "$batch": {
-            ".read": false,
             ".write": "!data.exists() && newData.exists()",
             ".validate": "newData.hasChildren(['e','n']) && newData.child('n').isNumber() && newData.child('n').val() > 0 && newData.child('n').val() <= 60"
           }
@@ -17,7 +28,6 @@
 
         "sessionEnds": {
           "$id": {
-            ".read": false,
             ".write": "!data.exists() && newData.exists()",
             ".validate": "newData.hasChildren(['end','durMs'])"
           }
@@ -25,7 +35,6 @@
 
         "sessions": {
           "$sid": {
-            ".read": false,
             ".write": "newData.exists()",
             ".validate": "newData.hasChildren()",
             "start":    { ".validate": "newData.isNumber()" },

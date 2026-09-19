@@ -9,7 +9,7 @@ birim testi yok; hepsi gerçek tarayıcıda çalışan davranış ve ölçüm ko
 cd test
 npm install
 npm test              # hepsi
-npm test -- a11y      # tek takım: behaviour | a11y | layout | contrast | motion
+npm test -- a11y      # tek takım: behaviour | a11y | layout | contrast | motion | panel
 ```
 
 Chromium yolu `CHROMIUM_PATH` ile verilebilir; verilmezse Playwright'ın kendi
@@ -23,6 +23,7 @@ indirdiği sürüm kullanılır.
 | `a11y` | Kontrol adları, Tab dolaşımı, odak halkası, panel odak tuzağı, Escape, odağın geri dönmesi, canlı bölge, diyalog semantiği |
 | `layout` | Sekiz ekran boyutunda kadran/foot çakışması, dokunma hedefinin kadrana hizası, yatay kaydırma, düğmenin kabuğa sığması |
 | `contrast` | Metin/zemin oranları (WCAG AA 4.5:1) ve birincil düğmenin beyaz etiketi |
+| `panel` | `panel.html`: sahte Firebase verisiyle giriş, cihaz listesi, beş grafik, efsane, tablo görünümü, tam sayı eksen, gezinme ipucu. Ayrıca cihaz kimliğinin kalıcılığı: localStorage ve çerezin birbirini kurtarması, `?did=` ile çakma ve URL'den silinmesi, geçersiz değerin reddi |
 | `motion` | Açılış sekansı, hapın kadrana hizası (yeniden boyutlandırma dahil), sekme geçişi, biten öğünün kapanması, geri alma sayacının süresi, hareket azaltma yolu |
 
 ## Neden bu şekilde yazıldı

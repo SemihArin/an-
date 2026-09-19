@@ -5,9 +5,10 @@ import a11y from './a11y.mjs';
 import layout from './layout.mjs';
 import contrast from './contrast.mjs';
 import motion from './motion.mjs';
+import panel from './panel.mjs';
 
 const only = process.argv[2];
-const ALL = { behaviour, a11y, layout, contrast, motion };
+const ALL = { behaviour, a11y, layout, contrast, motion, panel };
 const pick = only ? { [only]: ALL[only] } : ALL;
 if (only && !ALL[only]) {
   console.error(`Bilinmeyen takım: ${only}. Seçenekler: ${Object.keys(ALL).join(', ')}`);

@@ -947,7 +947,40 @@ const TELE=(function(){
     try{if(window.crypto&&crypto.randomUUID)return crypto.randomUUID()}catch(e){}
     return 'x'+now().toString(36)+Math.random().toString(36).slice(2,10);
   }
-  try{did=localStorage.getItem(DK)||'';if(!did){did=uid();localStorage.setItem(DK,did)}}catch(e){did='tmp-'+uid()}
+  /* Çerez okuma/yazma — localStorage temizlense de kimlik hayatta kalsın. */
+  function ck(name,val){
+    try{
+      if(val===undefined){
+        const m=document.cookie.match('(?:^|; )'+name.replace(/\./g,'\\.')+'=([^;]*)');
+        return m?decodeURIComponent(m[1]):'';
+      }
+      document.cookie=name+'='+encodeURIComponent(val)+'; max-age=34560000; path=/; samesite=lax';
+    }catch(e){}
+    return '';
+  }
+  /* Cihaz kimliği. Her tarayıcı ve profil kendi kimliğini ürettiği için panelde
+     çok sayıda cihaz birikiyordu. Üç önlem:
+       1. `?did=...` ile kimliği bir kez o cihaza çakmak (parametre sonra URL'den
+          siliniyor, kullanıcı hiçbir şey görmüyor),
+       2. localStorage ve çerezde birlikte saklamak — biri temizlenirse öteki
+          kurtarır,
+       3. hangisinde bulunduysa ikisine de geri yazmak. */
+  try{
+    let pinned='';
+    try{
+      const u=new URLSearchParams(location.search);
+      const v=(u.get('did')||'').trim();
+      if(v&&/^[A-Za-z0-9._-]{6,64}$/.test(v)){
+        pinned=v;u.delete('did');
+        const q=u.toString();
+        history.replaceState(null,'',location.pathname+(q?'?'+q:'')+location.hash);
+      }
+    }catch(e){}
+    let ls='';try{ls=localStorage.getItem(DK)||''}catch(e){}
+    did=pinned||ls||ck(DK)||uid();
+    try{localStorage.setItem(DK,did)}catch(e){}
+    ck(DK,did);
+  }catch(e){did='tmp-'+uid()}
   sid=uid();
   try{const r=localStorage.getItem(QK);if(r)q=JSON.parse(r)||[]}catch(e){q=[]}
   const persist=()=>{try{localStorage.setItem(QK,JSON.stringify(q.slice(-500)))}catch(e){}};

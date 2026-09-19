@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>İlaç · Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Analiz paneli. Uygulamanın yumuşak pembesini bilerek taşımıyor: bu başka bir
+   iş, başka bir oda — tek kişinin masaüstünde okuduğu bir laboratuvar defteri.
+   Renk yalnız veride; arayüz nötr kâğıt ve mürekkep.
+   Kategorik palet dataviz doğrulayıcısından geçirildi (altı kontrol, light):
+   #1F8F63 / #A8690F / #B03A63 — CVD ΔE 8.7, normal görüş 15.9, kontrast ≥3:1.
+   ΔE 8'in hemen üstünde olduğu için ikincil kodlama zorunlu: her dilim doğrudan
+   etiketli ve aralarında 2px yüzey boşluğu var. */
+:root{
+  --paper:#FCFCFB; --surface:#FFFFFF; --ink:#1A1916; --ink-2:#55524C; --ink-3:#86827A;
+  --line:#E4E1DA; --line-2:#F0EEE9;
+  --ok:#1F8F63; --warn:#A8690F; --bad:#B03A63;
+  --accent:#B03A63;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  --r:10px;
+  --mono:"IBM Plex Sans",ui-sans-serif,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141412; --surface:#1C1B18; --ink:#F2F0EB; --ink-2:#B4B0A7; --ink-3:#817D74;
+    --line:#2E2C28; --line-2:#242220;
+    /* koyu yüzey kendi adımlarını alır — açık moddan çevrilmiş değil */
+    --ok:#4FBF8C; --warn:#D79A3C; --bad:#E2739A; --accent:#E2739A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141412; --surface:#1C1B18; --ink:#F2F0EB; --ink-2:#B4B0A7; --ink-3:#817D74;
+  --line:#2E2C28; --line-2:#242220;
+  --ok:#4FBF8C; --warn:#D79A3C; --bad:#E2739A; --accent:#E2739A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+html,body{overflow-x:clip}
+h1,h2,h3{font-family:Newsreader,Georgia,serif;font-weight:600;font-style:normal;margin:0;
+  letter-spacing:-.01em;overflow-wrap:anywhere;min-width:0}
+h1{font-size:clamp(26px,3.4vw,34px)}
+h2{font-size:19px;margin-bottom:var(--s3)}
+h3{font-size:15px;font-weight:600}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin-inline:auto;padding:var(--s6) var(--s4) var(--s7)}
+.head{display:flex;align-items:flex-end;gap:var(--s4);flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:var(--s4);margin-bottom:var(--s5)}
+.head p{margin:var(--s1) 0 0;color:var(--ink-2);font-size:14px}
+.head .sp{margin-left:auto;display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+button,select,input{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
+  padding:9px var(--s3);min-height:40px;cursor:pointer;transition:border-color 140ms var(--ease)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.key{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.key:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+select,input{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
+  padding:9px var(--s3);min-height:40px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* giriş */
+#gate{max-width:420px;margin:12vh auto;padding:var(--s5);background:var(--surface);
+  border:1px solid var(--line);border-radius:14px}
+#gate h1{font-size:24px;margin-bottom:var(--s2)}
+#gate p{color:var(--ink-2);font-size:14px;line-height:1.5;margin:0 0 var(--s4)}
+#gate label{display:block;font-size:13px;color:var(--ink-2);margin:0 0 var(--s1)}
+#gate input{width:100%;margin-bottom:var(--s3)}
+#gate .btn{width:100%}
+.err{color:var(--bad);font-size:13px;margin-top:var(--s3);min-height:18px;line-height:1.4}
+
+/* cihaz şeridi */
+.devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--s3);
+  margin-bottom:var(--s5)}
+.dev{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
+  padding:var(--s3);cursor:pointer;display:grid;gap:2px;transition:border-color 140ms var(--ease)}
+.dev:hover{border-color:var(--ink-3)}
+.dev[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.dev b{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.dev small{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.dev .pin{color:var(--accent);font-size:12px;font-weight:600}
+
+/* istatistik döşemeleri — sayı grafik değil, sayı */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--s3);
+  margin-bottom:var(--s5)}
+.tile{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:var(--s4)}
+.tile b{display:block;font-family:Newsreader,Georgia,serif;font-size:30px;font-weight:600;line-height:1.05}
+.tile span{display:block;margin-top:var(--s1);font-size:13px;color:var(--ink-2)}
+.tile em{font-style:normal;font-size:14px;color:var(--ink-3)}
+
+/* grafik çerçevesi */
+figure{margin:0 0 var(--s5);border:1px solid var(--line);background:var(--surface);
+  border-radius:var(--r);padding:var(--s4)}
+figcaption{margin-bottom:var(--s3)}
+figcaption p{margin:var(--s1) 0 0;font-size:13px;color:var(--ink-2);line-height:1.45}
+.legend{display:flex;gap:var(--s4);flex-wrap:wrap;margin-top:var(--s2);font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;
+  vertical-align:-1px}
+.chart{position:relative;width:100%;overflow:visible}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.gridline{stroke:var(--line-2);stroke-width:1}
+.axis{fill:var(--ink-3);font-size:11px}
+.axis-title{fill:var(--ink-2);font-size:12px}
+.bar{transition:opacity 120ms var(--ease)}
+.chart:hover .bar{opacity:.45}
+.chart .bar:hover,.chart g:hover .bar{opacity:1}
+.tip{position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-100%);
+  background:var(--ink);color:var(--paper);padding:7px 10px;border-radius:8px;font-size:12.5px;
+  line-height:1.35;white-space:nowrap;z-index:5;transition:opacity 100ms var(--ease)}
+.tip.on{opacity:1}
+.tip b{font-weight:600}
+.empty{color:var(--ink-3);font-size:14px;padding:var(--s5) 0;text-align:center}
+
+/* tablo görünümü — erişilebilir karşılık */
+details{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);
+  padding:var(--s3) var(--s4);margin-bottom:var(--s5)}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+table{width:100%;border-collapse:collapse;margin-top:var(--s3);font-size:13px}
+th,td{text-align:left;padding:7px var(--s2);border-bottom:1px solid var(--line-2);
+  vertical-align:top}
+th{color:var(--ink-2);font-weight:600;position:sticky;top:0;background:var(--surface)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{max-height:460px;overflow:auto}
+.pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;font-weight:600;
+  border:1px solid currentColor}
+.hide{display:none!important}
+.note{font-size:13px;color:var(--ink-2);line-height:1.5;margin:var(--s4) 0 0}
+@media (max-width:640px){.wrap{padding:var(--s4) var(--s3) var(--s6)}}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body data-palette="#1F8F63,#A8690F,#B03A63">
+
+<div id="gate">
+  <h1>İlaç · Panel</h1>
+  <p>Veriyi okumak için Firebase hesabınla giriş yap. Kurallar yalnız bu hesabın
+     okumasına izin veriyor — sayfanın kendisi bir sır taşımıyor.</p>
+  <label for="em">E-posta</label>
+  <input id="em" type="email" autocomplete="username" autocapitalize="none" spellcheck="false">
+  <label for="pw">Parola</label>
+  <input id="pw" type="password" autocomplete="current-password">
+  <button class="btn key" id="go">Gir</button>
+  <p class="err" id="gerr" role="status" aria-live="polite"></p>
+</div>
+
+<div class="wrap hide" id="app">
+  <div class="head">
+    <div>
+      <h1>İlaç · Panel</h1>
+      <p id="sub">—</p>
+    </div>
+    <div class="sp">
+      <select id="range" aria-label="Zaman aralığı">
+        <option value="7">Son 7 gün</option>
+        <option value="30" selected>Son 30 gün</option>
+        <option value="90">Son 90 gün</option>
+        <option value="0">Tümü</option>
+      </select>
+      <button class="btn" id="reload">Yenile</button>
+      <button class="btn" id="out">Çık</button>
+    </div>
+  </div>
+
+  <h2>Cihazlar</h2>
+  <div class="devs" id="devs"></div>
+  <p class="note" id="devnote"></p>
+
+  <div id="body"></div>
+</div>
+
+<script>
+/* ——— Ayar. apiKey Firebase Console → Proje ayarları → Web API anahtarı. ——— */
+const CFG = {
+  db: 'https://roomcast-4ef14-default-rtdb.europe-west1.firebasedatabase.app',
+  apiKey: 'BURAYA_WEB_API_ANAHTARI'
+};
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const fmtDur = ms => {
+  if (!ms || ms < 0) return '—';
+  const s = Math.round(ms / 1000);
+  if (s < 60) return s + ' sn';
+  const m = Math.round(s / 60);
+  return m < 60 ? m + ' dk' : Math.floor(m / 60) + ' sa ' + pad(m % 60) + ' dk';
+};
+
+/* ——— kimlik ——— */
+const AUTH = {
+  tok: null, refresh: null, uid: null, exp: 0,
+  async signIn(email, password) {
+    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${CFG.apiKey}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error?.message || 'Giriş başarısız');
+    this.set(j.idToken, j.refreshToken, j.localId, j.expiresIn);
+    return j;
+  },
+  set(tok, refresh, uid, expiresIn) {
+    this.tok = tok; this.refresh = refresh; this.uid = uid;
+    this.exp = Date.now() + (Number(expiresIn) || 3600) * 1000 - 60000;
+    try { sessionStorage.setItem('ilacpanel', JSON.stringify({ refresh, uid })); } catch (e) {}
+  },
+  /* idToken bir saatte doluyor; yenileme jetonu oturum boyunca saklanıyor */
+  async valid() {
+    if (this.tok && Date.now() < this.exp) return this.tok;
+    if (!this.refresh) return null;
+    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.apiKey}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(this.refresh) });
+    if (!r.ok) { this.clear(); return null; }
+    const j = await r.json();
+    this.set(j.id_token, j.refresh_token, j.user_id, j.expires_in);
+    return this.tok;
+  },
+  clear() { this.tok = this.refresh = this.uid = null; this.exp = 0;
+    try { sessionStorage.removeItem('ilacpanel'); } catch (e) {} }
+};
+
+async function dbGet(path, params = '') {
+  const tok = await AUTH.valid();
+  if (!tok) throw new Error('Oturum düştü');
+  const r = await fetch(`${CFG.db}/${path}.json?auth=${encodeURIComponent(tok)}${params}`);
+  if (!r.ok) throw new Error(`${path}: ${r.status} ${r.status === 401 ? '— kural okumaya izin vermiyor' : ''}`);
+  return r.json();
+}
+async function dbPut(path, value) {
+  const tok = await AUTH.valid();
+  const r = await fetch(`${CFG.db}/${path}.json?auth=${encodeURIComponent(tok)}`,
+    { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(value) });
+  if (!r.ok) throw new Error(`yazılamadı: ${r.status}`);
+}
+
+/* ——— durum ——— */
+const ST = { devices: {}, meta: { labels: {}, primary: null }, sel: null, raw: null, days: 30 };
+
+/* ——— olayları düzleştir ———
+   Her push bir toplu gönderi: { d, s, n, e:[ {t, ts, ty, ...} ] } */
+function flatten(deviceNode) {
+  const out = [];
+  const ev = deviceNode && deviceNode.events;
+  if (ev) for (const k in ev) {
+    const b = ev[k];
+    if (!b || !Array.isArray(b.e)) continue;
+    for (const e of b.e) if (e && e.t) out.push(Object.assign({ _sid: b.s }, e));
+  }
+  out.sort((a, b) => a.t - b.t);
+  return out;
+}
+function sessionsOf(node) {
+  const s = node && node.sessions ? node.sessions : {};
+  const ends = {};
+  const se = node && node.sessionEnds ? node.sessionEnds : {};
+  for (const k in se) { const x = se[k]; if (x && x.sid) ends[x.sid] = x; }
+  return Object.keys(s).map(sid => Object.assign({ sid }, s[sid], ends[sid] || {}));
+}
+
+/* ——— çubuk grafik ———
+   İnce işaretler, tabana çakılı 4px yuvarlatılmış uç, yığılı dilimler arasında
+   2px yüzey boşluğu, geri çekilmiş ızgara, her noktaya değil seçili yerlere
+   doğrudan etiket, ve her işarette gezinme ipucu. */
+function barChart(host, opt) {
+  const { labels, series, yFmt = v => v, tip = null, maxBars = 0 } = opt;
+  const n = labels.length;
+  if (!n) { host.innerHTML = '<p class="empty">Bu aralıkta veri yok.</p>'; return; }
+  const W = 1000, H = opt.height || 220, L = 40, R = 12, T = 14, B = 30;
+  const iw = W - L - R, ih = H - T - B;
+  const totals = labels.map((_, i) => series.reduce((a, s) => a + (s.values[i] || 0), 0));
+  const max = Math.max(1, ...totals);
+  const step = iw / n, bw = Math.min(opt.barWidth || 26, step * 0.68);
+  const y = v => T + ih - (v / max) * ih;
+
+  /* Eksen adımları: 4 aralık, okunur yuvarlak sayılar. Veri tam sayıysa adım da
+     tam sayı — yarım doz diye bir şey yok, eksende de görünmemeli. */
+  const tamSayi = series.every(s => s.values.every(v => Number.isInteger(v || 0)));
+  const niceStep = (() => {
+    const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw) || 0));
+    const aday = [1, 2, 2.5, 5, 10].map(m => m * p).find(v => v >= raw) || p * 10;
+    return tamSayi ? Math.max(1, Math.round(aday)) : aday;
+  })();
+  let ticks = []; for (let v = 0; v <= max + 1e-9; v += niceStep) ticks.push(v);
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria || '')}">`;
+  for (const t of ticks) {
+    svg += `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"/>`;
+    svg += `<text class="axis" x="${L - 8}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end">${yFmt(Math.round(t * 100) / 100)}</text>`;
+  }
+  const skip = maxBars && n > maxBars ? Math.ceil(n / maxBars) : 1;
+  labels.forEach((lab, i) => {
+    const cx = L + step * i + step / 2;
+    let acc = 0;
+    series.forEach((s, si) => {
+      const v = s.values[i] || 0;
+      if (!v) { acc += v; return; }
+      const y1 = y(acc + v), y0 = y(acc);
+      /* dilimler arasında 2px yüzey boşluğu; yalnız en üst dilimin ucu yuvarlak */
+      const gap = si < series.length - 1 && acc > 0 ? 2 : 0;
+      const top = si === series.length - 1 || series.slice(si + 1).every(z => !(z.values[i] || 0));
+      const h = Math.max(1, y0 - y1 - (acc > 0 ? 2 : 0));
+      const yy = y1;
+      const r = Math.min(4, h / 2, bw / 2);
+      const d = top
+        ? `M${cx - bw / 2} ${yy + h} V${yy + r} a${r} ${r} 0 0 1 ${r} ${-r} H${cx + bw / 2 - r} a${r} ${r} 0 0 1 ${r} ${r} V${yy + h} Z`
+        : `M${cx - bw / 2} ${yy + h} V${yy} H${cx + bw / 2} V${yy + h} Z`;
+      svg += `<path class="bar" d="${d}" fill="${s.color}" data-i="${i}" data-s="${si}"/>`;
+      acc += v;
+    });
+    if (i % skip === 0)
+      svg += `<text class="axis" x="${cx}" y="${H - 10}" text-anchor="middle">${esc(lab)}</text>`;
+  });
+  /* seçili doğrudan etiket: yalnız en yüksek sütun — her noktaya sayı yazılmaz */
+  const peak = totals.indexOf(Math.max(...totals));
+  if (totals[peak] > 0) {
+    const cx = L + step * peak + step / 2;
+    svg += `<text class="axis-title" x="${cx}" y="${(y(totals[peak]) - 7).toFixed(1)}" text-anchor="middle" font-weight="600">${yFmt(totals[peak])}</text>`;
+  }
+  svg += '</svg><div class="tip" role="status" aria-live="off"></div>';
+  host.innerHTML = svg;
+
+  const tipEl = host.querySelector('.tip');
+  host.querySelectorAll('.bar').forEach(el => {
+    const show = ev => {
+      const i = +el.dataset.i, si = +el.dataset.s;
+      const parts = series.map(s => `${s.label}: <b>${yFmt(s.values[i] || 0)}</b>`).join('<br>');
+      tipEl.innerHTML = `<b>${esc(tip ? tip(i) : labels[i])}</b><br>${parts}`;
+      const r = host.getBoundingClientRect(), b = el.getBoundingClientRect();
+      tipEl.style.left = (b.left - r.left + b.width / 2) + 'px';
+      tipEl.style.top = (b.top - r.top - 8) + 'px';
+      tipEl.classList.add('on');
+    };
+    el.addEventListener('mouseenter', show);
+    el.addEventListener('focus', show);
+    el.addEventListener('mouseleave', () => tipEl.classList.remove('on'));
+    el.addEventListener('blur', () => tipEl.classList.remove('on'));
+    el.setAttribute('tabindex', '0');
+  });
+}
+const C = () => {
+  const s = getComputedStyle(document.documentElement);
+  return { ok: s.getPropertyValue('--ok').trim(), warn: s.getPropertyValue('--warn').trim(),
+           bad: s.getPropertyValue('--bad').trim(), accent: s.getPropertyValue('--accent').trim() };
+};
+
+/* ——— analiz ——— */
+function analyse(events, sessions, days) {
+  const cut = days ? Date.now() - days * 864e5 : 0;
+  const ev = events.filter(e => e.t >= cut);
+  const ses = sessions.filter(s => (s.start || 0) >= cut);
+  const byDay = {}, hourTaken = new Array(24).fill(0), hourOpen = new Array(24).fill(0);
+  const delays = [], water = {}, types = {};
+  for (const e of ev) {
+    const d = new Date(e.t), k = dayKey(d);
+    types[e.ty] = (types[e.ty] || 0) + 1;
+    byDay[k] = byDay[k] || { alindi: 0, atlandi: 0, geri: 0 };
+    if (e.ty === 'doz_alindi') { byDay[k].alindi++; hourTaken[d.getHours()]++;
+      if (typeof e.gecikmeDk === 'number') delays.push(e.gecikmeDk); }
+    else if (e.ty === 'doz_atlandi') byDay[k].atlandi++;
+    else if (e.ty === 'doz_geri_alindi' || e.ty === 'atlama_geri_alindi') byDay[k].geri++;
+    else if (e.ty === 'acilis') hourOpen[d.getHours()]++;
+    if (e.ty === 'su' && typeof e.yeni === 'number') water[k] = Math.max(water[k] || 0, e.yeni);
+  }
+  const keys = Object.keys(byDay).sort();
+  const tot = keys.reduce((a, k) => ({ alindi: a.alindi + byDay[k].alindi,
+    atlandi: a.atlandi + byDay[k].atlandi }), { alindi: 0, atlandi: 0 });
+  const kapali = tot.alindi + tot.atlandi;
+  /* gecikme kovaları: erken / tam zamanında / kademeli geç */
+  const buckets = [['erken', -1e9, -1], ['0–15 dk', 0, 15], ['15–60 dk', 16, 60],
+    ['1–3 sa', 61, 180], ['3 sa+', 181, 1e9]];
+  const delayCounts = buckets.map(([, lo, hi]) => delays.filter(d => d >= lo && d <= hi).length);
+  const durs = ses.map(s => s.durMs).filter(x => typeof x === 'number' && x > 0);
+  const acts = ses.map(s => s.activeMs).filter(x => typeof x === 'number' && x > 0);
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  return {
+    ev, ses, keys, byDay, types, water, hourTaken, hourOpen,
+    delays, delayCounts, buckets: buckets.map(b => b[0]),
+    uyum: kapali ? Math.round(tot.alindi / kapali * 100) : null,
+    alindi: tot.alindi, atlandi: tot.atlandi,
+    gunSayisi: new Set(ev.map(e => dayKey(new Date(e.t)))).size,
+    oturum: ses.length, ortSure: avg(durs), toplamAktif: acts.reduce((a, b) => a + b, 0),
+    ilk: ev.length ? ev[0].t : null, son: ev.length ? ev[ev.length - 1].t : null
+  };
+}
+
+function tile(v, label, hint) {
+  return `<div class="tile"><b>${v}</b><span>${esc(label)}${hint ? ` <em>${esc(hint)}</em>` : ''}</span></div>`;
+}
+
+function render() {
+  const host = $('body');
+  if (!ST.sel || !ST.raw) { host.innerHTML = '<p class="empty">Bir cihaz seç.</p>'; return; }
+  const events = flatten(ST.raw), sessions = sessionsOf(ST.raw);
+  const A = analyse(events, sessions, ST.days);
+  const c = C();
+  const label = ST.meta.labels[ST.sel] || ST.sel.slice(0, 8);
+
+  if (!A.ev.length) {
+    host.innerHTML = `<p class="empty">“${esc(label)}” için bu aralıkta olay yok.
+      Aralığı genişletmeyi dene.</p>`;
+    return;
+  }
+
+  const son7 = A.keys.slice(-Math.min(A.keys.length, ST.days || 60));
+  const gunEtiket = k => { const d = new Date(k + 'T00:00'); return pad(d.getDate()) + '.' + pad(d.getMonth() + 1); };
+
+  host.innerHTML = `
+    <h2>Özet · ${esc(label)}</h2>
+    <div class="tiles">
+      ${tile(A.uyum === null ? '—' : A.uyum + '<em>%</em>', 'uyum', A.uyum === null ? '' : `${A.alindi}/${A.alindi + A.atlandi}`)}
+      ${tile(A.gunSayisi, 'etkin gün')}
+      ${tile(A.oturum, 'oturum')}
+      ${tile(fmtDur(A.ortSure), 'ortalama oturum')}
+      ${tile(fmtDur(A.toplamAktif), 'toplam aktif süre')}
+      ${tile(A.ev.length, 'olay')}
+    </div>
+
+    <figure>
+      <figcaption>
+        <h3>Günlük doz</h3>
+        <p>Kapatılan her doz: alınan ya da atlanan. Sütuna gel, o günün dökümünü gör.</p>
+        <div class="legend">
+          <span><i style="background:${c.ok}"></i>alındı</span>
+          <span><i style="background:${c.warn}"></i>atlandı</span>
+        </div>
+      </figcaption>
+      <div class="chart" id="ch1"></div>
+    </figure>
+
+    <figure>
+      <figcaption><h3>Dozun alındığı saat</h3>
+        <p>Gerçekte hangi saatte işaretlenmiş — planlanan saat değil, dokunma anı.</p></figcaption>
+      <div class="chart" id="ch2"></div>
+    </figure>
+
+    <figure>
+      <figcaption><h3>Gecikme</h3>
+        <p>Planlanan saat ile işaretleme arasındaki fark.</p></figcaption>
+      <div class="chart" id="ch3"></div>
+    </figure>
+
+    <figure>
+      <figcaption><h3>Uygulamanın açıldığı saat</h3>
+        <p>Günün hangi saatlerinde açılmış.</p></figcaption>
+      <div class="chart" id="ch4"></div>
+    </figure>
+
+    ${Object.keys(A.water).length ? `<figure>
+      <figcaption><h3>Su</h3><p>Gün sonunda işaretlenen bardak sayısı.</p></figcaption>
+      <div class="chart" id="ch5"></div></figure>` : ''}
+
+    <details>
+      <summary>Olay türleri (tablo)</summary>
+      <div class="scroll"><table><thead><tr><th>Tür</th><th class="n">Adet</th></tr></thead><tbody>
+        ${Object.entries(A.types).sort((a, b) => b[1] - a[1])
+          .map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join('')}
+      </tbody></table></div>
+    </details>
+
+    <details>
+      <summary>Ham olaylar — son 300 (tablo)</summary>
+      <div class="scroll"><table><thead><tr><th>Zaman</th><th>Tür</th><th>Ayrıntı</th></tr></thead><tbody>
+        ${A.ev.slice(-300).reverse().map(e => {
+          const d = new Date(e.t);
+          const rest = Object.keys(e).filter(k => !['t','ts','ty','_sid'].includes(k))
+            .map(k => `${k}: ${typeof e[k] === 'object' ? JSON.stringify(e[k]) : e[k]}`).join(' · ');
+          return `<tr><td>${pad(d.getDate())}.${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}</td>
+            <td>${esc(e.ty)}</td><td>${esc(rest)}</td></tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </details>
+
+    <details>
+      <summary>Oturumlar (tablo)</summary>
+      <div class="scroll"><table><thead><tr><th>Başlangıç</th><th class="n">Süre</th><th class="n">Aktif</th>
+        <th>Ekran</th><th>Ortam</th></tr></thead><tbody>
+        ${A.ses.slice().sort((a,b)=>(b.start||0)-(a.start||0)).slice(0,200).map(s => {
+          const d = s.start ? new Date(s.start) : null;
+          return `<tr><td>${d ? `${pad(d.getDate())}.${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}` : '—'}</td>
+            <td class="n">${fmtDur(s.durMs)}</td><td class="n">${fmtDur(s.activeMs)}</td>
+            <td>${s.vw ? `${s.vw}×${s.vh}` : '—'}</td>
+            <td>${[s.standalone ? 'PWA' : '', s.webgl ? 'WebGL' : '', s.tz || ''].filter(Boolean).join(' · ') || '—'}</td></tr>`;
+        }).join('')}
+      </tbody></table></div>
+    </details>`;
+
+  barChart($('ch1'), { labels: son7.map(gunEtiket), maxBars: 16, height: 230,
+    aria: 'Günlük alınan ve atlanan doz sayısı',
+    series: [{ label: 'alındı', color: c.ok, values: son7.map(k => A.byDay[k].alindi) },
+             { label: 'atlandı', color: c.warn, values: son7.map(k => A.byDay[k].atlandi) }],
+    tip: i => son7[i] });
+  barChart($('ch2'), { labels: A.hourTaken.map((_, h) => pad(h)), maxBars: 12, barWidth: 20,
+    aria: 'Dozun alındığı saat dağılımı',
+    series: [{ label: 'doz', color: c.accent, values: A.hourTaken }], tip: i => pad(i) + ':00' });
+  barChart($('ch3'), { labels: A.buckets, barWidth: 60, height: 190,
+    aria: 'Gecikme dağılımı',
+    series: [{ label: 'doz', color: c.bad, values: A.delayCounts }] });
+  barChart($('ch4'), { labels: A.hourOpen.map((_, h) => pad(h)), maxBars: 12, barWidth: 20,
+    aria: 'Açılış saati dağılımı',
+    series: [{ label: 'açılış', color: c.accent, values: A.hourOpen }], tip: i => pad(i) + ':00' });
+  if (Object.keys(A.water).length) {
+    const wk = Object.keys(A.water).sort().slice(-(ST.days || 60));
+    barChart($('ch5'), { labels: wk.map(gunEtiket), maxBars: 16, height: 190,
+      aria: 'Günlük su',
+      series: [{ label: 'bardak', color: '#3E7FA8', values: wk.map(k => A.water[k]) }], tip: i => wk[i] });
+  }
+}
+
+/* ——— cihazlar ——— */
+async function loadDevices() {
+  const shallow = await dbGet('devices', '&shallow=true') || {};
+  const ids = Object.keys(shallow);
+  ST.meta = (await dbGet('panel').catch(() => null)) || { labels: {}, primary: null };
+  ST.meta.labels = ST.meta.labels || {};
+  ST.devices = {};
+  /* her cihazın künyesi: yalnız oturumlar — olaylar ağır, seçilince çekiliyor */
+  await Promise.all(ids.map(async id => {
+    const s = await dbGet(`devices/${id}/sessions`).catch(() => null) || {};
+    const ends = await dbGet(`devices/${id}/sessionEnds`).catch(() => null) || {};
+    const starts = Object.values(s).map(x => x && x.start).filter(Boolean);
+    const endT = Object.values(ends).map(x => x && x.end).filter(Boolean);
+    ST.devices[id] = {
+      oturum: Object.keys(s).length,
+      ilk: starts.length ? Math.min(...starts) : null,
+      son: Math.max(starts.length ? Math.max(...starts) : 0, endT.length ? Math.max(...endT) : 0) || null,
+      ornek: Object.values(s)[0] || {}
+    };
+  }));
+  if (!ST.sel) ST.sel = ST.meta.primary && ST.devices[ST.meta.primary] ? ST.meta.primary
+    : ids.sort((a, b) => (ST.devices[b].son || 0) - (ST.devices[a].son || 0))[0] || null;
+  drawDevices();
+  $('devnote').textContent = ids.length > 1
+    ? ids.length + ' cihaz kaydı var. Her tarayıcı ve profil kendi kimliğini üretir, bu yüzden '
+      + 'test açılışları ve farklı tarayıcılar ayrı görünür. Asıl cihazı sabitlemek için birine '
+      + 'ad ver ve "asıl" işaretle; sonra uygulamayı o cihazda bir kez ?did=KİMLİK ile aç — '
+      + 'kimlik oraya çakılır ve bir daha değişmez.'
+    : '';
+  if (ST.sel) await selectDevice(ST.sel);
+}
+function drawDevices() {
+  const ids = Object.keys(ST.devices)
+    .sort((a, b) => (ST.devices[b].son || 0) - (ST.devices[a].son || 0));
+  $('devs').innerHTML = ids.map(id => {
+    const d = ST.devices[id], lab = ST.meta.labels[id];
+    const son = d.son ? new Date(d.son) : null;
+    return `<button class="dev" data-id="${esc(id)}" aria-pressed="${id === ST.sel}">
+      <b>${esc(lab || id.slice(0, 8) + '…')}</b>
+      <small>${d.oturum} oturum · ${son ? `son ${pad(son.getDate())}.${pad(son.getMonth() + 1)} ${pad(son.getHours())}:${pad(son.getMinutes())}` : 'kayıt yok'}</small>
+      <small>${esc(d.ornek.ua ? String(d.ornek.ua).slice(0, 42) : (d.ornek.tz || ''))}</small>
+      ${ST.meta.primary === id ? '<span class="pin">asıl cihaz</span>' : ''}
+    </button>`;
+  }).join('') + `
+    <div class="dev" style="cursor:default">
+      <b>Seçili cihazı adlandır</b>
+      <input id="lab" placeholder="örn. Telefonu" aria-label="Cihaz adı">
+      <button class="btn" id="save" style="margin-top:6px">Kaydet ve “asıl” yap</button>
+      <small id="labmsg"></small>
+    </div>`;
+  $('devs').querySelectorAll('.dev[data-id]').forEach(b =>
+    b.addEventListener('click', () => selectDevice(b.dataset.id)));
+  const inp = $('lab');
+  if (inp) inp.value = ST.meta.labels[ST.sel] || '';
+  const sv = $('save');
+  if (sv) sv.addEventListener('click', async () => {
+    if (!ST.sel) return;
+    const name = ($('lab').value || '').trim();
+    try {
+      ST.meta.labels[ST.sel] = name || ST.sel.slice(0, 8);
+      ST.meta.primary = ST.sel;
+      await dbPut('panel', { labels: ST.meta.labels, primary: ST.meta.primary });
+      $('labmsg').textContent = 'kaydedildi';
+      drawDevices(); render();
+    } catch (e) { $('labmsg').textContent = e.message; }
+  });
+}
+async function selectDevice(id) {
+  ST.sel = id;
+  drawDevices();
+  $('body').innerHTML = '<p class="empty">Yükleniyor…</p>';
+  try { ST.raw = await dbGet(`devices/${id}`); }
+  catch (e) { $('body').innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
+  const ev = flatten(ST.raw);
+  $('sub').textContent = ev.length
+    ? `${ev.length} olay · ${new Date(ev[0].t).toLocaleDateString('tr')} – ${new Date(ev[ev.length - 1].t).toLocaleDateString('tr')}`
+    : 'olay yok';
+  render();
+}
+
+/* ——— bağlantı ——— */
+$('go').addEventListener('click', async () => {
+  const b = $('go'); b.disabled = true; $('gerr').textContent = '';
+  try {
+    if (CFG.apiKey.startsWith('BURAYA')) throw new Error('Önce CFG.apiKey alanını doldur (Firebase Console → Proje ayarları → Web API anahtarı).');
+    await AUTH.signIn($('em').value.trim(), $('pw').value);
+    $('gate').classList.add('hide'); $('app').classList.remove('hide');
+    await loadDevices();
+  } catch (e) {
+    $('gerr').textContent = ({
+      EMAIL_NOT_FOUND: 'Bu e-posta kayıtlı değil.',
+      INVALID_PASSWORD: 'Parola yanlış.',
+      INVALID_LOGIN_CREDENTIALS: 'E-posta veya parola yanlış.',
+      OPERATION_NOT_ALLOWED: 'Firebase Console’da E-posta/Parola girişini etkinleştir.'
+    })[e.message] || e.message;
+  } finally { b.disabled = false; }
+});
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('go').click(); });
+$('range').addEventListener('change', e => { ST.days = +e.target.value; render(); });
+$('reload').addEventListener('click', () => loadDevices());
+$('out').addEventListener('click', () => { AUTH.clear(); location.reload(); });
+/* oturum sekmede saklı: sayfa yenilense de tekrar parola sormasın */
+(async () => {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('ilacpanel') || 'null');
+    if (!s || !s.refresh || CFG.apiKey.startsWith('BURAYA')) return;
+    AUTH.refresh = s.refresh; AUTH.uid = s.uid;
+    if (await AUTH.valid()) {
+      $('gate').classList.add('hide'); $('app').classList.remove('hide');
+      await loadDevices();
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

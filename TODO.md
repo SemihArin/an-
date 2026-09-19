@@ -252,3 +252,29 @@ Birinci turdan devreden ve kodla kapatılamayan / karar bekleyen maddeler.
 4. **M2** — yaylanma kararı. **Önce onay** — brief ile katalog çelişiyor.
 5. **m1** — tek satırlık temizlik.
 6. **A2/A3/A4** — telefon sonrası.
+
+---
+
+# Panel ve cihaz kimliği (yeni)
+
+- [x] **P1 · `panel.html`** — Firebase'e bağlanıp olayları okuyan ve analiz eden
+      ayrı sayfa. Uygulamanın yumuşak pembesini bilerek taşımıyor: başka bir iş,
+      başka bir oda. Newsreader + IBM Plex Sans, nötr kâğıt, renk yalnız veride.
+      İçerik: 6 istatistik döşemesi · günlük doz (yığılı: alındı/atlandı) ·
+      dozun alındığı saat · gecikme dağılımı · açılış saati · su · üç tablo
+      görünümü (olay türleri, ham olaylar, oturumlar).
+      Kategorik palet `dataviz` doğrulayıcısından geçirildi: `#1F8F63 · #A8690F ·
+      #B03A63` — altı kontrolün hepsi PASS (CVD ΔE 8.7, normal görüş 15.9,
+      kontrast ≥3:1). ΔE 8'in hemen üstünde olduğu için ikincil kodlama var:
+      efsane, doğrudan etiket ve dilimler arasında 2px yüzey boşluğu.
+      *Yakalanan hata:* eksen tam sayı veride 0.5 adımlarla gidiyordu — yarım
+      doz diye bir şey yok; veri tam sayıysa adım da tam sayı.
+- [x] **P2 · Okuma izni gerçek kimliğe bağlandı.** `firebase-rules.json` artık
+      `auth.uid === 'PANEL_UID'` istiyor; panelde e-posta/parola girişi var.
+      *Not:* "sayfaya gömülü kod" bir güvenlik önlemi değil — sayfayı açan
+      herkes kodu görür. Gerçek koruma tek hesaplık Firebase Auth.
+- [x] **P3 · Cihaz kimliği kalıcı oldu.** Üç önlem: `?did=` ile bir kez çakma
+      (parametre sonra URL'den siliniyor, kullanıcı hiçbir şey görmüyor),
+      localStorage **ve** çerezde birlikte saklama, hangisinde varsa ikisine de
+      geri yazma. Altı senaryo test edildi.
+- [x] **P4 · Test takımı büyüdü:** `panel` takımı eklendi, toplam **112 kontrol**.
