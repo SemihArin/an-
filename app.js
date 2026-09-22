@@ -127,6 +127,20 @@ let latestCurrent = null;
 let latestHistory = [];
 let lastHistoryPoint = null;
 let lastGeocode = { key: "", at: 0, text: "" };
+let swRegistration = null;
+const SHARE_NOTIF_ID = 4242;
+const SHARE_NOTIF_TAG = "konum-paylasim";
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("sw.js")
+    .then((reg) => {
+      swRegistration = reg;
+    })
+    .catch(() => {
+      /* SW yoksa web bildirimi devre disi, banner yine calisir */
+    });
+}
 
 const rtcConfig = {
   iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }],
@@ -592,6 +606,7 @@ async function startShare() {
   dom.stopShareButton.disabled = false;
   setShareBanner(true);
   await requestWakeLock();
+  await showShareNotification();
   setStatus("Konum paylasiliyor");
 }
 
@@ -619,6 +634,7 @@ async function stopShare() {
   dom.startShareButton.disabled = false;
   dom.stopShareButton.disabled = true;
   setShareBanner(false);
+  await clearShareNotification();
 }
 
 async function onPosition(position) {
@@ -801,6 +817,66 @@ function releaseWakeLock() {
     /* yoksay */
   }
   wakeLock = null;
+}
+
+async function showShareNotification() {
+  // APK (Capacitor) icinde: kalici (ongoing) native bildirim.
+  const LN = window.Capacitor?.Plugins?.LocalNotifications;
+  if (LN) {
+    try {
+      const perm = await LN.requestPermissions();
+      if (perm?.display !== "granted") return;
+      await LN.schedule({
+        notifications: [
+          {
+            id: SHARE_NOTIF_ID,
+            title: "Konum paylasiliyor",
+            body: "Canli konumun su anda paylasiliyor. Durdurmak icin uygulamayi ac.",
+            ongoing: true,
+            autoCancel: false,
+          },
+        ],
+      });
+    } catch (_) {
+      /* yoksay */
+    }
+    return;
+  }
+
+  // Web/PWA: service worker bildirimi.
+  try {
+    if (!("Notification" in window) || !swRegistration) return;
+    if (Notification.permission === "default") await Notification.requestPermission();
+    if (Notification.permission !== "granted") return;
+    await swRegistration.showNotification("Konum paylasiliyor", {
+      body: "Canli konumun su anda paylasiliyor. Durdurmak icin uygulamayi ac.",
+      tag: SHARE_NOTIF_TAG,
+      requireInteraction: true,
+      silent: true,
+    });
+  } catch (_) {
+    /* yoksay */
+  }
+}
+
+async function clearShareNotification() {
+  const LN = window.Capacitor?.Plugins?.LocalNotifications;
+  if (LN) {
+    try {
+      await LN.cancel({ notifications: [{ id: SHARE_NOTIF_ID }] });
+    } catch (_) {
+      /* yoksay */
+    }
+    return;
+  }
+
+  try {
+    if (!swRegistration) return;
+    const notes = await swRegistration.getNotifications({ tag: SHARE_NOTIF_TAG });
+    notes.forEach((note) => note.close());
+  } catch (_) {
+    /* yoksay */
+  }
 }
 
 function setShareBanner(on) {
