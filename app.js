@@ -12,12 +12,15 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
+  limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
+  writeBatch,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
   getDownloadURL,
@@ -72,6 +75,18 @@ const dom = {
   answerCallButton: $("#answerCallButton"),
   hangupButton: $("#hangupButton"),
   messageTemplate: $("#messageTemplate"),
+  shareBanner: $("#shareBanner"),
+  shareBannerText: $("#shareBannerText"),
+  startShareButton: $("#startShareButton"),
+  stopShareButton: $("#stopShareButton"),
+  clearHistoryButton: $("#clearHistoryButton"),
+  locationMap: $("#locationMap"),
+  lastUpdate: $("#lastUpdate"),
+  currentAddress: $("#currentAddress"),
+  currentCoords: $("#currentCoords"),
+  currentMeta: $("#currentMeta"),
+  placesList: $("#placesList"),
+  placesCount: $("#placesCount"),
 };
 
 let app;
@@ -91,6 +106,21 @@ let lastCapture;
 let lastCaptureUrl;
 let peerConnection;
 let callId;
+
+let unsubscribeCurrent;
+let unsubscribeHistory;
+let watchId = null;
+let sharing = false;
+let wakeLock = null;
+let map;
+let marker;
+let accuracyCircle;
+let trail;
+let mapReady = false;
+let latestCurrent = null;
+let latestHistory = [];
+let lastHistoryPoint = null;
+let lastGeocode = { key: "", at: 0, text: "" };
 
 const rtcConfig = {
   iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }],
@@ -120,6 +150,7 @@ dom.joinRoomButton.addEventListener("click", () => {
   dom.roomInput.value = currentRoom;
   dom.activeRoomTitle.textContent = currentRoom;
   listenToMessages();
+  listenToLocation();
   setStatus("Odaya baglandi");
 });
 
@@ -175,6 +206,16 @@ dom.createCallButton.addEventListener("click", createCall);
 dom.answerCallButton.addEventListener("click", answerCall);
 dom.hangupButton.addEventListener("click", hangup);
 
+dom.startShareButton.addEventListener("click", startShare);
+dom.stopShareButton.addEventListener("click", stopShare);
+dom.clearHistoryButton.addEventListener("click", clearHistory);
+$('[data-view="locationView"]').addEventListener("click", onLocationTabShown);
+document.addEventListener("visibilitychange", async () => {
+  if (sharing && wakeLock === null && document.visibilityState === "visible") {
+    await requestWakeLock();
+  }
+});
+
 function watchAuth() {
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
@@ -186,9 +227,13 @@ function watchAuth() {
       dom.userEmail.textContent = user.email || "";
       dom.userPhoto.src = user.photoURL || "";
       listenToMessages();
+      listenToLocation();
       setStatus("Giris yapildi");
     } else {
       if (unsubscribeMessages) unsubscribeMessages();
+      if (unsubscribeCurrent) unsubscribeCurrent();
+      if (unsubscribeHistory) unsubscribeHistory();
+      stopShare();
       setStatus("Cikis yapildi");
     }
   });
@@ -395,6 +440,304 @@ async function hangup() {
   if (unsubscribeCall) unsubscribeCall();
   if (callId) await deleteDoc(doc(db, "rooms", currentRoom, "calls", callId));
   setStatus("Arama kapatildi");
+}
+
+// ---- Konum paylasimi ----
+
+function trackerCurrentDoc() {
+  return doc(db, "rooms", currentRoom, "tracker", "current");
+}
+
+function trackerHistoryCol() {
+  return collection(db, "rooms", currentRoom, "tracker", "history");
+}
+
+function onLocationTabShown() {
+  initMap();
+  if (map) setTimeout(() => map.invalidateSize(), 60);
+  renderLocation();
+  renderTrail();
+  renderPlaces();
+}
+
+function initMap() {
+  if (mapReady || typeof L === "undefined") return;
+  map = L.map(dom.locationMap, { zoomControl: true }).setView([39.925, 32.866], 6);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap",
+  }).addTo(map);
+  trail = L.polyline([], { color: "#ef6f6c", weight: 4, opacity: 0.8 }).addTo(map);
+  mapReady = true;
+}
+
+function listenToLocation() {
+  if (!db || !currentUser) return;
+  if (unsubscribeCurrent) unsubscribeCurrent();
+  if (unsubscribeHistory) unsubscribeHistory();
+
+  unsubscribeCurrent = onSnapshot(trackerCurrentDoc(), (snap) => {
+    latestCurrent = snap.exists() ? snap.data() : null;
+    renderLocation();
+  });
+
+  const historyQuery = query(trackerHistoryCol(), orderBy("at", "desc"), limit(300));
+  unsubscribeHistory = onSnapshot(historyQuery, (snap) => {
+    latestHistory = [];
+    snap.forEach((entry) => latestHistory.push(entry.data()));
+    latestHistory.reverse();
+    renderTrail();
+    renderPlaces();
+  });
+}
+
+async function startShare() {
+  if (!navigator.geolocation) {
+    setStatus("Cihaz konum desteklemiyor");
+    return;
+  }
+  if (sharing) return;
+  if (!currentUser) {
+    setStatus("Once giris yap");
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
+    enableHighAccuracy: true,
+    maximumAge: 5000,
+    timeout: 20000,
+  });
+
+  sharing = true;
+  dom.startShareButton.disabled = true;
+  dom.stopShareButton.disabled = false;
+  setShareBanner(true);
+  await requestWakeLock();
+  setStatus("Konum paylasiliyor");
+}
+
+async function stopShare() {
+  const wasSharing = sharing;
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  releaseWakeLock();
+
+  if (wasSharing && db && currentUser) {
+    try {
+      await setDoc(
+        trackerCurrentDoc(),
+        { sharing: false, updatedAt: serverTimestamp() },
+        { merge: true },
+      );
+    } catch (_) {
+      /* offline - yoksay */
+    }
+  }
+
+  sharing = false;
+  dom.startShareButton.disabled = false;
+  dom.stopShareButton.disabled = true;
+  setShareBanner(false);
+}
+
+async function onPosition(position) {
+  const { latitude, longitude, accuracy, heading, speed } = position.coords;
+
+  try {
+    await setDoc(
+      trackerCurrentDoc(),
+      {
+        lat: latitude,
+        lng: longitude,
+        accuracy: accuracy ?? null,
+        heading: heading ?? null,
+        speed: speed ?? null,
+        sharing: true,
+        uid: currentUser.uid,
+        displayName: currentUser.displayName || "Ben",
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    );
+  } catch (_) {
+    setStatus("Konum yazilamadi");
+    return;
+  }
+
+  const now = Date.now();
+  const moved =
+    !lastHistoryPoint ||
+    distanceMeters(lastHistoryPoint.lat, lastHistoryPoint.lng, latitude, longitude) > 25;
+  const waited = !lastHistoryPoint || now - lastHistoryPoint.at > 60000;
+
+  if (moved || waited) {
+    lastHistoryPoint = { lat: latitude, lng: longitude, at: now };
+    try {
+      await addDoc(trackerHistoryCol(), {
+        lat: latitude,
+        lng: longitude,
+        accuracy: accuracy ?? null,
+        at: serverTimestamp(),
+      });
+    } catch (_) {
+      /* yoksay */
+    }
+  }
+}
+
+function onPositionError(error) {
+  setStatus(`Konum hatasi: ${error.message}`);
+}
+
+function renderLocation() {
+  if (!latestCurrent) {
+    dom.lastUpdate.textContent = "-";
+    dom.currentCoords.textContent = "-";
+    dom.currentMeta.textContent = "-";
+    dom.currentAddress.textContent = "-";
+    return;
+  }
+
+  const { lat, lng, accuracy, speed, updatedAt, sharing: isSharing } = latestCurrent;
+  const time = updatedAt?.toDate ? updatedAt.toDate().toLocaleString("tr-TR") : "-";
+  dom.lastUpdate.textContent = isSharing === false ? `${time} (durduruldu)` : time;
+
+  if (typeof lat === "number" && typeof lng === "number") {
+    dom.currentCoords.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const speedText = typeof speed === "number" && speed >= 0 ? `${(speed * 3.6).toFixed(0)} km/s` : "-";
+    const accText = typeof accuracy === "number" ? `${accuracy.toFixed(0)} m` : "-";
+    dom.currentMeta.textContent = `${accText} / ${speedText}`;
+    updateMarker(lat, lng, accuracy);
+    reverseGeocode(lat, lng);
+  }
+}
+
+function updateMarker(lat, lng, accuracy) {
+  if (!mapReady) return;
+  const latlng = [lat, lng];
+  if (!marker) {
+    marker = L.marker(latlng).addTo(map);
+    map.setView(latlng, 16);
+  } else {
+    marker.setLatLng(latlng);
+  }
+  if (typeof accuracy === "number") {
+    if (!accuracyCircle) {
+      accuracyCircle = L.circle(latlng, {
+        radius: accuracy,
+        color: "#4fb7a8",
+        weight: 1,
+        fillOpacity: 0.08,
+      }).addTo(map);
+    } else {
+      accuracyCircle.setLatLng(latlng);
+      accuracyCircle.setRadius(accuracy);
+    }
+  }
+}
+
+function renderTrail() {
+  if (!mapReady || !trail) return;
+  const points = latestHistory
+    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+    .map((p) => [p.lat, p.lng]);
+  trail.setLatLngs(points);
+}
+
+function renderPlaces() {
+  dom.placesList.innerHTML = "";
+  dom.placesCount.textContent = latestHistory.length ? `${latestHistory.length} nokta` : "";
+  const items = latestHistory.slice().reverse().slice(0, 40);
+  items.forEach((p) => {
+    const li = document.createElement("li");
+    const time = p.at?.toDate ? p.at.toDate().toLocaleString("tr-TR") : "";
+    const coords =
+      typeof p.lat === "number" ? `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}` : "-";
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "place-time";
+    timeSpan.textContent = time;
+    const coordSpan = document.createElement("span");
+    coordSpan.className = "place-coords";
+    coordSpan.textContent = coords;
+    li.append(timeSpan, coordSpan);
+    dom.placesList.appendChild(li);
+  });
+}
+
+async function reverseGeocode(lat, lng) {
+  const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+  const now = Date.now();
+  if (key === lastGeocode.key && lastGeocode.text) {
+    dom.currentAddress.textContent = lastGeocode.text;
+    return;
+  }
+  if (now - lastGeocode.at < 15000) return;
+  lastGeocode = { key, at: now, text: lastGeocode.text };
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=tr`,
+    );
+    const data = await res.json();
+    const text = data.display_name || "-";
+    lastGeocode = { key, at: now, text };
+    dom.currentAddress.textContent = text;
+  } catch (_) {
+    dom.currentAddress.textContent = "-";
+  }
+}
+
+async function clearHistory() {
+  if (!db || !currentUser) return;
+  try {
+    const snap = await getDocs(trackerHistoryCol());
+    const batch = writeBatch(db);
+    snap.forEach((entry) => batch.delete(entry.ref));
+    await batch.commit();
+    lastHistoryPoint = null;
+    setStatus("Gecmis temizlendi");
+  } catch (_) {
+    setStatus("Gecmis temizlenemedi");
+  }
+}
+
+async function requestWakeLock() {
+  try {
+    if ("wakeLock" in navigator) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => {
+        wakeLock = null;
+      });
+    }
+  } catch (_) {
+    wakeLock = null;
+  }
+}
+
+function releaseWakeLock() {
+  try {
+    wakeLock?.release();
+  } catch (_) {
+    /* yoksay */
+  }
+  wakeLock = null;
+}
+
+function setShareBanner(on) {
+  dom.shareBanner.dataset.state = on ? "on" : "off";
+  dom.shareBannerText.textContent = on ? "Konum paylasiliyor - canli" : "Konum paylasimi kapali";
+}
+
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (value) => (value * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
 }
 
 function cleanRoom(value) {

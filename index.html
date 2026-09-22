@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iki Kisilik An</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -42,6 +48,7 @@
             <button class="tab is-active" type="button" data-view="chatView">Mesaj</button>
             <button class="tab" type="button" data-view="cameraView">Kamera</button>
             <button class="tab" type="button" data-view="callView">Arama</button>
+            <button class="tab" type="button" data-view="locationView">Konum</button>
           </nav>
           <button class="ghost-action" id="logoutButton" type="button">Cikis yap</button>
         </aside>
@@ -101,6 +108,54 @@
               Ayni oda koduyla iki farkli cihazda giris yapinca biri arama baslatir, digeri katilir.
             </p>
           </section>
+
+          <section class="view location-view is-hidden" id="locationView">
+            <div class="share-banner" id="shareBanner" data-state="off">
+              <span class="dot"></span>
+              <span id="shareBannerText">Konum paylasimi kapali</span>
+            </div>
+
+            <div class="control-row">
+              <button id="startShareButton" type="button">Konumumu paylas</button>
+              <button id="stopShareButton" type="button" disabled>Paylasimi durdur</button>
+              <button id="clearHistoryButton" type="button">Gecmisi temizle</button>
+            </div>
+
+            <div id="locationMap" class="location-map"></div>
+
+            <div class="location-info">
+              <div class="info-card">
+                <span class="info-label">Son guncelleme</span>
+                <strong id="lastUpdate">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Konum</span>
+                <strong id="currentAddress">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Koordinat</span>
+                <strong id="currentCoords">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Dogruluk / Hiz</span>
+                <strong id="currentMeta">-</strong>
+              </div>
+            </div>
+
+            <div class="places">
+              <div class="places-head">
+                <h3>Gidilen yerler</h3>
+                <span class="muted small" id="placesCount"></span>
+              </div>
+              <ul class="places-list" id="placesList"></ul>
+            </div>
+
+            <p class="muted small">
+              Bu cihaz senin: "Konumumu paylas" dedigin surece canli konumun ayni oda kodundaki
+              diger kisiye gorunur. Tarayici/APK arka plana atilinca konum guncellemesi durabilir;
+              surekli takip icin uygulamayi acik ve ekrani uyanik tut.
+            </p>
+          </section>
         </section>
       </section>
     </main>
@@ -113,6 +168,11 @@
       </article>
     </template>
 
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script type="module" src="app.js"></script>
   </body>
 </html>

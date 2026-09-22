@@ -353,6 +353,134 @@ input {
   display: block;
 }
 
+.location-view {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.share-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-weight: 700;
+}
+
+.share-banner .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.share-banner[data-state="on"] {
+  border-color: rgba(79, 183, 168, 0.6);
+  background: rgba(79, 183, 168, 0.12);
+  color: #bff3ea;
+}
+
+.share-banner[data-state="on"] .dot {
+  background: var(--accent-2);
+  box-shadow: 0 0 0 0 rgba(79, 183, 168, 0.7);
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 183, 168, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 183, 168, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 183, 168, 0);
+  }
+}
+
+.location-map {
+  height: 380px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #05070a;
+  z-index: 0;
+}
+
+.location-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.info-card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.info-label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.info-card strong {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+}
+
+.places-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.places-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.places-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.places-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+
+.place-time {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.place-coords {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
 .is-hidden {
   display: none !important;
 }
@@ -397,5 +525,13 @@ input {
 
   .message {
     width: 100%;
+  }
+
+  .location-info {
+    grid-template-columns: 1fr;
+  }
+
+  .location-map {
+    height: 320px;
   }
 }
