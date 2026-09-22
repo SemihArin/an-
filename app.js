@@ -87,7 +87,13 @@ const dom = {
   currentMeta: $("#currentMeta"),
   placesList: $("#placesList"),
   placesCount: $("#placesCount"),
+  consentOverlay: $("#consentOverlay"),
+  consentCheckbox: $("#consentCheckbox"),
+  consentAgreeButton: $("#consentAgreeButton"),
+  consentCancelButton: $("#consentCancelButton"),
 };
+
+const CONSENT_KEY = "konum-paylasim-onayi";
 
 let app;
 let auth;
@@ -209,6 +215,19 @@ dom.hangupButton.addEventListener("click", hangup);
 dom.startShareButton.addEventListener("click", startShare);
 dom.stopShareButton.addEventListener("click", stopShare);
 dom.clearHistoryButton.addEventListener("click", clearHistory);
+dom.consentCheckbox.addEventListener("change", () => {
+  dom.consentAgreeButton.disabled = !dom.consentCheckbox.checked;
+});
+dom.consentAgreeButton.addEventListener("click", () => {
+  if (!dom.consentCheckbox.checked) return;
+  setConsent(true);
+  hideConsent();
+  startShare();
+});
+dom.consentCancelButton.addEventListener("click", () => {
+  hideConsent();
+  setStatus("Konum paylasimi onaylanmadi");
+});
 $('[data-view="locationView"]').addEventListener("click", onLocationTabShown);
 document.addEventListener("visibilitychange", async () => {
   if (sharing && wakeLock === null && document.visibilityState === "visible") {
@@ -442,6 +461,35 @@ async function hangup() {
   setStatus("Arama kapatildi");
 }
 
+// ---- Onay ----
+
+function hasConsent() {
+  try {
+    return localStorage.getItem(CONSENT_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function setConsent(value) {
+  try {
+    if (value) localStorage.setItem(CONSENT_KEY, "1");
+    else localStorage.removeItem(CONSENT_KEY);
+  } catch (_) {
+    /* localStorage yoksa yoksay */
+  }
+}
+
+function showConsent() {
+  dom.consentCheckbox.checked = false;
+  dom.consentAgreeButton.disabled = true;
+  dom.consentOverlay.classList.remove("is-hidden");
+}
+
+function hideConsent() {
+  dom.consentOverlay.classList.add("is-hidden");
+}
+
 // ---- Konum paylasimi ----
 
 function trackerCurrentDoc() {
@@ -499,6 +547,12 @@ async function startShare() {
   if (sharing) return;
   if (!currentUser) {
     setStatus("Once giris yap");
+    return;
+  }
+
+  // Onay verilmemisse once onay ekranini goster; paylasim baslamaz.
+  if (!hasConsent()) {
+    showConsent();
     return;
   }
 

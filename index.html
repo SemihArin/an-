@@ -160,6 +160,29 @@
       </section>
     </main>
 
+    <div class="consent-overlay is-hidden" id="consentOverlay" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+      <div class="consent-card">
+        <h2 id="consentTitle">Konum paylasimi onayi</h2>
+        <p>
+          "Onayliyorum" dedigin an, bu cihazin <strong>canli konumu</strong> ve
+          <strong>gittigi yerler</strong> ayni oda kodundaki kisiye gorunur olur.
+        </p>
+        <ul>
+          <li>Paylasim yalnizca sen "Konumumu paylas" dedigin surece calisir.</li>
+          <li>Istedigin an "Paylasimi durdur" ile kapatabilirsin.</li>
+          <li>Paylasim acikken ekranda surekli "canli" gostergesi kalir.</li>
+        </ul>
+        <label class="consent-check">
+          <input type="checkbox" id="consentCheckbox" />
+          <span>Kendi konumumun paylasilmasini onayliyorum.</span>
+        </label>
+        <div class="control-row">
+          <button id="consentAgreeButton" type="button" disabled>Onayliyorum</button>
+          <button id="consentCancelButton" type="button">Vazgec</button>
+        </div>
+      </div>
+    </div>
+
     <template id="messageTemplate">
       <article class="message">
         <div class="message-meta"></div>
