@@ -220,6 +220,11 @@ dom.consentCheckbox.addEventListener("change", () => {
 });
 dom.consentAgreeButton.addEventListener("click", () => {
   if (!dom.consentCheckbox.checked) return;
+  if (!currentUser) {
+    hideConsent();
+    setStatus("Once Google ile giris yap");
+    return;
+  }
   setConsent(true);
   hideConsent();
   startShare();
@@ -481,6 +486,10 @@ function setConsent(value) {
 }
 
 function showConsent() {
+  if (!currentUser) {
+    setStatus("Once Google ile giris yap");
+    return;
+  }
   dom.consentCheckbox.checked = false;
   dom.consentAgreeButton.disabled = true;
   dom.consentOverlay.classList.remove("is-hidden");
@@ -545,8 +554,10 @@ async function startShare() {
     return;
   }
   if (sharing) return;
+  // Giris yapilmadan konum iznine ve paylasima gecilmez.
   if (!currentUser) {
-    setStatus("Once giris yap");
+    setStatus("Once Google ile giris yap");
+    dom.authPanel?.classList.remove("is-hidden");
     return;
   }
 
