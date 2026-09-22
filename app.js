@@ -502,6 +502,20 @@ async function startShare() {
     return;
   }
 
+  // Capacitor (APK) icinde calisiyorsa once native konum iznini iste.
+  const geoPlugin = window.Capacitor?.Plugins?.Geolocation;
+  if (geoPlugin) {
+    try {
+      const perm = await geoPlugin.requestPermissions();
+      if (perm?.location === "denied" && perm?.coarseLocation === "denied") {
+        setStatus("Konum izni reddedildi");
+        return;
+      }
+    } catch (_) {
+      /* izin sorgusu basarisiz - watchPosition yine de dener */
+    }
+  }
+
   watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
     enableHighAccuracy: true,
     maximumAge: 5000,

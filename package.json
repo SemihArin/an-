@@ -1,0 +1,29 @@
+{
+  "name": "an-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sync:web": "cp index.html app.js styles.css www/",
+    "sync": "npm run sync:web && cap sync android",
+    "build:apk": "npm run sync && cd android && ./gradlew :app:assembleDebug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SemihArin/an-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SemihArin/an-/issues"
+  },
+  "homepage": "https://github.com/SemihArin/an-#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/geolocation": "^8.2.2"
+  }
+}

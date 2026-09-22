@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Iki Kisilik An</string>
+    <string name="title_activity_main">Iki Kisilik An</string>
+    <string name="package_name">com.ikikisilik.an</string>
+    <string name="custom_url_scheme">com.ikikisilik.an</string>
+</resources>

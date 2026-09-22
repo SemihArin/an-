@@ -1,0 +1,20 @@
+# Node
+node_modules/
+
+# Capacitor generated web copy (regenerate with: npm run sync:web)
+www/
+
+# Android build outputs & local config
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+android/app/release/
+.gradle/
+
+# APK artifacts
+*.apk
+
+# OS
+.DS_Store
