@@ -80,13 +80,10 @@ const dom = {
   recordButton: $("#recordButton"),
   uploadCaptureButton: $("#uploadCaptureButton"),
   capturePreview: $("#capturePreview"),
-  localVideo: $("#localVideo"),
-  remoteVideo: $("#remoteVideo"),
-  prepareCallButton: $("#prepareCallButton"),
-  createCallButton: $("#createCallButton"),
-  answerCallButton: $("#answerCallButton"),
-  hangupButton: $("#hangupButton"),
   messageTemplate: $("#messageTemplate"),
+  recenterButton: $("#recenterButton"),
+  sheetHandle: $("#sheetHandle"),
+  locationView: $("#locationView"),
   shareBanner: $("#shareBanner"),
   shareBannerText: $("#shareBannerText"),
   startShareButton: $("#startShareButton"),
@@ -115,16 +112,11 @@ let storage;
 let currentUser;
 let currentRoom = "arkadaslar";
 let unsubscribeMessages;
-let unsubscribeCall;
 let cameraStream;
-let callStream;
-let remoteStream;
 let recorder;
 let recordedChunks = [];
 let lastCapture;
 let lastCaptureUrl;
-let peerConnection;
-let callId;
 
 let unsubscribeMembers;
 let unsubscribeHistory;
@@ -156,10 +148,6 @@ if ("serviceWorker" in navigator) {
       /* SW yoksa web bildirimi devre disi, banner yine calisir */
     });
 }
-
-const rtcConfig = {
-  iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }],
-};
 
 if (hasFirebaseConfig) {
   app = initializeApp(firebaseConfig);
@@ -303,10 +291,11 @@ dom.uploadCaptureButton.addEventListener("click", async () => {
   setStatus("Cekim Firebase Storage'a yuklendi");
 });
 
-dom.prepareCallButton.addEventListener("click", prepareCall);
-dom.createCallButton.addEventListener("click", createCall);
-dom.answerCallButton.addEventListener("click", answerCall);
-dom.hangupButton.addEventListener("click", hangup);
+dom.recenterButton?.addEventListener("click", recenterOnMe);
+dom.sheetHandle?.addEventListener("click", () => {
+  dom.locationView?.classList.toggle("collapsed");
+  if (map) setTimeout(() => map.invalidateSize(), 260);
+});
 
 dom.startShareButton.addEventListener("click", startShare);
 dom.stopShareButton.addEventListener("click", stopShare);
@@ -463,108 +452,6 @@ async function uploadCapture(file) {
   return getDownloadURL(captureRef);
 }
 
-async function prepareCall() {
-  callStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  remoteStream = new MediaStream();
-  dom.localVideo.srcObject = callStream;
-  dom.remoteVideo.srcObject = remoteStream;
-  dom.createCallButton.disabled = false;
-  dom.answerCallButton.disabled = false;
-  setStatus("Arama hazir");
-}
-
-function createPeerConnection() {
-  peerConnection = new RTCPeerConnection(rtcConfig);
-  callStream.getTracks().forEach((track) => peerConnection.addTrack(track, callStream));
-  peerConnection.addEventListener("track", (event) => {
-    event.streams[0].getTracks().forEach((track) => remoteStream.addTrack(track));
-  });
-  return peerConnection;
-}
-
-async function createCall() {
-  callId = currentRoom;
-  const callDoc = doc(db, "rooms", currentRoom, "calls", callId);
-  const offerCandidates = collection(callDoc, "offerCandidates");
-  const answerCandidates = collection(callDoc, "answerCandidates");
-
-  createPeerConnection();
-  peerConnection.addEventListener("icecandidate", (event) => {
-    if (event.candidate) addDoc(offerCandidates, event.candidate.toJSON());
-  });
-
-  const offer = await peerConnection.createOffer();
-  await peerConnection.setLocalDescription(offer);
-  await setDoc(callDoc, {
-    offer: { type: offer.type, sdp: offer.sdp },
-    createdAt: serverTimestamp(),
-    owner: currentUser.uid,
-  });
-
-  unsubscribeCall = onSnapshot(callDoc, (snapshot) => {
-    const data = snapshot.data();
-    if (!peerConnection.currentRemoteDescription && data?.answer) {
-      peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-    }
-  });
-
-  onSnapshot(answerCandidates, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === "added") peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data()));
-    });
-  });
-
-  dom.hangupButton.disabled = false;
-  setStatus("Arama baslatildi");
-}
-
-async function answerCall() {
-  callId = currentRoom;
-  const callDoc = doc(db, "rooms", currentRoom, "calls", callId);
-  const callSnapshot = await getDoc(callDoc);
-  if (!callSnapshot.exists()) {
-    setStatus("Bu odada aktif arama yok");
-    return;
-  }
-
-  const offerCandidates = collection(callDoc, "offerCandidates");
-  const answerCandidates = collection(callDoc, "answerCandidates");
-  createPeerConnection();
-  peerConnection.addEventListener("icecandidate", (event) => {
-    if (event.candidate) addDoc(answerCandidates, event.candidate.toJSON());
-  });
-
-  const callData = callSnapshot.data();
-  await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
-  const answer = await peerConnection.createAnswer();
-  await peerConnection.setLocalDescription(answer);
-  await setDoc(callDoc, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
-
-  onSnapshot(offerCandidates, (snapshot) => {
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === "added") peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data()));
-    });
-  });
-
-  dom.hangupButton.disabled = false;
-  setStatus("Aramaya katildi");
-}
-
-async function hangup() {
-  peerConnection?.close();
-  peerConnection = null;
-  callStream?.getTracks().forEach((track) => track.stop());
-  remoteStream?.getTracks().forEach((track) => track.stop());
-  dom.localVideo.srcObject = null;
-  dom.remoteVideo.srcObject = null;
-  dom.createCallButton.disabled = true;
-  dom.answerCallButton.disabled = true;
-  dom.hangupButton.disabled = true;
-  if (unsubscribeCall) unsubscribeCall();
-  if (callId) await deleteDoc(doc(db, "rooms", currentRoom, "calls", callId));
-  setStatus("Arama kapatildi");
-}
-
 // ---- Onay ----
 
 function hasConsent() {
@@ -622,13 +509,33 @@ function onLocationTabShown() {
 
 function initMap() {
   if (mapReady || typeof L === "undefined") return;
-  map = L.map(dom.locationMap, { zoomControl: true }).setView([39.925, 32.866], 6);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap",
+  map = L.map(dom.locationMap, { zoomControl: true, attributionControl: true }).setView([39.925, 32.866], 6);
+  map.zoomControl.setPosition("topright");
+  // Koyu temali ozel harita (CARTO dark, anahtar gerektirmez)
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 20,
+    subdomains: "abcd",
+    attribution: "&copy; OpenStreetMap &copy; CARTO",
   }).addTo(map);
-  trail = L.polyline([], { color: "#ef6f6c", weight: 4, opacity: 0.8 }).addTo(map);
+  trail = L.polyline([], { color: "#6c8cff", weight: 5, opacity: 0.85, lineJoin: "round" }).addTo(map);
   mapReady = true;
+}
+
+function recenterOnMe() {
+  const me = currentUser ? members.get(currentUser.uid) : null;
+  if (me && mapReady && typeof me.lat === "number") {
+    map.setView([me.lat, me.lng], 16);
+    return;
+  }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (mapReady) map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+      },
+      () => setStatus("Konum alinamadi"),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }
 }
 
 function resetGroupState() {
