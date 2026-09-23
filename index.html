@@ -22,7 +22,7 @@
   <body>
     <!-- ==================== GIRIS EKRANI ==================== -->
     <main class="auth-screen" id="authPanel">
-      <div class="auth-card">
+      <div class="auth-card" data-mode="login">
         <div class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
             <path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z" fill="currentColor" opacity="0.25"/>
@@ -31,11 +31,14 @@
           </svg>
         </div>
         <h1 class="brand-title">Nerede</h1>
-        <p class="brand-sub">
-          Arkadaslarinla canli konum paylas. Ayni grup koduna girenler birbirini haritada gorur.
+        <p class="brand-sub only-login">
+          Tekrar hos geldin. Arkadaslarinla canli konum paylasmak icin giris yap.
+        </p>
+        <p class="brand-sub only-register">
+          Yeni hesap olustur, sonra arkadaslarinla ayni grup koduna girin.
         </p>
 
-        <button class="btn btn-google" id="loginButton" type="button">
+        <button class="btn btn-google only-login" id="loginButton" type="button">
           <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
             <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.2 13.3 17.6 9.5 24 9.5Z"/>
             <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7C43.7 37.9 46.5 31.8 46.5 24.5Z"/>
@@ -45,10 +48,10 @@
           Google ile devam et
         </button>
 
-        <div class="divider"><span>veya e-posta ile</span></div>
+        <div class="divider only-login"><span>veya e-posta ile</span></div>
 
-        <label class="field">
-          <span class="field-label">Ad (kayit icin)</span>
+        <label class="field only-register">
+          <span class="field-label">Ad</span>
           <input id="authName" placeholder="Adin" autocomplete="name" />
         </label>
         <label class="field">
@@ -60,12 +63,20 @@
           <input id="authPassword" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
         </label>
 
-        <div class="auth-actions">
-          <button class="btn btn-primary" id="emailLoginButton" type="button">Giris yap</button>
-          <button class="btn btn-ghost" id="emailRegisterButton" type="button">Kayit ol</button>
-        </div>
+        <button class="btn btn-primary only-login" id="emailLoginButton" type="button">Giris yap</button>
+        <button class="btn btn-primary only-register" id="emailRegisterButton" type="button">Kayit ol</button>
 
         <p class="auth-error is-hidden" id="authError"></p>
+
+        <p class="auth-switch only-login">
+          Hesabin yok mu?
+          <button type="button" class="link-btn" id="showRegister">Kayit ol</button>
+        </p>
+        <p class="auth-switch only-register">
+          Zaten uye misin?
+          <button type="button" class="link-btn" id="showLogin">Giris yap</button>
+        </p>
+
         <p class="setup-warning is-hidden" id="setupWarning">
           Firebase bilgilerini app.js icindeki firebaseConfig alanina ekle.
         </p>

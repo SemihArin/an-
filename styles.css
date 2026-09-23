@@ -233,10 +233,32 @@ input:focus {
   background: var(--line);
 }
 
-.auth-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.auth-card[data-mode="login"] .only-register {
+  display: none !important;
+}
+
+.auth-card[data-mode="register"] .only-login {
+  display: none !important;
+}
+
+.auth-switch {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 2px 0 0;
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
 }
 
 .auth-error {

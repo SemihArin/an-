@@ -57,6 +57,9 @@ const dom = {
   emailLoginButton: $("#emailLoginButton"),
   emailRegisterButton: $("#emailRegisterButton"),
   authError: $("#authError"),
+  authCard: $(".auth-card"),
+  showRegister: $("#showRegister"),
+  showLogin: $("#showLogin"),
   userPhoto: $("#userPhoto"),
   userName: $("#userName"),
   userEmail: $("#userEmail"),
@@ -177,6 +180,16 @@ dom.loginButton.addEventListener("click", async () => {
 });
 
 dom.logoutButton.addEventListener("click", () => signOut(auth));
+
+function setAuthMode(mode) {
+  if (dom.authCard) dom.authCard.dataset.mode = mode;
+  hideAuthError();
+  if (mode === "register") dom.authName?.focus();
+  else dom.authEmail?.focus();
+}
+
+dom.showRegister?.addEventListener("click", () => setAuthMode("register"));
+dom.showLogin?.addEventListener("click", () => setAuthMode("login"));
 
 dom.emailLoginButton.addEventListener("click", async () => {
   if (!hasFirebaseConfig) return;
