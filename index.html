@@ -2,201 +2,257 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iki Kisilik An</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0" />
+    <meta name="theme-color" content="#0e1017" />
+    <title>Nerede</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <section class="auth-panel" id="authPanel">
-        <div>
-          <p class="eyebrow">Ozel alan</p>
-          <h1>Iki kisilik an</h1>
-          <p class="muted">
-            Arkadaslarinla canli konum paylasimi: ayni grup koduyla girenler birbirini haritada
-            gorur. Ayrica mesajlasma, kamera ve sesli/goruntulu arama.
-          </p>
+    <!-- ==================== GIRIS EKRANI ==================== -->
+    <main class="auth-screen" id="authPanel">
+      <div class="auth-card">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
+            <path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z" fill="currentColor" opacity="0.25"/>
+            <path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="12" cy="10" r="2.6" fill="currentColor"/>
+          </svg>
         </div>
-        <button class="primary-action" id="loginButton" type="button">Google ile giris yap (web)</button>
+        <h1 class="brand-title">Nerede</h1>
+        <p class="brand-sub">
+          Arkadaslarinla canli konum paylas. Ayni grup koduna girenler birbirini haritada gorur.
+        </p>
 
-        <div class="email-auth">
-          <p class="muted small">APK icin e-posta ile giris:</p>
-          <input id="authName" placeholder="Adin (kayit icin)" autocomplete="name" />
-          <input id="authEmail" type="email" placeholder="E-posta" autocomplete="email" />
-          <input id="authPassword" type="password" placeholder="Sifre (en az 6 karakter)" autocomplete="current-password" />
-          <div class="inline-form">
-            <button id="emailLoginButton" type="button">Giris yap</button>
-            <button id="emailRegisterButton" type="button">Kayit ol</button>
-          </div>
-          <p class="auth-error is-hidden" id="authError"></p>
+        <button class="btn btn-google" id="loginButton" type="button">
+          <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.2 13.3 17.6 9.5 24 9.5Z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7C43.7 37.9 46.5 31.8 46.5 24.5Z"/>
+            <path fill="#FBBC05" d="M10.4 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.1Z"/>
+            <path fill="#34A853" d="M24 48c6.4 0 11.9-2.1 15.8-5.8l-7.3-5.7c-2 1.4-4.7 2.3-8.5 2.3-6.4 0-11.8-3.8-13.6-9.2l-7.9 6.1C6.4 42.6 14.6 48 24 48Z"/>
+          </svg>
+          Google ile devam et
+        </button>
+
+        <div class="divider"><span>veya e-posta ile</span></div>
+
+        <label class="field">
+          <span class="field-label">Ad (kayit icin)</span>
+          <input id="authName" placeholder="Adin" autocomplete="name" />
+        </label>
+        <label class="field">
+          <span class="field-label">E-posta</span>
+          <input id="authEmail" type="email" placeholder="ornek@eposta.com" autocomplete="email" />
+        </label>
+        <label class="field">
+          <span class="field-label">Sifre</span>
+          <input id="authPassword" type="password" placeholder="En az 6 karakter" autocomplete="current-password" />
+        </label>
+
+        <div class="auth-actions">
+          <button class="btn btn-primary" id="emailLoginButton" type="button">Giris yap</button>
+          <button class="btn btn-ghost" id="emailRegisterButton" type="button">Kayit ol</button>
         </div>
 
-        <p class="setup-warning" id="setupWarning">
+        <p class="auth-error is-hidden" id="authError"></p>
+        <p class="setup-warning is-hidden" id="setupWarning">
           Firebase bilgilerini app.js icindeki firebaseConfig alanina ekle.
         </p>
-      </section>
-
-      <section class="workspace is-hidden" id="workspace" aria-label="Uygulama">
-        <aside class="sidebar">
-          <div class="profile">
-            <img id="userPhoto" alt="" />
-            <div>
-              <strong id="userName">Kullanici</strong>
-              <span id="userEmail"></span>
-            </div>
-          </div>
-          <div class="room-card">
-            <label for="roomInput">Grup kodu</label>
-            <div class="inline-form">
-              <input id="roomInput" value="arkadaslar" autocomplete="off" />
-              <button id="joinRoomButton" type="button">Baglan</button>
-            </div>
-          </div>
-          <nav class="tabs" aria-label="Bolumler">
-            <button class="tab is-active" type="button" data-view="chatView">Mesaj</button>
-            <button class="tab" type="button" data-view="cameraView">Kamera</button>
-            <button class="tab" type="button" data-view="callView">Arama</button>
-            <button class="tab" type="button" data-view="locationView">Konum</button>
-          </nav>
-          <button class="ghost-action" id="logoutButton" type="button">Cikis yap</button>
-        </aside>
-
-        <section class="content">
-          <div class="topbar">
-            <div>
-              <p class="eyebrow">Aktif oda</p>
-              <h2 id="activeRoomTitle">bizim-odamiz</h2>
-            </div>
-            <span class="status-pill" id="statusPill">Hazir</span>
-          </div>
-
-          <section class="view chat-view" id="chatView">
-            <div class="messages" id="messages" aria-live="polite"></div>
-            <form class="composer" id="messageForm">
-              <button class="icon-button" id="attachLastCaptureButton" type="button" title="Son cekimi ekle">
-                +
-              </button>
-              <input id="messageInput" placeholder="Mesaj yaz..." autocomplete="off" />
-              <button class="send-button" type="submit">Gonder</button>
-            </form>
-          </section>
-
-          <section class="view camera-view is-hidden" id="cameraView">
-            <div class="media-stage">
-              <video id="cameraPreview" autoplay playsinline muted></video>
-              <canvas id="photoCanvas" class="is-hidden"></canvas>
-            </div>
-            <div class="control-row">
-              <button id="startCameraButton" type="button">Kamerayi ac</button>
-              <button id="takePhotoButton" type="button" disabled>Fotograf cek</button>
-              <button id="recordButton" type="button" disabled>Video kaydet</button>
-              <button id="uploadCaptureButton" type="button" disabled>Firebase'e yukle</button>
-            </div>
-            <div class="capture-preview" id="capturePreview"></div>
-          </section>
-
-          <section class="view call-view is-hidden" id="callView">
-            <div class="call-grid">
-              <div class="video-tile">
-                <video id="localVideo" autoplay playsinline muted></video>
-                <span>Sen</span>
-              </div>
-              <div class="video-tile">
-                <video id="remoteVideo" autoplay playsinline></video>
-                <span>Sevgilin</span>
-              </div>
-            </div>
-            <div class="control-row">
-              <button id="prepareCallButton" type="button">Mikrofon/kamera ac</button>
-              <button id="createCallButton" type="button" disabled>Arama baslat</button>
-              <button id="answerCallButton" type="button" disabled>Aramaya katil</button>
-              <button id="hangupButton" type="button" disabled>Kapat</button>
-            </div>
-            <p class="muted small">
-              Ayni oda koduyla iki farkli cihazda giris yapinca biri arama baslatir, digeri katilir.
-            </p>
-          </section>
-
-          <section class="view location-view is-hidden" id="locationView">
-            <div class="share-banner" id="shareBanner" data-state="off">
-              <span class="dot"></span>
-              <span id="shareBannerText">Konum paylasimi kapali</span>
-            </div>
-
-            <div class="control-row">
-              <button id="startShareButton" type="button">Konumumu paylas</button>
-              <button id="stopShareButton" type="button" disabled>Paylasimi durdur</button>
-              <button id="clearHistoryButton" type="button">Gecmisi temizle</button>
-            </div>
-
-            <div id="locationMap" class="location-map"></div>
-
-            <div class="friends">
-              <div class="friends-head">
-                <h3>Arkadaslar</h3>
-                <span class="muted small" id="friendsCount"></span>
-              </div>
-              <ul class="friends-list" id="friendsList"></ul>
-            </div>
-
-            <div class="focus-detail">
-              <h3 id="focusName">Konum detayi</h3>
-              <div class="location-info">
-                <div class="info-card">
-                  <span class="info-label">Son guncelleme</span>
-                  <strong id="lastUpdate">-</strong>
-                </div>
-                <div class="info-card">
-                  <span class="info-label">Adres</span>
-                  <strong id="currentAddress">-</strong>
-                </div>
-                <div class="info-card">
-                  <span class="info-label">Koordinat</span>
-                  <strong id="currentCoords">-</strong>
-                </div>
-                <div class="info-card">
-                  <span class="info-label">Uzaklik / Dogruluk</span>
-                  <strong id="currentMeta">-</strong>
-                </div>
-              </div>
-            </div>
-
-            <p class="muted small">
-              Ayni grup koduyla giren herkes birbirinin canli konumunu haritada gorur. Herkes
-              yalnizca "Konumumu paylas" dedigi ve onay verdigi surece paylasir; listeden birine
-              dokununca haritada ona odaklanir. Tarayici/APK arka plana atilinca guncelleme
-              durabilir; surekli paylasim icin uygulamayi acik tut.
-            </p>
-          </section>
-        </section>
-      </section>
+      </div>
     </main>
 
-    <div class="consent-overlay is-hidden" id="consentOverlay" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
-      <div class="consent-card">
+    <!-- ==================== UYGULAMA ==================== -->
+    <div class="app is-hidden" id="workspace" aria-label="Uygulama">
+      <header class="app-bar">
+        <div class="app-brand">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z" fill="currentColor" opacity="0.3"/>
+            <path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="12" cy="10" r="2.6" fill="currentColor"/>
+          </svg>
+          <span>Nerede</span>
+        </div>
+        <div class="app-bar-actions">
+          <span class="status-pill" id="statusPill">Hazir</span>
+          <button class="icon-btn" id="logoutButton" type="button" title="Cikis yap" aria-label="Cikis yap">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="group-bar">
+        <img class="me-avatar" id="userPhoto" alt="" />
+        <div class="group-field">
+          <input id="roomInput" value="arkadaslar" autocomplete="off" placeholder="grup kodu" aria-label="Grup kodu" />
+        </div>
+        <button class="btn btn-primary btn-sm" id="joinRoomButton" type="button">Baglan</button>
+      </div>
+      <span id="userName" hidden></span>
+      <span id="userEmail" hidden></span>
+      <span id="activeRoomTitle" hidden></span>
+
+      <main class="screen">
+        <!-- Konum / Harita -->
+        <section class="view location-view" id="locationView">
+          <div class="share-banner" id="shareBanner" data-state="off">
+            <span class="dot"></span>
+            <span id="shareBannerText">Konum paylasimi kapali</span>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="startShareButton" type="button">Konumumu paylas</button>
+            <button class="btn btn-danger" id="stopShareButton" type="button" disabled>Durdur</button>
+            <button class="btn btn-ghost" id="clearHistoryButton" type="button">Gecmisi temizle</button>
+          </div>
+
+          <div id="locationMap" class="location-map"></div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Arkadaslar</h3>
+              <span class="pill-count" id="friendsCount"></span>
+            </div>
+            <ul class="friends-list" id="friendsList"></ul>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title" id="focusName">Konum detayi</h3>
+            <div class="info-grid">
+              <div class="info-card">
+                <span class="info-label">Son guncelleme</span>
+                <strong id="lastUpdate">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Adres</span>
+                <strong id="currentAddress">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Koordinat</span>
+                <strong id="currentCoords">-</strong>
+              </div>
+              <div class="info-card">
+                <span class="info-label">Uzaklik / Dogruluk</span>
+                <strong id="currentMeta">-</strong>
+              </div>
+            </div>
+          </div>
+
+          <p class="hint">
+            Ayni grup koduyla giren herkes birbirinin canli konumunu haritada gorur. Herkes yalnizca
+            "Konumumu paylas" deyip onay verdigi surece paylasir. Listeden birine dokununca haritada
+            ona odaklanirsin.
+          </p>
+        </section>
+
+        <!-- Mesaj -->
+        <section class="view chat-view is-hidden" id="chatView">
+          <div class="messages" id="messages" aria-live="polite"></div>
+          <form class="composer" id="messageForm">
+            <button class="icon-btn ghost" id="attachLastCaptureButton" type="button" title="Son cekimi ekle">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <input id="messageInput" placeholder="Mesaj yaz..." autocomplete="off" />
+            <button class="btn btn-primary btn-sm" type="submit">Gonder</button>
+          </form>
+        </section>
+
+        <!-- Kamera -->
+        <section class="view camera-view is-hidden" id="cameraView">
+          <div class="media-stage">
+            <video id="cameraPreview" autoplay playsinline muted></video>
+            <canvas id="photoCanvas" class="is-hidden"></canvas>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="startCameraButton" type="button">Kamerayi ac</button>
+            <button class="btn btn-ghost" id="takePhotoButton" type="button" disabled>Fotograf cek</button>
+            <button class="btn btn-ghost" id="recordButton" type="button" disabled>Video kaydet</button>
+            <button class="btn btn-primary" id="uploadCaptureButton" type="button" disabled>Yukle</button>
+          </div>
+          <div class="capture-preview" id="capturePreview"></div>
+        </section>
+
+        <!-- Arama -->
+        <section class="view call-view is-hidden" id="callView">
+          <div class="call-grid">
+            <div class="video-tile">
+              <video id="localVideo" autoplay playsinline muted></video>
+              <span>Sen</span>
+            </div>
+            <div class="video-tile">
+              <video id="remoteVideo" autoplay playsinline></video>
+              <span>Arkadas</span>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="prepareCallButton" type="button">Mikrofon/kamera ac</button>
+            <button class="btn btn-primary" id="createCallButton" type="button" disabled>Arama baslat</button>
+            <button class="btn btn-ghost" id="answerCallButton" type="button" disabled>Aramaya katil</button>
+            <button class="btn btn-danger" id="hangupButton" type="button" disabled>Kapat</button>
+          </div>
+          <p class="hint">
+            Ayni grup koduyla iki cihazda girince biri arama baslatir, digeri katilir.
+          </p>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Bolumler">
+        <button class="tab is-active" type="button" data-view="locationView">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <span>Harita</span>
+        </button>
+        <button class="tab" type="button" data-view="chatView">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Mesaj</span>
+        </button>
+        <button class="tab" type="button" data-view="cameraView">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Kamera</span>
+        </button>
+        <button class="tab" type="button" data-view="callView">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Arama</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ==================== ONAY MODALI ==================== -->
+    <div class="modal-overlay is-hidden" id="consentOverlay" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+      <div class="modal-card">
+        <div class="modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        </div>
         <h2 id="consentTitle">Konum paylasimi onayi</h2>
         <p>
           "Onayliyorum" dedigin an, bu cihazin <strong>canli konumu</strong> ve
           <strong>gittigi yerler</strong> ayni grup kodundaki arkadaslarina gorunur olur.
         </p>
-        <ul>
+        <ul class="modal-list">
           <li>Paylasim yalnizca sen "Konumumu paylas" dedigin surece calisir.</li>
-          <li>Istedigin an "Paylasimi durdur" ile kapatabilirsin.</li>
+          <li>Istedigin an "Durdur" ile kapatabilirsin.</li>
           <li>Paylasim acikken ekranda ve bildirimde surekli "canli" gostergesi kalir.</li>
         </ul>
         <label class="consent-check">
           <input type="checkbox" id="consentCheckbox" />
           <span>Kendi konumumun paylasilmasini onayliyorum.</span>
         </label>
-        <div class="control-row">
-          <button id="consentAgreeButton" type="button" disabled>Onayliyorum</button>
-          <button id="consentCancelButton" type="button">Vazgec</button>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="consentAgreeButton" type="button" disabled>Onayliyorum</button>
+          <button class="btn btn-ghost" id="consentCancelButton" type="button">Vazgec</button>
         </div>
       </div>
     </div>

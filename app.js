@@ -167,6 +167,7 @@ if (hasFirebaseConfig) {
   watchAuth();
 } else {
   dom.loginButton.disabled = true;
+  dom.setupWarning.classList.remove("is-hidden");
   setStatus("Firebase ayari bekleniyor");
 }
 
@@ -331,9 +332,11 @@ function watchAuth() {
     if (user) {
       dom.userName.textContent = user.displayName || "Kullanici";
       dom.userEmail.textContent = user.email || "";
-      dom.userPhoto.src = user.photoURL || "";
+      if (user.photoURL) dom.userPhoto.src = user.photoURL;
+      else dom.userPhoto.removeAttribute("src");
       listenToMessages();
       listenToLocation();
+      setTimeout(onLocationTabShown, 60);
       setStatus("Giris yapildi");
     } else {
       if (unsubscribeMessages) unsubscribeMessages();
