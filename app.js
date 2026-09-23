@@ -755,41 +755,62 @@ function updateMemberMarker(uid, m) {
   if (!mapReady || typeof m.lat !== "number" || typeof m.lng !== "number") return;
   const latlng = [m.lat, m.lng];
   const isMe = uid === currentUser?.uid;
-  const color = isMe ? "#ef6f6c" : colorForUid(uid);
+  const color = isMe ? "#22d3bb" : colorForUid(uid);
 
   let mk = markers.get(uid);
   if (!mk) {
-    mk = L.marker(latlng, { icon: personIcon(color, m.displayName, isMe) }).addTo(map);
+    mk = L.marker(latlng, { icon: personIcon(m, uid), zIndexOffset: isMe ? 1000 : 0 }).addTo(map);
     mk.on("click", () => focusMember(uid));
     markers.set(uid, mk);
   } else {
     mk.setLatLng(latlng);
-    mk.setIcon(personIcon(color, m.displayName, isMe));
+    mk.setIcon(personIcon(m, uid));
   }
-
-  const element = mk.getElement();
-  if (element) element.style.opacity = m.sharing === false ? "0.45" : "1";
 
   if (typeof m.accuracy === "number") {
     let circle = memberCircles.get(uid);
     if (!circle) {
-      circle = L.circle(latlng, { radius: m.accuracy, color, weight: 1, fillOpacity: 0.06 }).addTo(map);
+      circle = L.circle(latlng, {
+        radius: m.accuracy,
+        color,
+        weight: 1,
+        fillColor: color,
+        fillOpacity: 0.08,
+      }).addTo(map);
       memberCircles.set(uid, circle);
     } else {
       circle.setLatLng(latlng);
       circle.setRadius(m.accuracy);
+      circle.setStyle({ color, fillColor: color });
     }
   }
 }
 
-function personIcon(color, name, isMe) {
-  const label = isMe ? "Sen" : (name || "").trim().split(" ")[0] || "?";
+// Dairesel avatar baloncugu (foto veya bas harf + renkli halka)
+function personIcon(m, uid) {
+  const isMe = uid === currentUser?.uid;
+  const color = isMe ? "#22d3bb" : colorForUid(uid);
+  const name = isMe ? "Sen" : (m.displayName || "").trim().split(" ")[0] || "";
+  const letter = initialOf(isMe ? "Sen" : m.displayName);
+  const img = m.photoURL
+    ? `<img class="ava-img" src="${escapeAttr(m.photoURL)}" referrerpolicy="no-referrer" onerror="this.remove()"/>`
+    : "";
+  const dim = m.sharing === false ? " dim" : "";
   return L.divIcon({
-    className: "person-pin-wrap",
-    html: `<span class="person-pin" style="--pin:${color}"></span><span class="person-name">${escapeHtml(label)}</span>`,
-    iconSize: [24, 34],
-    iconAnchor: [12, 30],
+    className: "avatar-marker-wrap",
+    html:
+      `<div class="avatar-marker${dim}" style="--ring:${color}">` +
+      `<span class="ava-fallback">${escapeHtml(letter)}</span>${img}` +
+      `</div>` +
+      `<span class="marker-tip" style="background:${color}"></span>` +
+      `<span class="marker-name">${escapeHtml(name)}</span>`,
+    iconSize: [50, 62],
+    iconAnchor: [25, 56],
   });
+}
+
+function escapeAttr(text) {
+  return String(text).replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function initialOf(name) {
