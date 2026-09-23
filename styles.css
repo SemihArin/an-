@@ -108,6 +108,29 @@ input {
   margin: 0;
 }
 
+.email-auth {
+  display: grid;
+  gap: 10px;
+  max-width: 420px;
+}
+
+.email-auth .inline-form {
+  gap: 10px;
+}
+
+.email-auth .inline-form button {
+  flex: 1;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.auth-error {
+  color: #ff9d9d;
+  margin: 0;
+  font-size: 14px;
+}
+
 .primary-action,
 .send-button {
   background: var(--accent);

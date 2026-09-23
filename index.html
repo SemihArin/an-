@@ -23,7 +23,20 @@
             gorur. Ayrica mesajlasma, kamera ve sesli/goruntulu arama.
           </p>
         </div>
-        <button class="primary-action" id="loginButton" type="button">Google ile giris yap</button>
+        <button class="primary-action" id="loginButton" type="button">Google ile giris yap (web)</button>
+
+        <div class="email-auth">
+          <p class="muted small">APK icin e-posta ile giris:</p>
+          <input id="authName" placeholder="Adin (kayit icin)" autocomplete="name" />
+          <input id="authEmail" type="email" placeholder="E-posta" autocomplete="email" />
+          <input id="authPassword" type="password" placeholder="Sifre (en az 6 karakter)" autocomplete="current-password" />
+          <div class="inline-form">
+            <button id="emailLoginButton" type="button">Giris yap</button>
+            <button id="emailRegisterButton" type="button">Kayit ol</button>
+          </div>
+          <p class="auth-error is-hidden" id="authError"></p>
+        </div>
+
         <p class="setup-warning" id="setupWarning">
           Firebase bilgilerini app.js icindeki firebaseConfig alanina ekle.
         </p>

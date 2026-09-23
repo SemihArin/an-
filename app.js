@@ -1,10 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
+  createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  updateProfile,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   addDoc,
@@ -48,6 +51,12 @@ const dom = {
   setupWarning: $("#setupWarning"),
   loginButton: $("#loginButton"),
   logoutButton: $("#logoutButton"),
+  authName: $("#authName"),
+  authEmail: $("#authEmail"),
+  authPassword: $("#authPassword"),
+  emailLoginButton: $("#emailLoginButton"),
+  emailRegisterButton: $("#emailRegisterButton"),
+  authError: $("#authError"),
   userPhoto: $("#userPhoto"),
   userName: $("#userName"),
   userEmail: $("#userEmail"),
@@ -167,6 +176,61 @@ dom.loginButton.addEventListener("click", async () => {
 });
 
 dom.logoutButton.addEventListener("click", () => signOut(auth));
+
+dom.emailLoginButton.addEventListener("click", async () => {
+  if (!hasFirebaseConfig) return;
+  const email = dom.authEmail.value.trim();
+  const password = dom.authPassword.value;
+  if (!email || !password) {
+    showAuthError("E-posta ve sifre gir");
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    hideAuthError();
+  } catch (err) {
+    showAuthError(authErrorText(err));
+  }
+});
+
+dom.emailRegisterButton.addEventListener("click", async () => {
+  if (!hasFirebaseConfig) return;
+  const email = dom.authEmail.value.trim();
+  const password = dom.authPassword.value;
+  const name = dom.authName.value.trim();
+  if (!email || !password) {
+    showAuthError("E-posta ve sifre gir");
+    return;
+  }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (name) await updateProfile(cred.user, { displayName: name });
+    if (dom.userName) dom.userName.textContent = name || cred.user.email || "Kullanici";
+    hideAuthError();
+  } catch (err) {
+    showAuthError(authErrorText(err));
+  }
+});
+
+function showAuthError(text) {
+  dom.authError.textContent = text;
+  dom.authError.classList.remove("is-hidden");
+}
+
+function hideAuthError() {
+  dom.authError.classList.add("is-hidden");
+}
+
+function authErrorText(err) {
+  const code = err?.code || "";
+  if (code.includes("invalid-credential") || code.includes("wrong-password")) return "E-posta veya sifre hatali";
+  if (code.includes("email-already-in-use")) return "Bu e-posta zaten kayitli, giris yap";
+  if (code.includes("weak-password")) return "Sifre en az 6 karakter olmali";
+  if (code.includes("invalid-email")) return "Gecersiz e-posta";
+  if (code.includes("operation-not-allowed")) return "Firebase'de E-posta/Sifre yontemini etkinlestir";
+  if (code.includes("network")) return "Ag hatasi, baglantini kontrol et";
+  return err?.message || "Giris yapilamadi";
+}
 
 dom.joinRoomButton.addEventListener("click", () => {
   currentRoom = cleanRoom(dom.roomInput.value);
