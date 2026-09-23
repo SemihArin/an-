@@ -85,8 +85,9 @@ const dom = {
   currentAddress: $("#currentAddress"),
   currentCoords: $("#currentCoords"),
   currentMeta: $("#currentMeta"),
-  placesList: $("#placesList"),
-  placesCount: $("#placesCount"),
+  friendsList: $("#friendsList"),
+  friendsCount: $("#friendsCount"),
+  focusName: $("#focusName"),
   consentOverlay: $("#consentOverlay"),
   consentCheckbox: $("#consentCheckbox"),
   consentAgreeButton: $("#consentAgreeButton"),
@@ -100,7 +101,7 @@ let auth;
 let db;
 let storage;
 let currentUser;
-let currentRoom = "bizim-odamiz";
+let currentRoom = "arkadaslar";
 let unsubscribeMessages;
 let unsubscribeCall;
 let cameraStream;
@@ -113,17 +114,19 @@ let lastCaptureUrl;
 let peerConnection;
 let callId;
 
-let unsubscribeCurrent;
+let unsubscribeMembers;
 let unsubscribeHistory;
 let watchId = null;
 let sharing = false;
 let wakeLock = null;
 let map;
-let marker;
-let accuracyCircle;
 let trail;
 let mapReady = false;
-let latestCurrent = null;
+let members = new Map(); // uid -> member data
+let markers = new Map(); // uid -> L.marker
+let memberCircles = new Map(); // uid -> L.circle
+let focusUid = null; // detay/iz gosterilen kisi (varsayilan: sen)
+let didAutoFit = false;
 let latestHistory = [];
 let lastHistoryPoint = null;
 let lastGeocode = { key: "", at: 0, text: "" };
@@ -169,9 +172,10 @@ dom.joinRoomButton.addEventListener("click", () => {
   currentRoom = cleanRoom(dom.roomInput.value);
   dom.roomInput.value = currentRoom;
   dom.activeRoomTitle.textContent = currentRoom;
+  resetGroupState();
   listenToMessages();
   listenToLocation();
-  setStatus("Odaya baglandi");
+  setStatus("Gruba baglandi");
 });
 
 dom.tabs.forEach((tab) => {
@@ -269,9 +273,10 @@ function watchAuth() {
       setStatus("Giris yapildi");
     } else {
       if (unsubscribeMessages) unsubscribeMessages();
-      if (unsubscribeCurrent) unsubscribeCurrent();
+      if (unsubscribeMembers) unsubscribeMembers();
       if (unsubscribeHistory) unsubscribeHistory();
       stopShare();
+      resetGroupState();
       setStatus("Cikis yapildi");
     }
   });
@@ -515,20 +520,24 @@ function hideConsent() {
 
 // ---- Konum paylasimi ----
 
-function trackerCurrentDoc() {
-  return doc(db, "rooms", currentRoom, "tracker", "current");
+function memberDoc(uid) {
+  return doc(db, "rooms", currentRoom, "members", uid);
 }
 
-function trackerHistoryCol() {
-  return collection(db, "rooms", currentRoom, "tracker", "history");
+function membersCol() {
+  return collection(db, "rooms", currentRoom, "members");
+}
+
+function memberHistoryCol(uid) {
+  return collection(db, "rooms", currentRoom, "members", uid, "history");
 }
 
 function onLocationTabShown() {
   initMap();
   if (map) setTimeout(() => map.invalidateSize(), 60);
-  renderLocation();
+  renderMembers();
   renderTrail();
-  renderPlaces();
+  renderFocusDetail();
 }
 
 function initMap() {
@@ -542,24 +551,252 @@ function initMap() {
   mapReady = true;
 }
 
+function resetGroupState() {
+  clearAllMarkers();
+  members = new Map();
+  latestHistory = [];
+  lastHistoryPoint = null;
+  didAutoFit = false;
+  focusUid = currentUser ? currentUser.uid : null;
+  renderFriendsList();
+  renderFocusDetail();
+}
+
+// Gruptaki herkesin konumunu dinle; herkes birbirini haritada gorur.
 function listenToLocation() {
   if (!db || !currentUser) return;
-  if (unsubscribeCurrent) unsubscribeCurrent();
-  if (unsubscribeHistory) unsubscribeHistory();
+  if (unsubscribeMembers) unsubscribeMembers();
+  if (!focusUid) focusUid = currentUser.uid;
 
-  unsubscribeCurrent = onSnapshot(trackerCurrentDoc(), (snap) => {
-    latestCurrent = snap.exists() ? snap.data() : null;
-    renderLocation();
+  unsubscribeMembers = onSnapshot(membersCol(), (snap) => {
+    members = new Map();
+    snap.forEach((entry) => members.set(entry.id, entry.data()));
+    renderMembers();
   });
 
-  const historyQuery = query(trackerHistoryCol(), orderBy("at", "desc"), limit(300));
+  listenToFocusHistory();
+}
+
+// Secili kisinin (varsayilan: sen) gecmis izini dinle.
+function listenToFocusHistory() {
+  if (!db || !focusUid) return;
+  if (unsubscribeHistory) unsubscribeHistory();
+
+  const historyQuery = query(memberHistoryCol(focusUid), orderBy("at", "desc"), limit(300));
   unsubscribeHistory = onSnapshot(historyQuery, (snap) => {
     latestHistory = [];
     snap.forEach((entry) => latestHistory.push(entry.data()));
     latestHistory.reverse();
     renderTrail();
-    renderPlaces();
   });
+}
+
+function focusMember(uid) {
+  focusUid = uid;
+  const m = members.get(uid);
+  if (m && mapReady && typeof m.lat === "number") map.setView([m.lat, m.lng], 16);
+  listenToFocusHistory();
+  renderFriendsList();
+  renderFocusDetail();
+}
+
+function renderMembers() {
+  if (mapReady) {
+    members.forEach((m, uid) => updateMemberMarker(uid, m));
+    markers.forEach((mk, uid) => {
+      if (!members.has(uid)) {
+        map.removeLayer(mk);
+        markers.delete(uid);
+        const circle = memberCircles.get(uid);
+        if (circle) {
+          map.removeLayer(circle);
+          memberCircles.delete(uid);
+        }
+      }
+    });
+    autoFitOnce();
+  }
+  renderFriendsList();
+  renderFocusDetail();
+}
+
+function updateMemberMarker(uid, m) {
+  if (!mapReady || typeof m.lat !== "number" || typeof m.lng !== "number") return;
+  const latlng = [m.lat, m.lng];
+  const isMe = uid === currentUser?.uid;
+  const color = isMe ? "#ef6f6c" : colorForUid(uid);
+
+  let mk = markers.get(uid);
+  if (!mk) {
+    mk = L.marker(latlng, { icon: personIcon(color, m.displayName, isMe) }).addTo(map);
+    mk.on("click", () => focusMember(uid));
+    markers.set(uid, mk);
+  } else {
+    mk.setLatLng(latlng);
+    mk.setIcon(personIcon(color, m.displayName, isMe));
+  }
+
+  const element = mk.getElement();
+  if (element) element.style.opacity = m.sharing === false ? "0.45" : "1";
+
+  if (typeof m.accuracy === "number") {
+    let circle = memberCircles.get(uid);
+    if (!circle) {
+      circle = L.circle(latlng, { radius: m.accuracy, color, weight: 1, fillOpacity: 0.06 }).addTo(map);
+      memberCircles.set(uid, circle);
+    } else {
+      circle.setLatLng(latlng);
+      circle.setRadius(m.accuracy);
+    }
+  }
+}
+
+function personIcon(color, name, isMe) {
+  const label = isMe ? "Sen" : (name || "").trim().split(" ")[0] || "?";
+  return L.divIcon({
+    className: "person-pin-wrap",
+    html: `<span class="person-pin" style="--pin:${color}"></span><span class="person-name">${escapeHtml(label)}</span>`,
+    iconSize: [24, 34],
+    iconAnchor: [12, 30],
+  });
+}
+
+function colorForUid(uid) {
+  let hash = 0;
+  for (let i = 0; i < uid.length; i += 1) hash = (hash * 31 + uid.charCodeAt(i)) % 360;
+  return `hsl(${hash} 68% 55%)`;
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[ch]);
+}
+
+function autoFitOnce() {
+  if (didAutoFit) return;
+  const points = [];
+  members.forEach((m) => {
+    if (typeof m.lat === "number" && typeof m.lng === "number") points.push([m.lat, m.lng]);
+  });
+  if (points.length === 0) return;
+  if (points.length === 1) map.setView(points[0], 15);
+  else map.fitBounds(points, { padding: [40, 40] });
+  didAutoFit = true;
+}
+
+function clearAllMarkers() {
+  if (!mapReady) return;
+  markers.forEach((mk) => map.removeLayer(mk));
+  memberCircles.forEach((circle) => map.removeLayer(circle));
+  markers.clear();
+  memberCircles.clear();
+  if (trail) trail.setLatLngs([]);
+}
+
+function renderFriendsList() {
+  if (!dom.friendsList) return;
+  dom.friendsList.innerHTML = "";
+  const rows = [...members.entries()];
+  dom.friendsCount.textContent = rows.length ? `${rows.length} kisi` : "";
+
+  rows.sort(([ua, a], [ub, b]) => {
+    if (ua === currentUser?.uid) return -1;
+    if (ub === currentUser?.uid) return 1;
+    const sa = a.sharing === false ? 0 : 1;
+    const sb = b.sharing === false ? 0 : 1;
+    if (sa !== sb) return sb - sa;
+    return (a.displayName || "").localeCompare(b.displayName || "");
+  });
+
+  const me = currentUser ? members.get(currentUser.uid) : null;
+
+  rows.forEach(([uid, m]) => {
+    const li = document.createElement("li");
+    li.className = "friend-row";
+    if (uid === focusUid) li.classList.add("is-focused");
+    li.addEventListener("click", () => focusMember(uid));
+
+    const avatar = document.createElement("img");
+    avatar.className = "friend-avatar";
+    avatar.alt = "";
+    if (m.photoURL) avatar.src = m.photoURL;
+
+    const info = document.createElement("div");
+    info.className = "friend-info";
+    const nameEl = document.createElement("strong");
+    nameEl.textContent = uid === currentUser?.uid ? "Sen" : m.displayName || "Arkadas";
+    const metaEl = document.createElement("span");
+    metaEl.className = "friend-meta";
+    const seen = m.updatedAt?.toDate ? relativeTime(m.updatedAt.toDate()) : "-";
+    let distText = "";
+    if (me && uid !== currentUser?.uid && typeof me.lat === "number" && typeof m.lat === "number") {
+      distText = ` · ${formatDistance(distanceMeters(me.lat, me.lng, m.lat, m.lng))}`;
+    }
+    metaEl.textContent = `${m.sharing === false ? "durdu" : "canli"} · ${seen}${distText}`;
+    info.append(nameEl, metaEl);
+
+    const dot = document.createElement("span");
+    dot.className = `friend-dot ${m.sharing === false ? "off" : "on"}`;
+
+    li.append(avatar, info, dot);
+    dom.friendsList.appendChild(li);
+  });
+}
+
+function renderFocusDetail() {
+  if (!dom.focusName) return;
+  const m = focusUid ? members.get(focusUid) : null;
+  const name = focusUid === currentUser?.uid ? "Sen" : m?.displayName || "Arkadas";
+  dom.focusName.textContent = `${name} - konum`;
+
+  if (!m || typeof m.lat !== "number" || typeof m.lng !== "number") {
+    dom.lastUpdate.textContent = "-";
+    dom.currentCoords.textContent = "-";
+    dom.currentMeta.textContent = "-";
+    dom.currentAddress.textContent = "-";
+    return;
+  }
+
+  const time = m.updatedAt?.toDate ? m.updatedAt.toDate().toLocaleString("tr-TR") : "-";
+  dom.lastUpdate.textContent = m.sharing === false ? `${time} (durduruldu)` : time;
+  dom.currentCoords.textContent = `${m.lat.toFixed(5)}, ${m.lng.toFixed(5)}`;
+
+  const me = currentUser ? members.get(currentUser.uid) : null;
+  let distText = "-";
+  if (me && focusUid !== currentUser?.uid && typeof me.lat === "number") {
+    distText = formatDistance(distanceMeters(me.lat, me.lng, m.lat, m.lng));
+  }
+  const accText = typeof m.accuracy === "number" ? `${m.accuracy.toFixed(0)} m` : "-";
+  dom.currentMeta.textContent = `${distText} / ${accText}`;
+  reverseGeocode(m.lat, m.lng);
+}
+
+function renderTrail() {
+  if (!mapReady || !trail) return;
+  const points = latestHistory
+    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+    .map((p) => [p.lat, p.lng]);
+  trail.setLatLngs(points);
+}
+
+function relativeTime(date) {
+  const sec = Math.round((Date.now() - date.getTime()) / 1000);
+  if (sec < 60) return "az once";
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} dk once`;
+  const hour = Math.round(min / 60);
+  if (hour < 24) return `${hour} sa once`;
+  return date.toLocaleDateString("tr-TR");
+}
+
+function formatDistance(meters) {
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
 }
 
 async function startShare() {
@@ -621,7 +858,7 @@ async function stopShare() {
   if (wasSharing && db && currentUser) {
     try {
       await setDoc(
-        trackerCurrentDoc(),
+        memberDoc(currentUser.uid),
         { sharing: false, updatedAt: serverTimestamp() },
         { merge: true },
       );
@@ -642,16 +879,17 @@ async function onPosition(position) {
 
   try {
     await setDoc(
-      trackerCurrentDoc(),
+      memberDoc(currentUser.uid),
       {
+        uid: currentUser.uid,
+        displayName: currentUser.displayName || "Ben",
+        photoURL: currentUser.photoURL || "",
         lat: latitude,
         lng: longitude,
         accuracy: accuracy ?? null,
         heading: heading ?? null,
         speed: speed ?? null,
         sharing: true,
-        uid: currentUser.uid,
-        displayName: currentUser.displayName || "Ben",
         updatedAt: serverTimestamp(),
       },
       { merge: true },
@@ -670,7 +908,7 @@ async function onPosition(position) {
   if (moved || waited) {
     lastHistoryPoint = { lat: latitude, lng: longitude, at: now };
     try {
-      await addDoc(trackerHistoryCol(), {
+      await addDoc(memberHistoryCol(currentUser.uid), {
         lat: latitude,
         lng: longitude,
         accuracy: accuracy ?? null,
@@ -684,81 +922,6 @@ async function onPosition(position) {
 
 function onPositionError(error) {
   setStatus(`Konum hatasi: ${error.message}`);
-}
-
-function renderLocation() {
-  if (!latestCurrent) {
-    dom.lastUpdate.textContent = "-";
-    dom.currentCoords.textContent = "-";
-    dom.currentMeta.textContent = "-";
-    dom.currentAddress.textContent = "-";
-    return;
-  }
-
-  const { lat, lng, accuracy, speed, updatedAt, sharing: isSharing } = latestCurrent;
-  const time = updatedAt?.toDate ? updatedAt.toDate().toLocaleString("tr-TR") : "-";
-  dom.lastUpdate.textContent = isSharing === false ? `${time} (durduruldu)` : time;
-
-  if (typeof lat === "number" && typeof lng === "number") {
-    dom.currentCoords.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    const speedText = typeof speed === "number" && speed >= 0 ? `${(speed * 3.6).toFixed(0)} km/s` : "-";
-    const accText = typeof accuracy === "number" ? `${accuracy.toFixed(0)} m` : "-";
-    dom.currentMeta.textContent = `${accText} / ${speedText}`;
-    updateMarker(lat, lng, accuracy);
-    reverseGeocode(lat, lng);
-  }
-}
-
-function updateMarker(lat, lng, accuracy) {
-  if (!mapReady) return;
-  const latlng = [lat, lng];
-  if (!marker) {
-    marker = L.marker(latlng).addTo(map);
-    map.setView(latlng, 16);
-  } else {
-    marker.setLatLng(latlng);
-  }
-  if (typeof accuracy === "number") {
-    if (!accuracyCircle) {
-      accuracyCircle = L.circle(latlng, {
-        radius: accuracy,
-        color: "#4fb7a8",
-        weight: 1,
-        fillOpacity: 0.08,
-      }).addTo(map);
-    } else {
-      accuracyCircle.setLatLng(latlng);
-      accuracyCircle.setRadius(accuracy);
-    }
-  }
-}
-
-function renderTrail() {
-  if (!mapReady || !trail) return;
-  const points = latestHistory
-    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
-    .map((p) => [p.lat, p.lng]);
-  trail.setLatLngs(points);
-}
-
-function renderPlaces() {
-  dom.placesList.innerHTML = "";
-  dom.placesCount.textContent = latestHistory.length ? `${latestHistory.length} nokta` : "";
-  const items = latestHistory.slice().reverse().slice(0, 40);
-  items.forEach((p) => {
-    const li = document.createElement("li");
-    const time = p.at?.toDate ? p.at.toDate().toLocaleString("tr-TR") : "";
-    const coords =
-      typeof p.lat === "number" ? `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}` : "-";
-    const timeSpan = document.createElement("span");
-    timeSpan.className = "place-time";
-    timeSpan.textContent = time;
-    const coordSpan = document.createElement("span");
-    coordSpan.className = "place-coords";
-    coordSpan.textContent = coords;
-    li.append(timeSpan, coordSpan);
-    dom.placesList.appendChild(li);
-  });
 }
 
 async function reverseGeocode(lat, lng) {
@@ -786,7 +949,7 @@ async function reverseGeocode(lat, lng) {
 async function clearHistory() {
   if (!db || !currentUser) return;
   try {
-    const snap = await getDocs(trackerHistoryCol());
+    const snap = await getDocs(memberHistoryCol(currentUser.uid));
     const batch = writeBatch(db);
     snap.forEach((entry) => batch.delete(entry.ref));
     await batch.commit();
@@ -896,7 +1059,7 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 }
 
 function cleanRoom(value) {
-  return (value || "bizim-odamiz").trim().toLowerCase().replace(/[^a-z0-9-_]/g, "-").slice(0, 48);
+  return (value || "arkadaslar").trim().toLowerCase().replace(/[^a-z0-9-_]/g, "-").slice(0, 48);
 }
 
 function setStatus(text) {

@@ -437,7 +437,7 @@ input {
   font-size: 15px;
 }
 
-.places-head {
+.friends-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -445,40 +445,113 @@ input {
   margin-bottom: 8px;
 }
 
-.places-head h3 {
+.friends-head h3 {
   margin: 0;
   font-size: 18px;
 }
 
-.places-list {
+.friends-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: 6px;
-  max-height: 260px;
+  max-height: 280px;
   overflow: auto;
 }
 
-.places-list li {
-  display: flex;
+.friend-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   border: 1px solid var(--line);
   background: var(--panel);
   border-radius: var(--radius);
   padding: 8px 12px;
+  cursor: pointer;
 }
 
-.place-time {
+.friend-row.is-focused {
+  border-color: var(--accent-2);
+  background: rgba(79, 183, 168, 0.1);
+}
+
+.friend-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  object-fit: cover;
+}
+
+.friend-info {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.friend-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-meta {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.place-coords {
-  font-variant-numeric: tabular-nums;
-  font-size: 13px;
+.friend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.friend-dot.on {
+  background: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(79, 183, 168, 0.18);
+}
+
+.friend-dot.off {
+  background: var(--muted);
+  opacity: 0.5;
+}
+
+.focus-detail h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+/* Harita uzerindeki kisi isaretcileri */
+.person-pin-wrap {
+  display: grid;
+  justify-items: center;
+  line-height: 1;
+}
+
+.person-pin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin, #ef6f6c);
+  border: 2px solid #fff;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.person-name {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(5, 7, 10, 0.72);
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .consent-overlay {

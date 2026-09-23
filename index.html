@@ -19,7 +19,8 @@
           <p class="eyebrow">Ozel alan</p>
           <h1>Iki kisilik an</h1>
           <p class="muted">
-            Google ile giris, Firebase mesajlasma, kamera kaydi ve WebRTC sesli/goruntulu konusma.
+            Arkadaslarinla canli konum paylasimi: ayni grup koduyla girenler birbirini haritada
+            gorur. Ayrica mesajlasma, kamera ve sesli/goruntulu arama.
           </p>
         </div>
         <button class="primary-action" id="loginButton" type="button">Google ile giris yap</button>
@@ -38,9 +39,9 @@
             </div>
           </div>
           <div class="room-card">
-            <label for="roomInput">Oda kodu</label>
+            <label for="roomInput">Grup kodu</label>
             <div class="inline-form">
-              <input id="roomInput" value="bizim-odamiz" autocomplete="off" />
+              <input id="roomInput" value="arkadaslar" autocomplete="off" />
               <button id="joinRoomButton" type="button">Baglan</button>
             </div>
           </div>
@@ -123,37 +124,41 @@
 
             <div id="locationMap" class="location-map"></div>
 
-            <div class="location-info">
-              <div class="info-card">
-                <span class="info-label">Son guncelleme</span>
-                <strong id="lastUpdate">-</strong>
+            <div class="friends">
+              <div class="friends-head">
+                <h3>Arkadaslar</h3>
+                <span class="muted small" id="friendsCount"></span>
               </div>
-              <div class="info-card">
-                <span class="info-label">Konum</span>
-                <strong id="currentAddress">-</strong>
-              </div>
-              <div class="info-card">
-                <span class="info-label">Koordinat</span>
-                <strong id="currentCoords">-</strong>
-              </div>
-              <div class="info-card">
-                <span class="info-label">Dogruluk / Hiz</span>
-                <strong id="currentMeta">-</strong>
-              </div>
+              <ul class="friends-list" id="friendsList"></ul>
             </div>
 
-            <div class="places">
-              <div class="places-head">
-                <h3>Gidilen yerler</h3>
-                <span class="muted small" id="placesCount"></span>
+            <div class="focus-detail">
+              <h3 id="focusName">Konum detayi</h3>
+              <div class="location-info">
+                <div class="info-card">
+                  <span class="info-label">Son guncelleme</span>
+                  <strong id="lastUpdate">-</strong>
+                </div>
+                <div class="info-card">
+                  <span class="info-label">Adres</span>
+                  <strong id="currentAddress">-</strong>
+                </div>
+                <div class="info-card">
+                  <span class="info-label">Koordinat</span>
+                  <strong id="currentCoords">-</strong>
+                </div>
+                <div class="info-card">
+                  <span class="info-label">Uzaklik / Dogruluk</span>
+                  <strong id="currentMeta">-</strong>
+                </div>
               </div>
-              <ul class="places-list" id="placesList"></ul>
             </div>
 
             <p class="muted small">
-              Bu cihaz senin: "Konumumu paylas" dedigin surece canli konumun ayni oda kodundaki
-              diger kisiye gorunur. Tarayici/APK arka plana atilinca konum guncellemesi durabilir;
-              surekli takip icin uygulamayi acik ve ekrani uyanik tut.
+              Ayni grup koduyla giren herkes birbirinin canli konumunu haritada gorur. Herkes
+              yalnizca "Konumumu paylas" dedigi ve onay verdigi surece paylasir; listeden birine
+              dokununca haritada ona odaklanir. Tarayici/APK arka plana atilinca guncelleme
+              durabilir; surekli paylasim icin uygulamayi acik tut.
             </p>
           </section>
         </section>
@@ -165,12 +170,12 @@
         <h2 id="consentTitle">Konum paylasimi onayi</h2>
         <p>
           "Onayliyorum" dedigin an, bu cihazin <strong>canli konumu</strong> ve
-          <strong>gittigi yerler</strong> ayni oda kodundaki kisiye gorunur olur.
+          <strong>gittigi yerler</strong> ayni grup kodundaki arkadaslarina gorunur olur.
         </p>
         <ul>
           <li>Paylasim yalnizca sen "Konumumu paylas" dedigin surece calisir.</li>
           <li>Istedigin an "Paylasimi durdur" ile kapatabilirsin.</li>
-          <li>Paylasim acikken ekranda surekli "canli" gostergesi kalir.</li>
+          <li>Paylasim acikken ekranda ve bildirimde surekli "canli" gostergesi kalir.</li>
         </ul>
         <label class="consent-check">
           <input type="checkbox" id="consentCheckbox" />
