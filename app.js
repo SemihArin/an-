@@ -93,6 +93,13 @@ const dom = {
   consentCheckbox: $("#consentCheckbox"),
   consentAgreeButton: $("#consentAgreeButton"),
   consentCancelButton: $("#consentCancelButton"),
+  addPlaceButton: $("#addPlaceButton"),
+  savedPlacesList: $("#savedPlacesList"),
+  placeModal: $("#placeModal"),
+  placeNameInput: $("#placeNameInput"),
+  placeRadiusInput: $("#placeRadiusInput"),
+  placeSaveButton: $("#placeSaveButton"),
+  placeCancelButton: $("#placeCancelButton"),
 };
 
 const CONSENT_KEY = "konum-paylasim-onayi";
@@ -121,6 +128,12 @@ let didAutoFit = false;
 let latestHistory = [];
 let lastHistoryPoint = null;
 let lastGeocode = { key: "", at: 0, text: "" };
+let unsubscribePlaces;
+let places = new Map(); // id -> {name,lat,lng,radius,...}
+let placeLayers = new Map(); // id -> {circle, label}
+let geoState = {}; // placeId -> icerideyim mi (bool)
+let addPlaceMode = false;
+let pendingPlaceLatLng = null;
 let swRegistration = null;
 const SHARE_NOTIF_ID = 4242;
 const SHARE_NOTIF_TAG = "konum-paylasim";
@@ -263,6 +276,40 @@ dom.sheetHandle?.addEventListener("click", () => {
   if (map) setTimeout(() => map.invalidateSize(), 260);
 });
 
+dom.addPlaceButton?.addEventListener("click", () => {
+  initMap();
+  addPlaceMode = true;
+  dom.locationView?.classList.add("collapsed");
+  if (map) setTimeout(() => map.invalidateSize(), 260);
+  setStatus("Haritada bir noktaya dokun");
+});
+
+dom.placeCancelButton?.addEventListener("click", () => {
+  dom.placeModal?.classList.add("is-hidden");
+  pendingPlaceLatLng = null;
+});
+
+dom.placeSaveButton?.addEventListener("click", async () => {
+  if (!pendingPlaceLatLng || !db || !currentUser) return;
+  const name = (dom.placeNameInput.value || "").trim() || "Kayitli yer";
+  const radius = parseInt(dom.placeRadiusInput.value, 10) || 150;
+  try {
+    await addDoc(placesCol(), {
+      name,
+      lat: pendingPlaceLatLng.lat,
+      lng: pendingPlaceLatLng.lng,
+      radius,
+      createdBy: currentUser.uid,
+      createdAt: serverTimestamp(),
+    });
+    setStatus("Yer kaydedildi");
+  } catch (_) {
+    setStatus("Yer kaydedilemedi");
+  }
+  dom.placeModal?.classList.add("is-hidden");
+  pendingPlaceLatLng = null;
+});
+
 dom.startShareButton.addEventListener("click", startShare);
 dom.stopShareButton.addEventListener("click", stopShare);
 dom.clearHistoryButton.addEventListener("click", clearHistory);
@@ -311,6 +358,7 @@ function watchAuth() {
       if (unsubscribeMessages) unsubscribeMessages();
       if (unsubscribeMembers) unsubscribeMembers();
       if (unsubscribeHistory) unsubscribeHistory();
+      if (unsubscribePlaces) unsubscribePlaces();
       stopShare();
       resetGroupState();
       setStatus("Cikis yapildi");
@@ -335,21 +383,47 @@ function listenToMessages() {
 }
 
 function renderMessage(message) {
-  const node = dom.messageTemplate.content.firstElementChild.cloneNode(true);
-  const time = message.createdAt?.toDate ? message.createdAt.toDate().toLocaleTimeString("tr-TR") : "";
-  node.classList.toggle("is-mine", message.uid === currentUser.uid);
-  node.querySelector(".message-meta").textContent = `${message.displayName || "Kullanici"} ${time}`;
-  node.querySelector("p").textContent = message.text || "";
+  const time = message.createdAt?.toDate
+    ? message.createdAt.toDate().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })
+    : "";
 
-  const attachment = node.querySelector(".attachment");
-  if (message.attachmentUrl) {
-    attachment.href = message.attachmentUrl;
-    attachment.textContent = message.attachmentName || "Eki ac";
-  } else {
-    attachment.remove();
+  if (message.type === "system") {
+    const row = document.createElement("div");
+    row.className = "msg-system";
+    const span = document.createElement("span");
+    span.textContent = time ? `${message.text} · ${time}` : message.text;
+    row.appendChild(span);
+    dom.messages.appendChild(row);
+    return;
   }
 
-  dom.messages.appendChild(node);
+  const mine = message.uid === currentUser?.uid;
+  const row = document.createElement("div");
+  row.className = `msg-row${mine ? " mine" : ""}`;
+
+  if (!mine) {
+    row.appendChild(makeAvatar("msg-avatar", message.displayName, message.photoURL, message.uid));
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  if (!mine) {
+    const name = document.createElement("div");
+    name.className = "bubble-name";
+    name.textContent = message.displayName || "Arkadas";
+    bubble.appendChild(name);
+  }
+  const text = document.createElement("div");
+  text.className = "bubble-text";
+  text.textContent = message.text || "";
+  bubble.appendChild(text);
+  const timeEl = document.createElement("div");
+  timeEl.className = "bubble-time";
+  timeEl.textContent = time;
+  bubble.appendChild(timeEl);
+
+  row.appendChild(bubble);
+  dom.messages.appendChild(row);
 }
 
 // ---- Onay ----
@@ -418,7 +492,17 @@ function initMap() {
   }).addTo(map);
   dom.locationMap.classList.add("dark-tiles");
   trail = L.polyline([], { color: "#6c8cff", weight: 5, opacity: 0.85, lineJoin: "round" }).addTo(map);
+  map.on("click", onMapClick);
   mapReady = true;
+  renderPlaceCircles();
+}
+
+function onMapClick(event) {
+  if (!addPlaceMode) return;
+  addPlaceMode = false;
+  pendingPlaceLatLng = event.latlng;
+  if (dom.placeNameInput) dom.placeNameInput.value = "";
+  dom.placeModal?.classList.remove("is-hidden");
 }
 
 function recenterOnMe() {
@@ -440,13 +524,161 @@ function recenterOnMe() {
 
 function resetGroupState() {
   clearAllMarkers();
+  clearPlaceLayers();
   members = new Map();
+  places = new Map();
+  geoState = {};
   latestHistory = [];
   lastHistoryPoint = null;
   didAutoFit = false;
   focusUid = currentUser ? currentUser.uid : null;
   renderFriendsList();
   renderFocusDetail();
+  renderSavedPlacesList();
+}
+
+function placesCol() {
+  return collection(db, "rooms", currentRoom, "places");
+}
+
+function placeDoc(id) {
+  return doc(db, "rooms", currentRoom, "places", id);
+}
+
+function clearPlaceLayers() {
+  if (mapReady) {
+    placeLayers.forEach(({ circle, label }) => {
+      map.removeLayer(circle);
+      map.removeLayer(label);
+    });
+  }
+  placeLayers.clear();
+}
+
+function renderPlaceCircles() {
+  if (!mapReady) return;
+  places.forEach((p, id) => {
+    if (typeof p.lat !== "number" || typeof p.lng !== "number") return;
+    const latlng = [p.lat, p.lng];
+    const radius = p.radius || 150;
+    let layer = placeLayers.get(id);
+    if (!layer) {
+      const circle = L.circle(latlng, {
+        radius,
+        color: "#f5a524",
+        weight: 1.5,
+        fillColor: "#f5a524",
+        fillOpacity: 0.12,
+      }).addTo(map);
+      const label = L.marker(latlng, {
+        icon: L.divIcon({
+          className: "place-label-wrap",
+          html: `<span class="place-label">${escapeHtml(p.name || "Yer")}</span>`,
+          iconSize: [0, 0],
+        }),
+        interactive: false,
+      }).addTo(map);
+      placeLayers.set(id, { circle, label });
+    } else {
+      layer.circle.setLatLng(latlng);
+      layer.circle.setRadius(radius);
+      layer.label.setLatLng(latlng);
+    }
+  });
+  placeLayers.forEach((layer, id) => {
+    if (!places.has(id)) {
+      map.removeLayer(layer.circle);
+      map.removeLayer(layer.label);
+      placeLayers.delete(id);
+    }
+  });
+}
+
+function renderSavedPlacesList() {
+  if (!dom.savedPlacesList) return;
+  dom.savedPlacesList.innerHTML = "";
+  if (places.size === 0) {
+    const li = document.createElement("li");
+    li.className = "place-empty";
+    li.textContent = "Henuz kayitli yer yok. Haritadan ekle.";
+    dom.savedPlacesList.appendChild(li);
+    return;
+  }
+  places.forEach((p, id) => {
+    const li = document.createElement("li");
+    li.className = "place-item";
+    const info = document.createElement("div");
+    info.className = "place-info";
+    const name = document.createElement("strong");
+    name.textContent = p.name || "Yer";
+    const meta = document.createElement("span");
+    meta.className = "place-meta";
+    meta.textContent = `${p.radius || 150} m yaricap`;
+    info.append(name, meta);
+    const del = document.createElement("button");
+    del.className = "icon-btn ghost";
+    del.type = "button";
+    del.setAttribute("aria-label", "Sil");
+    del.textContent = "✕";
+    del.addEventListener("click", () => deletePlace(id));
+    li.append(info, del);
+    dom.savedPlacesList.appendChild(li);
+  });
+}
+
+async function deletePlace(id) {
+  if (!db) return;
+  try {
+    await deleteDoc(placeDoc(id));
+    delete geoState[id];
+    setStatus("Yer silindi");
+  } catch (_) {
+    setStatus("Yer silinemedi");
+  }
+}
+
+function myName() {
+  return currentUser?.displayName || "Biri";
+}
+
+// Kayitli yerlere giris/cikisi kendi cihazin tespit eder ve sohbete yazar.
+function checkGeofences(lat, lng) {
+  if (!places.size || !currentUser) return;
+  let changed = false;
+  places.forEach((p, id) => {
+    if (typeof p.lat !== "number" || typeof p.lng !== "number") return;
+    const inside = distanceMeters(lat, lng, p.lat, p.lng) <= (p.radius || 150);
+    const prev = geoState[id];
+    if (prev === undefined) {
+      geoState[id] = inside; // ilk okuma: sessizce durumu ayarla
+      return;
+    }
+    if (inside && !prev) {
+      geoState[id] = true;
+      changed = true;
+      postSystemMessage(`${myName()}, ${p.name || "yer"} konumuna giris yapti`);
+    } else if (!inside && prev) {
+      geoState[id] = false;
+      changed = true;
+      postSystemMessage(`${myName()}, ${p.name || "yer"} konumundan cikti`);
+    }
+  });
+  return changed;
+}
+
+async function postSystemMessage(text) {
+  if (!db || !currentUser) return;
+  try {
+    await addDoc(collection(db, "rooms", currentRoom, "messages"), {
+      text,
+      type: "system",
+      uid: currentUser.uid,
+      displayName: currentUser.displayName || "Biri",
+      createdAt: serverTimestamp(),
+    });
+  } catch (_) {
+    /* yoksay */
+  }
 }
 
 // Gruptaki herkesin konumunu dinle; herkes birbirini haritada gorur.
@@ -462,6 +694,18 @@ function listenToLocation() {
   });
 
   listenToFocusHistory();
+  listenToPlaces();
+}
+
+function listenToPlaces() {
+  if (!db || !currentUser) return;
+  if (unsubscribePlaces) unsubscribePlaces();
+  unsubscribePlaces = onSnapshot(placesCol(), (snap) => {
+    places = new Map();
+    snap.forEach((entry) => places.set(entry.id, entry.data()));
+    renderPlaceCircles();
+    renderSavedPlacesList();
+  });
 }
 
 // Secili kisinin (varsayilan: sen) gecmis izini dinle.
@@ -809,6 +1053,8 @@ async function onPosition(position) {
     setStatus("Konum yazilamadi");
     return;
   }
+
+  checkGeofences(latitude, longitude);
 
   const now = Date.now();
   const moved =

@@ -124,6 +124,10 @@
               <button class="btn btn-primary" id="startShareButton" type="button">Konumumu paylas</button>
               <button class="btn btn-danger" id="stopShareButton" type="button" disabled>Durdur</button>
             </div>
+            <button class="chip-btn" id="addPlaceButton" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Kayitli yer ekle
+            </button>
             <div class="sheet-head">
               <h3>Arkadaslar</h3>
               <span class="pill-count" id="friendsCount"></span>
@@ -159,6 +163,15 @@
             <p class="hint">
               Ayni grup koduna giren arkadaslarin haritada gorunur.
               <span id="activeRoomTitle" hidden></span>
+            </p>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Kayitli yerler</h3>
+            <ul class="places-list" id="savedPlacesList"></ul>
+            <p class="hint">
+              Haritada "Kayitli yer ekle" ile bir noktaya dokunup yer kaydet. Biri o alana girince
+              veya cikinca sohbete otomatik bildirim dusruz.
             </p>
           </div>
 
@@ -215,13 +228,34 @@
       </div>
     </div>
 
-    <template id="messageTemplate">
-      <article class="message">
-        <div class="message-meta"></div>
-        <p></p>
-        <a class="attachment" target="_blank" rel="noreferrer"></a>
-      </article>
-    </template>
+    <!-- ==================== YER EKLE MODALI ==================== -->
+    <div class="modal-overlay is-hidden" id="placeModal" role="dialog" aria-modal="true" aria-labelledby="placeTitle">
+      <div class="modal-card">
+        <div class="modal-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.686 7-11a7 7 0 1 0-14 0c0 5.314 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        </div>
+        <h2 id="placeTitle">Kayitli yer</h2>
+        <p>Bu noktaya bir isim ve alan yaricapi ver. Biri bu alana girince/cikinca sohbete bildirim dusruz.</p>
+        <label class="field">
+          <span class="field-label">Yer adi</span>
+          <input id="placeNameInput" placeholder="Ev, Okul, Is..." autocomplete="off" />
+        </label>
+        <label class="field">
+          <span class="field-label">Yaricap</span>
+          <select id="placeRadiusInput">
+            <option value="100">100 m</option>
+            <option value="150" selected>150 m</option>
+            <option value="300">300 m</option>
+            <option value="500">500 m</option>
+            <option value="1000">1 km</option>
+          </select>
+        </label>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="placeSaveButton" type="button">Kaydet</button>
+          <button class="btn btn-ghost" id="placeCancelButton" type="button">Vazgec</button>
+        </div>
+      </div>
+    </div>
 
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
