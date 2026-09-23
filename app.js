@@ -72,14 +72,6 @@ const dom = {
   messages: $("#messages"),
   messageForm: $("#messageForm"),
   messageInput: $("#messageInput"),
-  attachLastCaptureButton: $("#attachLastCaptureButton"),
-  cameraPreview: $("#cameraPreview"),
-  photoCanvas: $("#photoCanvas"),
-  startCameraButton: $("#startCameraButton"),
-  takePhotoButton: $("#takePhotoButton"),
-  recordButton: $("#recordButton"),
-  uploadCaptureButton: $("#uploadCaptureButton"),
-  capturePreview: $("#capturePreview"),
   messageTemplate: $("#messageTemplate"),
   recenterButton: $("#recenterButton"),
   sheetHandle: $("#sheetHandle"),
@@ -112,11 +104,6 @@ let storage;
 let currentUser;
 let currentRoom = "arkadaslar";
 let unsubscribeMessages;
-let cameraStream;
-let recorder;
-let recordedChunks = [];
-let lastCapture;
-let lastCaptureUrl;
 
 let unsubscribeMembers;
 let unsubscribeHistory;
@@ -256,12 +243,10 @@ dom.tabs.forEach((tab) => {
 dom.messageForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = dom.messageInput.value.trim();
-  if (!text && !lastCaptureUrl) return;
+  if (!text) return;
 
   await addDoc(collection(db, "rooms", currentRoom, "messages"), {
     text,
-    attachmentUrl: lastCaptureUrl || "",
-    attachmentName: lastCapture?.name || "",
     uid: currentUser.uid,
     displayName: currentUser.displayName || "Ben",
     photoURL: currentUser.photoURL || "",
@@ -269,26 +254,7 @@ dom.messageForm.addEventListener("submit", async (event) => {
   });
 
   dom.messageInput.value = "";
-  lastCaptureUrl = "";
   setStatus("Mesaj gonderildi");
-});
-
-dom.attachLastCaptureButton.addEventListener("click", async () => {
-  if (!lastCapture) {
-    setStatus("Once fotograf veya video cek");
-    return;
-  }
-  lastCaptureUrl = await uploadCapture(lastCapture);
-  setStatus("Son cekim mesaja eklendi");
-});
-
-dom.startCameraButton.addEventListener("click", startCamera);
-dom.takePhotoButton.addEventListener("click", takePhoto);
-dom.recordButton.addEventListener("click", toggleRecording);
-dom.uploadCaptureButton.addEventListener("click", async () => {
-  if (!lastCapture) return;
-  lastCaptureUrl = await uploadCapture(lastCapture);
-  setStatus("Cekim Firebase Storage'a yuklendi");
 });
 
 dom.recenterButton?.addEventListener("click", recenterOnMe);
@@ -334,8 +300,9 @@ function watchAuth() {
     if (user) {
       dom.userName.textContent = user.displayName || "Kullanici";
       dom.userEmail.textContent = user.email || "";
-      if (user.photoURL) dom.userPhoto.src = user.photoURL;
-      else dom.userPhoto.removeAttribute("src");
+      const avatarNode = makeAvatar("profile-avatar", user.displayName || user.email, user.photoURL, user.uid);
+      dom.userPhoto.replaceWith(avatarNode);
+      dom.userPhoto = avatarNode;
       listenToMessages();
       listenToLocation();
       setTimeout(onLocationTabShown, 60);
@@ -383,73 +350,6 @@ function renderMessage(message) {
   }
 
   dom.messages.appendChild(node);
-}
-
-async function startCamera() {
-  cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  dom.cameraPreview.srcObject = cameraStream;
-  dom.takePhotoButton.disabled = false;
-  dom.recordButton.disabled = false;
-  setStatus("Kamera acik");
-}
-
-function takePhoto() {
-  const video = dom.cameraPreview;
-  const canvas = dom.photoCanvas;
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-  canvas.toBlob((blob) => {
-    lastCapture = new File([blob], `fotograf-${Date.now()}.jpg`, { type: "image/jpeg" });
-    showCapture(URL.createObjectURL(blob), "image");
-    dom.uploadCaptureButton.disabled = false;
-    setStatus("Fotograf cekildi");
-  }, "image/jpeg", 0.92);
-}
-
-function toggleRecording() {
-  if (recorder?.state === "recording") {
-    recorder.stop();
-    dom.recordButton.textContent = "Video kaydet";
-    return;
-  }
-
-  recordedChunks = [];
-  recorder = new MediaRecorder(cameraStream, { mimeType: pickMimeType() });
-  recorder.addEventListener("dataavailable", (event) => {
-    if (event.data.size > 0) recordedChunks.push(event.data);
-  });
-  recorder.addEventListener("stop", () => {
-    const type = recorder.mimeType || "video/webm";
-    const blob = new Blob(recordedChunks, { type });
-    lastCapture = new File([blob], `video-${Date.now()}.webm`, { type });
-    showCapture(URL.createObjectURL(blob), "video");
-    dom.uploadCaptureButton.disabled = false;
-    setStatus("Video hazir");
-  });
-  recorder.start();
-  dom.recordButton.textContent = "Kaydi durdur";
-  setStatus("Video kaydediliyor");
-}
-
-function pickMimeType() {
-  if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) return "video/webm;codecs=vp9";
-  if (MediaRecorder.isTypeSupported("video/webm")) return "video/webm";
-  return "";
-}
-
-function showCapture(url, type) {
-  dom.capturePreview.innerHTML = "";
-  const media = document.createElement(type === "image" ? "img" : "video");
-  media.src = url;
-  if (type === "video") media.controls = true;
-  dom.capturePreview.appendChild(media);
-}
-
-async function uploadCapture(file) {
-  const captureRef = ref(storage, `rooms/${currentRoom}/captures/${currentUser.uid}/${file.name}`);
-  await uploadBytes(captureRef, file);
-  return getDownloadURL(captureRef);
 }
 
 // ---- Onay ----
@@ -511,12 +411,12 @@ function initMap() {
   if (mapReady || typeof L === "undefined") return;
   map = L.map(dom.locationMap, { zoomControl: true, attributionControl: true }).setView([39.925, 32.866], 6);
   map.zoomControl.setPosition("topright");
-  // Koyu temali ozel harita (CARTO dark, anahtar gerektirmez)
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 20,
-    subdomains: "abcd",
-    attribution: "&copy; OpenStreetMap &copy; CARTO",
+  // OpenStreetMap kareleri + CSS filtresi ile koyu tema (API anahtari gerekmez)
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap",
   }).addTo(map);
+  dom.locationMap.classList.add("dark-tiles");
   trail = L.polyline([], { color: "#6c8cff", weight: 5, opacity: 0.85, lineJoin: "round" }).addTo(map);
   mapReady = true;
 }
@@ -648,6 +548,33 @@ function personIcon(color, name, isMe) {
   });
 }
 
+function initialOf(name) {
+  const s = (name || "").trim();
+  return s ? s.charAt(0).toUpperCase() : "?";
+}
+
+function makeInitials(className, name, uid) {
+  const div = document.createElement("div");
+  div.className = `${className} avatar-initials`;
+  div.textContent = initialOf(name);
+  if (uid) div.style.background = colorForUid(uid);
+  return div;
+}
+
+// Foto varsa goster (no-referrer ile Google fotolari da yuklenir); yuklenemezse bas harf.
+function makeAvatar(className, name, photoURL, uid) {
+  if (photoURL) {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = "";
+    img.referrerPolicy = "no-referrer";
+    img.addEventListener("error", () => img.replaceWith(makeInitials(className, name, uid)));
+    img.src = photoURL;
+    return img;
+  }
+  return makeInitials(className, name, uid);
+}
+
 function colorForUid(uid) {
   let hash = 0;
   for (let i = 0; i < uid.length; i += 1) hash = (hash * 31 + uid.charCodeAt(i)) % 360;
@@ -708,10 +635,7 @@ function renderFriendsList() {
     if (uid === focusUid) li.classList.add("is-focused");
     li.addEventListener("click", () => focusMember(uid));
 
-    const avatar = document.createElement("img");
-    avatar.className = "friend-avatar";
-    avatar.alt = "";
-    if (m.photoURL) avatar.src = m.photoURL;
+    const avatar = makeAvatar("friend-avatar", uid === currentUser?.uid ? "Sen" : m.displayName, m.photoURL, uid);
 
     const info = document.createElement("div");
     info.className = "friend-info";

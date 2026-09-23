@@ -136,27 +136,9 @@
         <section class="view chat-view is-hidden" id="chatView">
           <div class="messages" id="messages" aria-live="polite"></div>
           <form class="composer" id="messageForm">
-            <button class="icon-btn ghost" id="attachLastCaptureButton" type="button" title="Son cekimi ekle">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
             <input id="messageInput" placeholder="Mesaj yaz..." autocomplete="off" />
             <button class="btn btn-primary btn-sm" type="submit">Gonder</button>
           </form>
-        </section>
-
-        <!-- Kamera -->
-        <section class="view camera-view is-hidden" id="cameraView">
-          <div class="media-stage">
-            <video id="cameraPreview" autoplay playsinline muted></video>
-            <canvas id="photoCanvas" class="is-hidden"></canvas>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-ghost" id="startCameraButton" type="button">Kamerayi ac</button>
-            <button class="btn btn-ghost" id="takePhotoButton" type="button" disabled>Fotograf cek</button>
-            <button class="btn btn-ghost" id="recordButton" type="button" disabled>Video kaydet</button>
-            <button class="btn btn-primary" id="uploadCaptureButton" type="button" disabled>Yukle</button>
-          </div>
-          <div class="capture-preview" id="capturePreview"></div>
         </section>
 
         <!-- Profil -->
@@ -198,10 +180,6 @@
         <button class="tab" type="button" data-view="chatView">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <span>Mesaj</span>
-        </button>
-        <button class="tab" type="button" data-view="cameraView">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span>Kamera</span>
         </button>
         <button class="tab" type="button" data-view="profileView">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
